@@ -1,0 +1,52 @@
+---
+title: Sample Project
+date: '2024-03-27'
+description: A showcase of my sample project
+tags: ['project', 'demo']
+github: 'https://github.com/username/project'
+live: 'https://project-demo.com'
+---
+
+# Sample Project
+
+This is a showcase of my sample project. Here are some key features:
+
+## Technologies Used
+
+- Next.js
+- TypeScript
+- Tailwind CSS
+- MDX
+
+## Project Screenshots
+
+![Project Screenshot](/images/project-screenshot.png)
+
+## Implementation Details
+
+Here's a key piece of code from the project:
+
+```typescript
+interface ProjectProps {
+  title: string;
+  description: string;
+  technologies: string[];
+}
+
+const Project: React.FC<ProjectProps> = ({
+  title,
+  description,
+  technologies
+}) => {
+  return (
+    <div className="project-card">
+      <h2>{title}</h2>
+      <p>{description}</p>
+      <div className="tech-stack">
+        {technologies.map(tech => (
+          <span key={tech}>{tech}</span>
+        ))}
+      </div>
+    </div>
+  );
+};

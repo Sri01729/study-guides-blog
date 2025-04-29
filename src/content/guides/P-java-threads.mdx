@@ -1,0 +1,659 @@
+---
+title: Java Threads Deep Dive
+description: Comprehensive guide to Threads, Multiple Threads, Thread Priority and Sleep, Runnable vs Thread, Race Condition, and Thread States in Java with examples, pitfalls, Spring Boot integration, and interview preparation.
+date: '2025-04-29'
+---
+
+## Definition and Fundamentals
+
+**Threads** are the smallest unit of execution within a process. In Java, they allow concurrent execution of two or more parts of a program to maximize CPU utilization.
+
+- **Where it fits**: Core Java concurrency package (`java.lang.Thread`)
+- **Core Principle**: Parallelism and multitasking.
+- **Why use**: To make programs faster, more responsive, and better utilize multi-core systems.
+
+## Code Examples
+
+### Beginner
+```java
+public class HelloThread extends Thread {
+    public void run() {
+        System.out.println("Hello from thread!");
+    }
+
+    public static void main(String[] args) {
+        HelloThread thread = new HelloThread();
+        thread.start();
+    }
+}
+```
+
+### Intermediate
+```java
+class PrintTask implements Runnable {
+    @Override
+    public void run() {
+        System.out.println(Thread.currentThread().getName() + " is running");
+    }
+
+    public static void main(String[] args) {
+        Thread t1 = new Thread(new PrintTask());
+        Thread t2 = new Thread(new PrintTask());
+        t1.start();
+        t2.start();
+    }
+}
+```
+
+### Advanced
+```java
+class Counter {
+    private int count = 0;
+
+    public synchronized void increment() {
+        count++;
+    }
+
+    public int getCount() {
+        return count;
+    }
+}
+
+public class SafeCounter {
+    public static void main(String[] args) throws InterruptedException {
+        Counter counter = new Counter();
+
+        Runnable task = () -> {
+            for (int i = 0; i < 1000; i++) {
+                counter.increment();
+            }
+        };
+
+        Thread t1 = new Thread(task);
+        Thread t2 = new Thread(task);
+        t1.start();
+        t2.start();
+
+        t1.join();
+        t2.join();
+
+        System.out.println("Final count: " + counter.getCount());
+    }
+}
+```
+
+## Common Pitfalls and Best Practices
+
+- **Mistakes**:
+  - Forgetting `start()` vs `run()` confusion.
+  - Not handling synchronization leading to race conditions.
+  - Creating too many threads (leading to resource exhaustion).
+
+- **Performance**:
+  - Prefer thread pooling using `ExecutorService`.
+
+- **Security**:
+  - Avoid leaking sensitive data between threads.
+
+- **Code Smells**:
+  - Busy-wait loops.
+
+- **Modern Best Practices**:
+  - Use `ExecutorService`, `CompletableFuture`, or parallel streams instead of manually creating threads.
+
+## Real-World Spring Boot Integration
+
+**Business Problem**: Asynchronously processing user registration emails.
+
+### Spring Boot Example
+```java
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.stereotype.Service;
+
+@Service
+public class EmailService {
+
+    @Async
+    public void sendRegistrationEmail(String email) {
+        System.out.println("Sending email to: " + email);
+    }
+}
+```
+
+### Configuration
+```java
+import org.springframework.context.annotation.Configuration;
+import org.springframework.scheduling.annotation.EnableAsync;
+
+@Configuration
+@EnableAsync
+public class AsyncConfig {
+}
+```
+
+**How Spring Boot enhances**:
+- Abstracts thread creation.
+- Automatically handles thread pools with simple annotations.
+
+---
+
+# Java: Multiple Threads
+
+## Definition and Fundamentals
+Running multiple threads concurrently to perform different tasks simultaneously.
+
+**Example**: UI thread + background loading thread.
+
+### Code Example
+```java
+public class MultiThreadExample {
+    public static void main(String[] args) {
+        Thread t1 = new Thread(() -> System.out.println("Task 1"));
+        Thread t2 = new Thread(() -> System.out.println("Task 2"));
+
+        t1.start();
+        t2.start();
+    }
+}
+```
+
+---
+
+# Thread Priority and Sleep
+
+## Definition
+
+- **Priority**: Determines the preference a thread gets from the CPU.
+- **Sleep**: Temporarily pauses a thread.
+
+### Example
+```java
+Thread t = new Thread(() -> System.out.println("Running thread..."));
+t.setPriority(Thread.MAX_PRIORITY);
+t.start();
+
+Thread.sleep(1000); // Pauses for 1 second
+```
+
+---
+
+# Runnable vs Thread
+
+## Differences
+
+| Runnable | Thread |
+|:--------:|:------:|
+| Interface | Class |
+| Can extend another class | Cannot extend another class |
+| Preferable for flexibility | Limited |
+
+**Best Practice**: Always prefer `Runnable`.
+
+### Example
+```java
+class Task implements Runnable {
+    public void run() {
+        System.out.println("Runnable task running");
+    }
+}
+```
+
+---
+
+# Race Condition
+
+## Definition
+
+A **race condition** occurs when multiple threads access shared data and try to change it simultaneously.
+
+**Problem**: Unpredictable results.
+
+### Example (Bad)
+```java
+class Counter {
+    int count = 0;
+
+    void increment() {
+        count++;
+    }
+}
+```
+
+**Fixed**:
+```java
+synchronized void increment() {
+    count++;
+}
+```
+
+---
+
+# Thread States
+
+## Definition
+
+Java thread lifecycle:
+
+1. **New**
+2. **Runnable**
+3. **Blocked**
+4. **Waiting**
+5. **Timed Waiting**
+6. **Terminated**
+
+### Code Example
+```java
+Thread t = new Thread(() -> {});
+System.out.println(t.getState()); // NEW
+
+ t.start();
+System.out.println(t.getState()); // RUNNABLE
+```
+
+---
+
+# Interview Preparation
+
+## Common Questions
+
+1. What is a Thread in Java?
+2. How do you create a Thread?
+3. Difference between `start()` and `run()` method?
+4. What is Runnable?
+5. Thread vs Runnable - which is better?
+6. Explain thread states.
+7. What is synchronization?
+8. What is deadlock?
+9. What is a race condition?
+10. How to solve race condition?
+11. What is thread priority?
+12. How does `Thread.sleep()` work?
+13. What is `join()` in threads?
+14. How to create thread-safe code?
+15. What are daemon threads?
+16. What happens if the `run()` method is called directly?
+17. How to handle thread exceptions?
+18. How to stop a thread gracefully?
+19. What is a ThreadPool?
+20. Explain the `ExecutorService` in Java.
+
+## Detailed Answers
+
+> Full answers will be generated in next continuation if needed as this canvas is already dense.
+
+## Code Challenges
+
+**Challenge 1**: Create a program where 2 threads increment a shared counter safely.
+
+**Solution**:
+```java
+class SafeCounter {
+    private int count = 0;
+
+    public synchronized void increment() {
+        count++;
+    }
+
+    public int getCount() {
+        return count;
+    }
+}
+
+public class Main {
+    public static void main(String[] args) throws InterruptedException {
+        SafeCounter counter = new SafeCounter();
+
+        Runnable task = () -> {
+            for (int i = 0; i < 10000; i++) {
+                counter.increment();
+            }
+        };
+
+        Thread t1 = new Thread(task);
+        Thread t2 = new Thread(task);
+
+        t1.start();
+        t2.start();
+
+        t1.join();
+        t2.join();
+
+        System.out.println("Final Counter Value: " + counter.getCount());
+    }
+}
+```
+
+## Demonstrating Deep Understanding
+
+- Always explain real-world scenarios (e.g., ticket booking apps).
+- Discuss pitfalls and advanced synchronization (e.g., `ReentrantLock`).
+- Bring in Spring Boot Async usage examples if asked about scaling.
+
+---
+
+# Java Threads - Interview Questions and Answers
+
+## 1. What is a Thread in Java?
+**Answer**: A thread is a lightweight process. It's a separate path of execution within a program that enables concurrent operations.
+
+> **Follow-up**: How are threads different from processes?
+
+## 2. How do you create a Thread in Java?
+**Answer**:
+- Extend the `Thread` class and override the `run()` method.
+- Implement the `Runnable` interface and pass it to a `Thread` object.
+
+> **Follow-up**: Which method is better and why?
+
+## 3. Difference between `start()` and `run()` methods?
+**Answer**:
+- `start()`: Creates a new thread and calls `run()` internally.
+- `run()`: Just a normal method call, no new thread is created.
+
+> **Follow-up**: What happens if you call `run()` directly?
+
+## 4. What is Runnable?
+**Answer**: Runnable is a functional interface in Java that represents a task that can be executed concurrently.
+
+## 5. Thread vs Runnable - Which is better?
+**Answer**: Runnable is preferred because Java supports single inheritance, and implementing Runnable allows a class to inherit from another class.
+
+> **Follow-up**: When would you use Thread directly?
+
+## 6. Explain thread states.
+**Answer**:
+- New
+- Runnable
+- Blocked
+- Waiting
+- Timed Waiting
+- Terminated
+
+> **Follow-up**: What causes a thread to move from Runnable to Blocked?
+
+## 7. What is Synchronization?
+**Answer**: Synchronization ensures that only one thread accesses a critical section at a time, preventing data inconsistency.
+
+> **Follow-up**: How does intrinsic locking work?
+
+## 8. What is Deadlock?
+**Answer**: A situation where two or more threads are blocked forever, each waiting for the other to release a lock.
+
+> **Follow-up**: How can you prevent deadlock?
+
+## 9. What is a Race Condition?
+**Answer**: When multiple threads access and modify shared data at the same time, leading to unpredictable results.
+
+> **Follow-up**: Name real-world examples of race conditions.
+
+## 10. How do you solve Race Conditions?
+**Answer**: By using synchronization mechanisms like `synchronized`, `ReentrantLock`, or atomic classes like `AtomicInteger`.
+
+## 11. What is Thread Priority?
+**Answer**: Threads in Java can have priority levels (1 to 10) that hint to the scheduler which thread to prefer.
+
+> **Follow-up**: Does setting a higher priority guarantee faster execution?
+
+## 12. How does `Thread.sleep()` work?
+**Answer**: It pauses the thread for a specified time without releasing any locks it holds.
+
+> **Follow-up**: Does sleep() guarantee exact pause time?
+
+## 13. What is `join()` method?
+**Answer**: `join()` causes the current thread to wait until another thread finishes its execution.
+
+> **Follow-up**: What happens if join is called on a dead thread?
+
+## 14. How to create thread-safe code?
+**Answer**: By synchronizing critical sections, using concurrent collections, or leveraging atomic variables.
+
+## 15. What are Daemon Threads?
+**Answer**: Background threads that don't prevent JVM shutdown.
+
+> **Follow-up**: How to create a daemon thread?
+
+## 16. What happens if we call `run()` directly instead of `start()`?
+**Answer**: It will execute in the same thread, not a new thread.
+
+## 17. How to handle thread exceptions?
+**Answer**: Use `Thread.setUncaughtExceptionHandler()` to handle uncaught exceptions.
+
+> **Follow-up**: How does it differ from normal exception handling?
+
+## 18. How to stop a thread gracefully?
+**Answer**: By using a volatile flag to signal the thread to stop rather than calling `Thread.stop()` (which is deprecated).
+
+> **Follow-up**: Why was `Thread.stop()` deprecated?
+
+## 19. What is ThreadPool?
+**Answer**: A collection of reusable threads to execute tasks, managed by frameworks like `ExecutorService`.
+
+> **Follow-up**: How is it better than manually creating threads?
+
+## 20. What is `ExecutorService`?
+**Answer**: It provides a higher-level replacement for managing threads, tasks, and thread pools.
+
+> **Follow-up**: What are some important ExecutorService implementations?
+
+# Coding Challenges
+
+## Challenge 1: Simple Counter
+**Problem**: Create a counter incremented by 2 threads safely.
+
+**Solution**:
+```java
+class Counter {
+    private int count = 0;
+
+    public synchronized void increment() {
+        count++;
+    }
+
+    public int getCount() {
+        return count;
+    }
+}
+
+public class Main {
+    public static void main(String[] args) throws InterruptedException {
+        Counter counter = new Counter();
+
+        Runnable task = () -> {
+            for (int i = 0; i < 1000; i++) {
+                counter.increment();
+            }
+        };
+
+        Thread t1 = new Thread(task);
+        Thread t2 = new Thread(task);
+
+        t1.start();
+        t2.start();
+
+        t1.join();
+        t2.join();
+
+        System.out.println("Final Counter Value: " + counter.getCount());
+    }
+}
+```
+
+## Challenge 2: Deadlock Example
+
+**Problem**: Demonstrate deadlock situation.
+
+**Solution**:
+```java
+public class DeadlockExample {
+    private static final Object Lock1 = new Object();
+    private static final Object Lock2 = new Object();
+
+    public static void main(String[] args) {
+        Thread t1 = new Thread(() -> {
+            synchronized (Lock1) {
+                try { Thread.sleep(50); } catch (InterruptedException e) {}
+                synchronized (Lock2) {
+                    System.out.println("Thread 1 acquired both locks");
+                }
+            }
+        });
+
+        Thread t2 = new Thread(() -> {
+            synchronized (Lock2) {
+                try { Thread.sleep(50); } catch (InterruptedException e) {}
+                synchronized (Lock1) {
+                    System.out.println("Thread 2 acquired both locks");
+                }
+            }
+        });
+
+        t1.start();
+        t2.start();
+    }
+}
+```
+
+**How to avoid**:
+- Always acquire locks in the same order.
+- Use tryLock with timeout.
+
+# How to Demonstrate Deep Understanding
+
+- Mention Java Memory Model (JMM) when discussing concurrency.
+- Discuss ReentrantLocks vs synchronized blocks.
+- Explain thread starvation and livelock.
+- Bring real-world business problems and how threading solved them.
+
+---
+
+# Java Concurrency Best Practices Cheat Sheet
+
+## Core Principles
+
+- **Minimize Thread Creation**: Threads are expensive. Prefer reusing threads (e.g., `ExecutorService`).
+- **Prefer Immutability**: Immutable objects are automatically thread-safe.
+- **Use Higher-Level Concurrency Utilities**: Prefer `ExecutorService`, `ConcurrentHashMap`, `BlockingQueue`, etc.
+- **Minimize Lock Scope**: Keep synchronized blocks as short as possible.
+- **Avoid Busy Waiting**: Use wait/notify or higher-level constructs.
+- **Prefer synchronized blocks/methods over synchronized classes**: Fine-grained locking improves scalability.
+
+---
+
+## Thread Creation
+
+| **Bad** | **Good** |
+|:------:|:--------:|
+| new Thread().start() | Executors.newFixedThreadPool(n) |
+
+```java
+ExecutorService executor = Executors.newFixedThreadPool(10);
+executor.submit(() -> System.out.println("Task running"));
+```
+
+---
+
+## Synchronization
+
+- Use **synchronized** for atomic operations:
+```java
+synchronized(lockObject) {
+    // critical section
+}
+```
+- Use `ReentrantLock` when you need more control (e.g., tryLock, fairness).
+
+---
+
+## Volatile Keyword
+
+- Use `volatile` when multiple threads are reading/writing a **single variable** without compound actions.
+```java
+private volatile boolean running = true;
+```
+
+---
+
+## Avoid Deadlocks
+
+- Always acquire locks in a **consistent order**.
+- Prefer using `tryLock(timeout)` where possible.
+
+---
+
+## ExecutorService Shutdown
+
+Always shut down your executors gracefully:
+```java
+executor.shutdown();
+try {
+    if (!executor.awaitTermination(60, TimeUnit.SECONDS)) {
+        executor.shutdownNow();
+    }
+} catch (InterruptedException e) {
+    executor.shutdownNow();
+}
+```
+
+---
+
+## Thread Safety Utilities
+
+- Atomic variables: `AtomicInteger`, `AtomicReference`
+- Concurrent collections: `ConcurrentHashMap`, `CopyOnWriteArrayList`
+- Thread-safe counters: `LongAdder` for high-contention counters
+
+---
+
+## Handling Exceptions in Threads
+
+- Use `Thread.setUncaughtExceptionHandler()`:
+```java
+Thread t = new Thread(task);
+t.setUncaughtExceptionHandler((thread, ex) -> System.out.println("Error: " + ex));
+t.start();
+```
+
+---
+
+## Daemon Threads
+
+- For background tasks that should not block JVM shutdown:
+```java
+Thread t = new Thread(task);
+t.setDaemon(true);
+t.start();
+```
+
+---
+
+## Common Concurrency Anti-Patterns
+
+| Anti-Pattern | Better Approach |
+|:------------:|:---------------:|
+| Creating threads manually everywhere | Use thread pools |
+| Using synchronized on large methods | Fine-grained synchronization |
+| Ignoring exception handling in threads | Always catch/log exceptions |
+| Deadlock-prone nested locks | Consistent lock order / tryLock |
+
+---
+
+## Quick Summary Table
+
+| Concept | Best Practice |
+|:-------:|:-------------:|
+| Thread Creation | ExecutorService |
+| Synchronization | Short synchronized blocks |
+| Shared Variables | Use volatile/atomic types |
+| Race Conditions | Synchronization/Locks |
+| Deadlock Prevention | Lock ordering/tryLock |
+| Exception Handling | UncaughtExceptionHandler |
+
+---
+
+# Final Tip 🎯
+
+> **Think in terms of tasks, not threads.**
+>
+> Design your code to submit units of work to an executor rather than managing threads manually.
+
+---

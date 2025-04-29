@@ -1,0 +1,82 @@
+.dark .EasyMDEContainer .CodeMirror {
+  background-color: rgb(39 39 42);
+  color: rgb(244 244 245);
+  border-color: rgb(63 63 70);
+}
+
+.dark .editor-toolbar {
+  background-color: rgb(39 39 42);
+  border-color: rgb(63 63 70);
+}
+
+.dark .editor-toolbar button {
+  color: rgb(161 161 170) !important;
+}
+
+.dark .editor-toolbar button:hover,
+.dark .editor-toolbar button.active {
+  background: rgb(63 63 70);
+  border-color: rgb(82 82 91);
+}
+
+.dark .editor-toolbar i.separator {
+  border-color: rgb(63 63 70);
+}
+
+.dark .CodeMirror-cursor {
+  border-color: rgb(244 244 245);
+}
+
+.dark .CodeMirror-selected {
+  background: rgb(63 63 70);
+}
+
+.dark .CodeMirror-line::selection,
+.dark .CodeMirror-line > span::selection,
+.dark .CodeMirror-line > span > span::selection {
+  background: rgb(82 82 91);
+}
+
+.dark .editor-preview {
+  background: rgb(39 39 42);
+  color: rgb(244 244 245);
+}
+
+.dark .editor-preview-side {
+  background: rgb(39 39 42);
+  color: rgb(244 244 245);
+}
+
+.dark .editor-preview pre,
+.dark .editor-preview-side pre {
+  background: rgb(24 24 27);
+  border-color: rgb(63 63 70);
+}
+
+.dark .editor-preview code,
+.dark .editor-preview-side code {
+  background: rgb(24 24 27);
+  color: rgb(244 244 245);
+}
+
+.dark .editor-preview table td,
+.dark .editor-preview table th,
+.dark .editor-preview-side table td,
+.dark .editor-preview-side table th {
+  border-color: rgb(63 63 70);
+}
+
+.dark .editor-preview blockquote,
+.dark .editor-preview-side blockquote {
+  color: rgb(161 161 170);
+  border-left-color: rgb(63 63 70);
+}
+
+.dark .CodeMirror-gutters {
+  background-color: rgb(39 39 42);
+  border-color: rgb(63 63 70);
+}
+
+.dark .CodeMirror-linenumber {
+  color: rgb(161 161 170);
+}

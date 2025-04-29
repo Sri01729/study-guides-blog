@@ -1,0 +1,620 @@
+---
+title: Java Exceptions and Exception Handling
+description: Comprehensive guide on Exceptions in Java with definitions, code examples, best practices, Spring Boot integration, and interview preparation.
+date: '2025-04-29'
+---
+
+## 1. What is Exception?
+
+### Definition and Fundamentals
+An **Exception** is an event that disrupts the normal flow of a program during execution. It is an object which is thrown at runtime.
+
+**In Java Ecosystem:**
+- Part of `java.lang` package.
+- Used for error reporting and handling abnormal conditions.
+
+**Core Principles:**
+- Helps maintain normal program flow.
+- Makes error handling modular and clean.
+
+**When and Why:**
+- Used to separate error-handling code from regular code.
+- Makes programs robust and fault-tolerant.
+
+### Code Examples
+**Beginner:**
+```java
+public class ExceptionExample {
+    public static void main(String[] args) {
+        int a = 5, b = 0;
+        System.out.println(a / b); // Will throw ArithmeticException
+    }
+}
+```
+
+**Intermediate:**
+```java
+public class ExceptionExample {
+    public static void main(String[] args) {
+        try {
+            int a = 5, b = 0;
+            System.out.println(a / b);
+        } catch (ArithmeticException e) {
+            System.out.println("Cannot divide by zero: " + e);
+        }
+    }
+}
+```
+
+**Advanced:**
+```java
+public class ExceptionExample {
+    public static void main(String[] args) {
+        try {
+            performDivision(5, 0);
+        } catch (ArithmeticException e) {
+            System.err.println("Critical error occurred: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    static void performDivision(int a, int b) {
+        if (b == 0) throw new ArithmeticException("Denominator cannot be zero");
+        System.out.println(a / b);
+    }
+}
+```
+
+### Common Pitfalls and Best Practices
+- **Pitfall:** Catching `Exception` instead of specific exceptions.
+- **Best Practice:** Always catch the most specific exception first.
+- **Performance:** Avoid using exceptions for control flow.
+
+---
+
+## 2. Exception Handling using try-catch
+
+### Definition and Fundamentals
+`try-catch` block is used to handle exceptions gracefully.
+
+**Where it fits:** Core mechanism for exception handling.
+
+**Core Principle:**
+- Code that might throw exceptions is wrapped inside `try` block.
+- `catch` block handles the specific exception.
+
+**When and Why:**
+- To recover from unexpected errors and continue execution.
+
+### Code Examples
+**Beginner:**
+```java
+try {
+    int data = 50 / 0;
+} catch (ArithmeticException e) {
+    System.out.println("Cannot divide by zero");
+}
+```
+
+**Intermediate:**
+```java
+try {
+    int[] arr = new int[5];
+    System.out.println(arr[10]);
+} catch (ArrayIndexOutOfBoundsException e) {
+    System.out.println("Array index out of range");
+}
+```
+
+**Advanced:**
+```java
+try {
+    String str = null;
+    System.out.println(str.length());
+} catch (NullPointerException e) {
+    System.err.println("Null pointer encountered");
+    e.printStackTrace();
+}
+```
+
+### Common Pitfalls and Best Practices
+- **Pitfall:** Leaving catch blocks empty.
+- **Best Practice:** Always log the exception.
+
+---
+
+## 3. try with multiple catch
+
+### Definition and Fundamentals
+Allows catching multiple exception types individually.
+
+**Where:**
+Useful when multiple types of exceptions can be thrown.
+
+**Core Principle:**
+Each `catch` block is checked in order.
+
+### Code Examples
+**Beginner:**
+```java
+try {
+    int[] arr = new int[5];
+    arr[5] = 30/0;
+} catch (ArithmeticException e) {
+    System.out.println("ArithmeticException occurs");
+} catch (ArrayIndexOutOfBoundsException e) {
+    System.out.println("ArrayIndexOutOfBoundsException occurs");
+}
+```
+
+**Intermediate:**
+```java
+try {
+    String s = "abc";
+    int num = Integer.parseInt(s);
+} catch (NumberFormatException e) {
+    System.out.println("NumberFormatException occurs");
+} catch (Exception e) {
+    System.out.println("General exception");
+}
+```
+
+**Advanced:**
+```java
+try {
+    riskyOperation();
+} catch (IOException | SQLException e) {
+    System.out.println("Checked exception occurred: " + e);
+}
+```
+
+### Common Pitfalls and Best Practices
+- **Pitfall:** Wrong order - catch parent exception before child.
+- **Best Practice:** Always catch child exceptions first.
+
+---
+
+## 4. Exception Hierarchy
+
+### Definition and Fundamentals
+Java exceptions are organized in a class hierarchy.
+
+**Where:**
+- Root: `Throwable`
+- Two Branches: `Error` and `Exception`
+
+**Core Principles:**
+- `Error` – serious issues (JVM errors).
+- `Exception` – application-level issues.
+
+### Diagram
+```
+Throwable
+|-- Error
+|-- Exception
+    |-- RuntimeException
+    |-- IOException
+    |-- SQLException
+```
+
+### Code Example
+```java
+try {
+    throw new RuntimeException("Runtime Exception");
+} catch (RuntimeException e) {
+    System.out.println("Caught RuntimeException");
+}
+```
+
+### Best Practices
+- Never catch `Error`, only `Exception`.
+
+---
+
+## 5. Exception throw keyword
+
+### Definition and Fundamentals
+`throw` keyword is used to explicitly throw an exception.
+
+**Where:**
+Inside methods to indicate abnormal conditions.
+
+**Core Principle:**
+Manually trigger exceptions.
+
+### Code Example
+```java
+public class ThrowExample {
+    public static void main(String[] args) {
+        throw new ArithmeticException("Demo");
+    }
+}
+```
+
+### Best Practice
+- Validate inputs before throwing exceptions.
+
+---
+
+## 6. Custom Exception
+
+### Definition and Fundamentals
+Custom exceptions are user-defined exceptions extending `Exception` or `RuntimeException`.
+
+**Where:**
+When standard exceptions don't represent the error scenario clearly.
+
+**Core Principle:**
+Create more meaningful exception names.
+
+### Code Example
+```java
+class InvalidAgeException extends Exception {
+    public InvalidAgeException(String message) {
+        super(message);
+    }
+}
+
+public class TestCustomException {
+    static void validate(int age) throws InvalidAgeException {
+        if (age < 18)
+            throw new InvalidAgeException("Not eligible to vote");
+        System.out.println("Welcome to vote");
+    }
+
+    public static void main(String[] args) {
+        try {
+            validate(16);
+        } catch (InvalidAgeException e) {
+            System.out.println("Exception caught: " + e);
+        }
+    }
+}
+```
+
+### Best Practice
+- Name custom exceptions ending with `Exception`.
+
+---
+
+## 7. Ducking Exception using throws
+
+### Definition and Fundamentals
+`throws` keyword indicates that a method might throw exceptions.
+
+**Where:**
+In method signatures.
+
+**Core Principle:**
+Pass exception handling responsibility to the caller.
+
+### Code Example
+```java
+void myMethod() throws IOException {
+    throw new IOException("IOException occurred");
+}
+```
+
+### Best Practice
+- Use it for checked exceptions only.
+
+---
+
+## 8. User Input using BufferedReader and Scanner
+
+### BufferedReader Example
+```java
+BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+System.out.println("Enter your name:");
+String name = reader.readLine();
+System.out.println("Hello, " + name);
+```
+
+### Scanner Example
+```java
+Scanner sc = new Scanner(System.in);
+System.out.println("Enter your age:");
+int age = sc.nextInt();
+System.out.println("You are " + age + " years old.");
+```
+
+### Best Practice
+- Prefer `Scanner` for simpler input.
+- `BufferedReader` for larger and faster input needs.
+
+---
+
+## 9. try-with-resources
+
+### Definition and Fundamentals
+Introduced in Java 7 to automatically close resources.
+
+**Where:**
+Primarily with IO classes (`BufferedReader`, `FileInputStream`, etc.)
+
+**Core Principle:**
+Automatic resource management.
+
+### Code Example
+```java
+try (BufferedReader br = new BufferedReader(new FileReader("test.txt"))) {
+    System.out.println(br.readLine());
+} catch (IOException e) {
+    e.printStackTrace();
+}
+```
+
+### Best Practice
+- Always use `try-with-resources` for resources like files, sockets, etc.
+
+---
+
+# Real-World Spring Boot Integration
+
+**Example:** Validating input and throwing a custom exception in a REST API.
+
+### Code
+```java
+@RestController
+@RequestMapping("/api")
+public class UserController {
+
+    @GetMapping("/user/{age}")
+    public ResponseEntity<String> validateAge(@PathVariable int age) throws InvalidAgeException {
+        if (age < 18) throw new InvalidAgeException("Age must be 18 or above");
+        return ResponseEntity.ok("Valid age");
+    }
+}
+
+@ResponseStatus(HttpStatus.BAD_REQUEST)
+class InvalidAgeException extends RuntimeException {
+    public InvalidAgeException(String message) {
+        super(message);
+    }
+}
+```
+
+**Spring Enhancements:**
+- Spring Boot uses `@ControllerAdvice` for global exception handling.
+- Automatically maps exceptions to appropriate HTTP status codes.
+
+---
+
+## Interview Preparation
+
+### 20 Common Interview Questions and Answers
+
+**Q1. What is an Exception in Java?**
+**A:** An exception is an event that disrupts the normal flow of the program, typically occurring during runtime.
+
+**Q2. What is the difference between Checked and Unchecked Exceptions?**
+**A:** Checked exceptions are checked at compile-time (e.g., IOException), whereas Unchecked exceptions are checked at runtime (e.g., NullPointerException).
+
+**Q3. What is the base class of all exceptions?**
+**A:** `java.lang.Throwable`
+
+**Q4. How can you create a custom exception?**
+**A:** By creating a new class that extends `Exception` (checked) or `RuntimeException` (unchecked).
+
+**Q5. What is the use of try-catch block?**
+**A:** It is used to handle exceptions and prevent abrupt program termination.
+
+**Q6. What happens if you don't catch an exception?**
+**A:** The JVM catches it and terminates the program after printing the stack trace.
+
+**Q7. What is finally block?**
+**A:** A block that always executes after try-catch, regardless of whether an exception occurred.
+
+**Q8. Can we have try without catch or finally?**
+**A:** No, a try must be followed by either catch or finally.
+
+**Q9. Can you throw multiple exceptions?**
+**A:** Yes, using multi-catch blocks or throwing multiple exceptions separated by `|`.
+
+**Q10. What is throw keyword?**
+**A:** Used to explicitly throw an exception.
+
+**Q11. What is throws keyword?**
+**A:** Declares that a method can throw one or more exceptions.
+
+**Q12. What is exception chaining?**
+**A:** Wrapping one exception within another using constructors.
+
+**Q13. What is the difference between Error and Exception?**
+**A:** Errors are serious issues beyond the application's control (e.g., OutOfMemoryError), while Exceptions are conditions that an application might want to catch.
+
+**Q14. Can you catch an Error?**
+**A:** Technically yes, but it is discouraged because Errors are serious problems.
+
+**Q15. What is the use of try-with-resources?**
+**A:** Automatically closes resources like files and streams, introduced in Java 7.
+
+**Q16. What is StackTrace?**
+**A:** It provides the call sequence of method invocations that led to the exception.
+
+**Q17. What is a common exception in Java?**
+**A:** NullPointerException.
+
+**Q18. How to catch multiple exceptions with one block?**
+**A:** Use multi-catch block with `|` operator.
+
+**Q19. What is a suppressed exception?**
+**A:** Exceptions that are thrown when a resource is closed but suppressed because another exception is already thrown.
+
+**Q20. How to define a global exception handler in Spring Boot?**
+**A:** Use `@ControllerAdvice` and `@ExceptionHandler` annotations.
+
+---
+
+### Code Challenges + Solutions
+
+**Challenge 1: Handle Arithmetic Exception**
+
+**Problem:** Write a program that divides two numbers and handles division by zero.
+
+**Solution:**
+```java
+import java.util.Scanner;
+
+public class DivisionChallenge {
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        System.out.println("Enter numerator:");
+        int numerator = sc.nextInt();
+        System.out.println("Enter denominator:");
+        int denominator = sc.nextInt();
+
+        try {
+            int result = numerator / denominator;
+            System.out.println("Result: " + result);
+        } catch (ArithmeticException e) {
+            System.out.println("Cannot divide by zero.");
+        }
+    }
+}
+```
+
+---
+
+**Challenge 2: Create a Custom Exception**
+
+**Problem:** Create an exception called `NegativeAmountException` that gets thrown when a negative amount is entered.
+
+**Solution:**
+```java
+class NegativeAmountException extends Exception {
+    public NegativeAmountException(String message) {
+        super(message);
+    }
+}
+
+public class BankTransaction {
+    static void deposit(int amount) throws NegativeAmountException {
+        if (amount < 0) {
+            throw new NegativeAmountException("Amount cannot be negative");
+        }
+        System.out.println("Deposited: " + amount);
+    }
+
+    public static void main(String[] args) {
+        try {
+            deposit(-500);
+        } catch (NegativeAmountException e) {
+            System.out.println("Exception: " + e.getMessage());
+        }
+    }
+}
+```
+
+---
+
+**Challenge 3: Using try-with-resources**
+
+**Problem:** Read a line from a file `sample.txt` safely using try-with-resources.
+
+**Solution:**
+```java
+import java.io.*;
+
+public class ReadFileExample {
+    public static void main(String[] args) {
+        try (BufferedReader br = new BufferedReader(new FileReader("sample.txt"))) {
+            System.out.println(br.readLine());
+        } catch (IOException e) {
+            System.out.println("Error reading file: " + e.getMessage());
+        }
+    }
+}
+```
+
+---
+
+### Deep Understanding Tips for Interviews
+
+- **Always differentiate between Errors and Exceptions clearly.**
+- **Mention real-world examples** like banking transactions (e.g., InvalidAmountException, InsufficientBalanceException).
+- **Explain Exception Propagation** (method calls passing up exceptions until caught).
+- **Discuss Resource Management and try-with-resources.**
+- **Highlight the importance of meaningful exception messages** for debugging.
+- **Talk about best practices:**
+  - Never catch `Exception` or `Throwable` unless absolutely necessary.
+  - Always prefer specific exception types.
+  - Log exceptions properly, don't just swallow them silently.
+- **Mention Global Exception Handling in Spring Boot** (`@ControllerAdvice`).
+- **For Custom Exceptions:**
+  - Explain why and when they are needed (domain-specific cases).
+- **Always show you know the internal flow:**
+  - try → catch → finally.
+  - Exception Object -> Call Stack -> JVM handling.
+
+---
+
+### Bonus: Common Mistakes Developers Make with Exception Handling
+
+- **Catching Generic Exceptions:** Catching `Exception` or `Throwable` directly without understanding specific exception types.
+- **Empty Catch Blocks:** Catching an exception and doing nothing (silently ignoring the error).
+- **Not Logging Exceptions:** Losing valuable debug information by not logging or rethrowing the caught exception.
+- **Overusing Exceptions:** Using exceptions for normal program flow, which can hurt performance.
+- **Poorly Named Custom Exceptions:** Naming without clarity, e.g., `MyError` instead of `InvalidUserInputException`.
+- **Resource Leaks:** Not properly closing resources if not using try-with-resources.
+- **Not Handling Suppressed Exceptions:** Ignoring exceptions thrown during resource closure in try-with-resources.
+- **Swallowing Original Exceptions:** Throwing new exceptions without chaining the original cause.
+- **Mixing Error and Exception Handling:** Trying to catch and handle Errors (like `OutOfMemoryError`) which are not meant to be handled.
+- **Failing to Validate Inputs:** Missing validations and depending on exception handling to catch obvious input errors.
+
+### Best Practice Tip:
+> **Handle exceptions gracefully but validate aggressively. Prevention is better than exception!**
+
+---
+
+### Quick Recap Mindmap Version
+
+```
+Java Exception Handling
+│
+├── What is an Exception?
+│   └── Event disrupting normal program flow.
+│
+├── Types of Exceptions
+│   ├── Checked
+│   └── Unchecked
+│
+├── Core Mechanisms
+│   ├── try-catch-finally
+│   ├── throw & throws
+│   └── try-with-resources
+│
+├── Exception Hierarchy
+│   ├── Throwable
+│   │   ├── Error (serious issues)
+│   │   └── Exception (application level)
+│   │       └── RuntimeException (unchecked)
+│
+├── Custom Exceptions
+│   └── Extending Exception or RuntimeException
+│
+├── Best Practices
+│   ├── Catch specific exceptions
+│   ├── Never leave catch blocks empty
+│   ├── Use meaningful exception messages
+│   └── Log and handle properly
+│
+├── Spring Boot Integration
+│   ├── @ControllerAdvice
+│   └── @ExceptionHandler
+│
+└── Interview Prep
+    ├── 20+ Common Questions
+    ├── Coding Challenges
+    └── Deep Understanding Strategies
+```
+
+---
+
+
+
+
+
+
+
+

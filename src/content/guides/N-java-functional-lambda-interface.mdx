@@ -1,0 +1,359 @@
+---
+title: Functional Interface, Lambda Expression, and Types of Interface in Java
+description: Detailed guide covering Functional Interfaces, Lambda Expressions, Lambda with Return, and Types of Interfaces in Java with examples, pitfalls, Spring Boot integration, and interview preparation
+date: '2025-04-29'
+---
+
+# Functional Interface
+
+## Definition and Fundamentals
+
+A **Functional Interface** in Java is an interface that contains exactly **one abstract method**.
+
+- Introduced with Java 8.
+- Can have multiple **default** or **static methods**, but only **one abstract method**.
+- Marked with `@FunctionalInterface` annotation (optional but recommended).
+
+**Where it fits:**
+- Used heavily with **Lambda Expressions** and **Streams API**.
+
+**Core Principles:**
+- Promotes **functional programming** style in Java.
+- Enables behavior to be passed around as parameters.
+
+**When and Why to Use:**
+- When you need to pass a **block of code** (behavior) rather than an object.
+- Essential for **callbacks**, **event handling**, **streams**.
+
+## Code Examples
+
+### Beginner Level
+```java
+@FunctionalInterface
+interface Greeting {
+    void sayHello();
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Greeting greeting = () -> System.out.println("Hello, World!");
+        greeting.sayHello();
+    }
+}
+```
+
+### Intermediate Level
+```java
+@FunctionalInterface
+interface Calculator {
+    int operate(int a, int b);
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Calculator add = (a, b) -> a + b;
+        System.out.println("Sum: " + add.operate(5, 3));
+    }
+}
+```
+
+### Advanced Level
+```java
+@FunctionalInterface
+interface Transformer<T, R> {
+    R transform(T input);
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Transformer<String, Integer> lengthTransformer = String::length;
+        System.out.println("Length: " + lengthTransformer.transform("ChatGPT"));
+    }
+}
+```
+
+## Common Pitfalls and Best Practices
+
+- **Mistakes:**
+  - More than one abstract method -> Not a functional interface.
+  - Missing `@FunctionalInterface` and mistakenly adding multiple abstract methods.
+
+- **Performance:**
+  - Prefer lambdas over anonymous classes for **better performance**.
+
+- **Best Practices:**
+  - Always use `@FunctionalInterface` to catch errors early.
+  - Use built-in functional interfaces like `Predicate`, `Function`, `Consumer` from `java.util.function`.
+
+# Lambda Expression
+
+## Definition and Fundamentals
+
+A **Lambda Expression** is a **short block of code** that takes in parameters and returns a value.
+
+**Where it fits:**
+- Works with Functional Interfaces.
+
+**Core Principles:**
+- Simplifies syntax.
+- Makes code more concise and readable.
+
+**When and Why to Use:**
+- When writing inline implementations of methods.
+- Replaces anonymous classes for single-method use.
+
+## Code Examples
+
+### Beginner Level
+```java
+Runnable run = () -> System.out.println("Running Thread");
+new Thread(run).start();
+```
+
+### Intermediate Level
+```java
+List<String> names = Arrays.asList("John", "Jane", "Jack");
+names.forEach(name -> System.out.println(name));
+```
+
+### Advanced Level
+```java
+List<String> names = Arrays.asList("Sam", "Alex", "Bob");
+names.stream()
+    .filter(name -> name.startsWith("S"))
+    .map(String::toUpperCase)
+    .forEach(System.out::println);
+```
+
+## Common Pitfalls and Best Practices
+
+- **Mistakes:**
+  - Misusing or overcomplicating lambdas.
+  - Trying to handle checked exceptions inside lambdas.
+
+- **Performance:**
+  - Lambdas are converted to private static methods by the JVM (good optimization).
+
+- **Best Practices:**
+  - Keep lambdas **short and simple**.
+  - Prefer method references (`Class::method`) when clearer.
+
+# Lambda Expression with Return
+
+## Definition and Fundamentals
+
+Lambda expressions can have return values explicitly or implicitly.
+
+- If the body is a single expression, `return` keyword is **optional**.
+- If multiple lines, use `{}` and explicit `return`.
+
+## Code Examples
+
+### Beginner Level
+```java
+Calculator square = (x) -> x * x;
+System.out.println(square.operate(5)); // 25
+```
+
+### Intermediate Level
+```java
+Comparator<Integer> comparator = (a, b) -> {
+    if (a > b) return 1;
+    else if (a < b) return -1;
+    else return 0;
+};
+System.out.println(comparator.compare(5, 10));
+```
+
+### Advanced Level
+```java
+BiFunction<String, String, String> joiner = (s1, s2) -> {
+    if (s1 == null) return s2;
+    if (s2 == null) return s1;
+    return s1 + ", " + s2;
+};
+System.out.println(joiner.apply("Java", "Spring"));
+```
+
+# Types of Interface
+
+## Definition and Fundamentals
+
+Types of interfaces in Java:
+- **Normal Interface**: Multiple abstract methods.
+- **Functional Interface**: Single abstract method.
+- **Marker Interface**: No methods (e.g., `Serializable`).
+- **SAM Interface** (Same as Functional Interface).
+
+## Code Examples
+
+### Beginner Level - Normal Interface
+```java
+interface Vehicle {
+    void start();
+    void stop();
+}
+```
+
+### Marker Interface
+```java
+interface MarkerInterface {}
+```
+
+## Common Pitfalls and Best Practices
+
+- **Mistakes:**
+  - Forgetting to use `@FunctionalInterface`.
+
+- **Best Practices:**
+  - Use Marker Interfaces for tagging classes.
+
+# Real-World Spring Boot Integration
+
+## Practical Example: Using Functional Interface in Spring Boot
+
+### Problem
+Suppose you want to apply a discount strategy in a Spring Boot e-commerce app.
+
+### Code Sample
+```java
+@FunctionalInterface
+interface DiscountStrategy {
+    double applyDiscount(double price);
+}
+
+@Service
+public class DiscountService {
+
+    public double getDiscountedPrice(double price, DiscountStrategy strategy) {
+        return strategy.applyDiscount(price);
+    }
+}
+
+@RestController
+@RequestMapping("/discount")
+public class DiscountController {
+
+    private final DiscountService discountService;
+
+    public DiscountController(DiscountService discountService) {
+        this.discountService = discountService;
+    }
+
+    @GetMapping("/offer")
+    public double applyOffer(@RequestParam double price) {
+        return discountService.getDiscountedPrice(price, p -> p * 0.9);
+    }
+}
+```
+
+**Spring Enhancements:**
+- `@Service` and `@RestController` manage components automatically.
+- Lambda makes strategy patterns cleaner and dynamic.
+
+## Configuration Considerations
+- Autowire service classes.
+- Keep functional interfaces **pure** (no side effects).
+
+# Interview Preparation
+
+## 20 Common Interview Questions with Answers
+
+1. **What is a Functional Interface?**
+   - An interface with exactly one abstract method.
+
+2. **Why is `@FunctionalInterface` annotation important?**
+   - Helps compiler catch errors if more than one abstract method exists.
+
+3. **What happens if you have two abstract methods in a `@FunctionalInterface`?**
+   - Compiler error.
+
+4. **Can a Functional Interface have default and static methods?**
+   - Yes.
+
+5. **What is a Lambda Expression?**
+   - A concise way to represent a method using an anonymous function.
+
+6. **Why were Lambdas introduced in Java 8?**
+   - To support functional programming and simplify verbose code.
+
+7. **Can Lambdas throw exceptions?**
+   - Only unchecked exceptions. Need special handling for checked exceptions.
+
+8. **What is a method reference in Java?**
+   - A shorthand notation of a lambda expression to call a method (`Class::method`).
+
+9. **What is a Marker Interface?**
+   - An interface with no methods, used to tag classes (e.g., `Serializable`).
+
+10. **Difference between normal and functional interfaces?**
+    - Functional has exactly one abstract method; normal can have many.
+
+11. **What is the type of a Lambda expression?**
+    - It is matched to a Functional Interface.
+
+12. **Can a Lambda expression have multiple parameters?**
+    - Yes.
+
+13. **Can you return a value from a Lambda?**
+    - Yes.
+
+14. **Explain the use of `Function<T, R>` interface.**
+    - It takes a type `T` and returns a type `R`.
+
+15. **What are BiFunction and Supplier?**
+    - `BiFunction<T, U, R>` takes two arguments; `Supplier<T>` supplies a value without input.
+
+16. **How are Lambdas better than Anonymous classes?**
+    - More concise, readable, and performance-optimized.
+
+17. **What is the SAM rule?**
+    - Single Abstract Method rule for Functional Interfaces.
+
+18. **Can you use Lambdas in Streams API?**
+    - Yes, it's the most common use.
+
+19. **How do you handle exceptions in Lambda?**
+    - Use try-catch inside lambda or create wrapper methods.
+
+20. **When not to use Lambda expressions?**
+    - When logic is too complex, prefer regular classes for readability.
+
+## Follow-up Questions
+
+- What are some built-in functional interfaces in Java?
+- How does JVM optimize Lambda expressions?
+- Can Lambdas improve multi-threading?
+
+## Code Challenge Example
+
+**Problem:**
+- Write a method that accepts a list of integers and a functional interface that transforms integers.
+
+**Solution:**
+```java
+@FunctionalInterface
+interface Transformer {
+    int transform(int num);
+}
+
+public class Demo {
+    public static List<Integer> applyTransformation(List<Integer> numbers, Transformer transformer) {
+        return numbers.stream()
+                      .map(transformer::transform)
+                      .collect(Collectors.toList());
+    }
+
+    public static void main(String[] args) {
+        List<Integer> nums = Arrays.asList(1, 2, 3);
+        List<Integer> squares = applyTransformation(nums, n -> n * n);
+        System.out.println(squares); // [1, 4, 9]
+    }
+}
+```
+
+**Explanation:**
+- We pass behavior (`n -> n * n`) without creating new classes.
+- Demonstrates real-world Lambda flexibility.
+
+---

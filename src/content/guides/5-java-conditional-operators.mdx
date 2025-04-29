@@ -1,0 +1,247 @@
+---
+title: "Java Control Flow Statements"
+description: "Deep dive into Java's decision-making statements: If-Else, If-Else-If, Ternary Operator, and Switch Statement with Spring Boot Integration"
+date: '2025-04-29'
+---
+
+## 1. Definition and Fundamentals
+
+### If-Else
+- **Definition**: A conditional statement that executes a block of code if a specified condition is true; otherwise, another block is executed.
+- **Where it fits**: Core control structures in Java (essential for decision-making logic).
+- **Core Principle**: Evaluate a boolean expression and bifurcate execution paths.
+- **When/Why to use**: Whenever there is a binary decision (Yes/No, True/False).
+
+### If-Else-If Ladder
+- **Definition**: Multiple conditions are checked sequentially; the first true condition executes its block.
+- **Where it fits**: For complex decision trees.
+- **Core Principle**: Evaluate multiple boolean expressions in order.
+- **When/Why to use**: When multiple exclusive possibilities exist.
+
+### Ternary Operator
+- **Definition**: A shorthand if-else that returns one of two values based on a condition.
+- **Where it fits**: In simple assignments and expressions.
+- **Core Principle**: Compact conditional value selection.
+- **When/Why to use**: To write concise, single-line conditionals.
+
+### Switch Statement
+- **Definition**: A control structure that selects code to execute based on the value of a variable.
+- **Where it fits**: When many possible values exist for a single variable.
+- **Core Principle**: Evaluate a value once and jump to a matching case.
+- **When/Why to use**: For cleaner, more readable code than multiple if-else-if blocks.
+
+---
+
+## 2. Code Examples with Progressive Complexity
+
+### Beginner Level
+```java
+// If-Else Example
+int age = 18;
+if (age >= 18) {
+    System.out.println("You are an adult.");
+} else {
+    System.out.println("You are a minor.");
+}
+
+// Ternary Operator Example
+String result = (age >= 18) ? "Adult" : "Minor";
+System.out.println(result);
+
+// Switch Example
+int day = 2;
+switch(day) {
+    case 1: System.out.println("Monday"); break;
+    case 2: System.out.println("Tuesday"); break;
+    default: System.out.println("Other day");
+}
+```
+
+### Intermediate Level
+```java
+// If-Else-If Ladder Example
+int marks = 85;
+if (marks >= 90) {
+    System.out.println("Grade A+");
+} else if (marks >= 80) {
+    System.out.println("Grade A");
+} else if (marks >= 70) {
+    System.out.println("Grade B");
+} else {
+    System.out.println("Grade C");
+}
+
+// Nested Ternary Example
+String performance = (marks >= 90) ? "Excellent" : (marks >= 80) ? "Very Good" : "Good";
+System.out.println(performance);
+```
+
+### Advanced Level
+```java
+// Optimized Switch using Enhanced Switch (Java 14+)
+String dayType = switch (day) {
+    case 1, 7 -> "Weekend";
+    case 2, 3, 4, 5, 6 -> "Weekday";
+    default -> throw new IllegalStateException("Invalid day: " + day);
+};
+System.out.println(dayType);
+```
+
+---
+
+## 3. Common Pitfalls and Best Practices
+
+### Common Mistakes
+- Forgetting `break` statements in switch blocks (causes fall-through).
+- Complex, deeply nested if-else blocks (hard to read and maintain).
+- Overusing ternary operators leading to unreadable code.
+
+### Performance Implications
+- No significant performance difference between if-else and switch unless optimizing huge decision trees.
+- Modern JVM optimizes switch statements internally.
+
+### Best Practices
+- Use **switch** for multi-way branching.
+- Prefer **ternary** only for simple expressions.
+- Refactor complex **if-else** ladders into **polymorphism** when appropriate (OOP principle).
+- Use **enhanced switch** (Java 14+) for cleaner syntax.
+
+---
+
+## 4. Real-World Spring Boot Integration Example
+
+### Business Problem
+Suppose an e-commerce Spring Boot API needs to return discount information based on a user category.
+
+### Code Example
+```java
+@RestController
+@RequestMapping("/api/discount")
+public class DiscountController {
+
+    @GetMapping("/{userType}")
+    public ResponseEntity<String> getDiscount(@PathVariable String userType) {
+        String discount = switch (userType.toLowerCase()) {
+            case "student" -> "20% Discount";
+            case "senior" -> "30% Discount";
+            case "veteran" -> "25% Discount";
+            default -> "No Discount";
+        };
+        return ResponseEntity.ok(discount);
+    }
+}
+```
+
+### Explanation
+- **Spring Boot leverages Java enhanced switch** for clear routing logic.
+- **Configuration Considerations**: No special Spring annotations required; typical controller setup.
+
+---
+
+## 5. Interview Preparation
+
+### 20 Common Interview Questions & Detailed Answers
+
+1. **What is the purpose of if-else statements in Java?**
+   - *Answer*: To control the flow of execution based on boolean conditions.
+
+2. **How is if-else-if different from if-else?**
+   - *Answer*: if-else handles two paths; if-else-if handles multiple sequential conditions.
+
+3. **What is a ternary operator?**
+   - *Answer*: A one-line shorthand for if-else statements, formatted as `condition ? trueValue : falseValue`.
+
+4. **When should you prefer a ternary operator over if-else?**
+   - *Answer*: When assigning a value based on a simple condition.
+
+5. **Explain switch-case in Java.**
+   - *Answer*: Evaluates a variable once and executes code depending on matching case value.
+
+6. **What are the advantages of switch over if-else?**
+   - *Answer*: Cleaner and faster when checking the same variable against many constants.
+
+7. **Can switch work with strings in Java?**
+   - *Answer*: Yes, from Java 7 onwards.
+
+8. **What happens if we miss the break in a switch?**
+   - *Answer*: Execution "falls through" to the next case.
+
+9. **Can we replace nested if-else with switch?**
+   - *Answer*: Sometimes, if conditions are based on the same variable.
+
+10. **How does Java handle switch fall-through?**
+    - *Answer*: Without break, all subsequent cases execute until a break or end.
+
+11. **What is the default case in switch?**
+    - *Answer*: A fallback case when no other matches occur.
+
+12. **What types can be used in switch expressions?**
+    - *Answer*: int, short, byte, char, String, enums.
+
+13. **What is enhanced switch in Java 14?**
+    - *Answer*: New syntax using `->` and yields results directly.
+
+14. **Can we use return statements inside switch cases?**
+    - *Answer*: Yes, and it exits the switch immediately.
+
+15. **Is switch more efficient than if-else?**
+    - *Answer*: Sometimes, JVM optimizes switches better.
+
+16. **What is switch expression (Java 14)?**
+    - *Answer*: Switch that returns a value directly.
+
+17. **What is a nested if?**
+    - *Answer*: An if inside another if.
+
+18. **What is the syntax of a ternary operator?**
+    - *Answer*: `booleanExpression ? valueIfTrue : valueIfFalse`
+
+19. **Can ternary operators have multiple conditions?**
+    - *Answer*: Yes, by nesting ternaries, though it's discouraged for readability.
+
+20. **What are common mistakes in using if-else?**
+    - *Answer*: Not covering all conditions, deeply nesting, and duplicated logic.
+
+### Follow-up Questions Interviewers Might Ask
+- How would you handle multiple nested if-else blocks?
+- Can switch statements replace polymorphism?
+- Show examples of bad and good uses of ternary.
+- How do design patterns improve if-else-heavy code?
+
+### Code Challenges
+
+**Challenge 1**: Create a function to return grades based on marks using if-else-if.
+```java
+public static String getGrade(int marks) {
+    if (marks >= 90) return "A";
+    else if (marks >= 80) return "B";
+    else if (marks >= 70) return "C";
+    else if (marks >= 60) return "D";
+    else return "F";
+}
+```
+
+**Challenge 2**: Rewrite using ternary operators.
+```java
+public static String getCategory(int age) {
+    return (age >= 18) ? "Adult" : "Minor";
+}
+```
+
+**Challenge 3**: Create a menu-driven application using switch.
+```java
+public void displayMenu(int option) {
+    switch (option) {
+        case 1 -> System.out.println("Start Game");
+        case 2 -> System.out.println("Load Game");
+        case 3 -> System.out.println("Exit");
+        default -> System.out.println("Invalid Option");
+    }
+}
+```
+
+---
+
+# Conclusion
+If-Else, Else-If, Ternary Operators, and Switch Statements are the **backbone of decision-making in Java**. Mastering them sets the foundation for writing **clear**, **efficient**, and **maintainable** Java applications and Spring Boot APIs.
+

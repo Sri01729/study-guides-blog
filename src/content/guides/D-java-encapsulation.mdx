@@ -1,0 +1,320 @@
+---
+title: Encapsulation in Java
+description: Deep dive into the concept of Encapsulation in Java, code examples, real-world Spring Boot integration, interview questions with answers.
+date: '2025-04-29'
+---
+
+## Definition and Fundamentals
+
+**Encapsulation** is one of the four fundamental Object-Oriented Programming (OOP) principles (alongside Inheritance, Polymorphism, and Abstraction).
+
+- **Definition**: Encapsulation is the practice of bundling data (fields) and methods (functions) that operate on the data into a single unit, typically a class. It also involves restricting direct access to some of the object's components to enforce controlled access via getters and setters.
+
+- **Where it fits in Java**: Core to Java's OOP design principles. Java supports encapsulation using access modifiers (`private`, `public`, `protected`, default) and getter/setter methods.
+
+- **Core Principles**:
+  - Hide internal state and require all interaction to be performed through an object's methods.
+  - Improve code maintainability and flexibility.
+  - Control over data: validate data before updating.
+
+- **When and why to use**:
+  - Protect sensitive data.
+  - Improve reusability.
+  - Enhance security and integrity of objects.
+  - Allow modular, manageable code evolution.
+
+## Code Examples with Progressive Complexity
+
+### Beginner Level
+
+```java
+public class Person {
+    private String name;
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+}
+
+class Main {
+    public static void main(String[] args) {
+        Person person = new Person();
+        person.setName("Alice");
+        System.out.println(person.getName());
+    }
+}
+```
+
+### Intermediate Level
+
+```java
+public class BankAccount {
+    private double balance;
+
+    public double getBalance() {
+        return balance;
+    }
+
+    public void deposit(double amount) {
+        if (amount > 0) {
+            balance += amount;
+        }
+    }
+
+    public void withdraw(double amount) {
+        if (amount > 0 && balance >= amount) {
+            balance -= amount;
+        }
+    }
+}
+```
+
+### Advanced Level
+
+```java
+import java.util.concurrent.locks.ReentrantLock;
+
+public class ThreadSafeAccount {
+    private double balance;
+    private final ReentrantLock lock = new ReentrantLock();
+
+    public double getBalance() {
+        lock.lock();
+        try {
+            return balance;
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    public void deposit(double amount) {
+        lock.lock();
+        try {
+            if (amount > 0) {
+                balance += amount;
+            }
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    public void withdraw(double amount) {
+        lock.lock();
+        try {
+            if (amount > 0 && balance >= amount) {
+                balance -= amount;
+            }
+        } finally {
+            lock.unlock();
+        }
+    }
+}
+```
+
+## Common Pitfalls and Best Practices
+
+### Common Mistakes
+- Making fields `public` directly.
+- Skipping validation in setters.
+- Overusing getters/setters without real encapsulation.
+
+### Performance Implications
+- Minimal direct performance impact.
+- Significant long-term maintainability benefit.
+
+### Security Considerations
+- Proper encapsulation protects against accidental or malicious changes to internal data.
+
+### Code Smells and Anti-Patterns
+- Anemic Domain Model: Only getters/setters without logic.
+
+### Best Practices
+- Always make fields `private`.
+- Provide public/protected getters and setters only when needed.
+- Validate input inside setters.
+
+## Real-World Spring Boot Integration
+
+### Practical Example
+Imagine a Spring Boot application managing Employees.
+
+```java
+@Entity
+public class Employee {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    private String name;
+    private double salary;
+
+    // Getters and Setters
+    public Long getId() {
+        return id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        if(name == null || name.isBlank()) {
+            throw new IllegalArgumentException("Name cannot be blank");
+        }
+        this.name = name;
+    }
+
+    public double getSalary() {
+        return salary;
+    }
+
+    public void setSalary(double salary) {
+        if(salary < 0) {
+            throw new IllegalArgumentException("Salary cannot be negative");
+        }
+        this.salary = salary;
+    }
+}
+```
+
+**Spring Boot Leverages Encapsulation**:
+- JPA Entities require encapsulation for persistence.
+- Validation can be integrated using Bean Validation (Hibernate Validator).
+- Example: `@NotNull`, `@Positive` annotations.
+
+### Configuration Considerations
+- Use DTOs (Data Transfer Objects) to expose only necessary fields when transferring objects.
+
+
+## Interview Preparation
+
+### 20 Common Interview Questions and Answers
+
+1. **What is encapsulation?**
+   - Encapsulation is wrapping data and behavior into a single unit and controlling access using access modifiers.
+
+2. **How is encapsulation achieved in Java?**
+   - Using `private` fields with `public` getters and setters.
+
+3. **Why is encapsulation important?**
+   - It provides control, security, and modularity.
+
+4. **What are the advantages of encapsulation?**
+   - Data hiding, increased flexibility, ease of maintenance.
+
+5. **Can you have a class without encapsulation?**
+   - Yes, but it would expose internal states, making it prone to errors.
+
+6. **Is encapsulation the same as abstraction?**
+   - No. Encapsulation hides data; abstraction hides complexity.
+
+7. **Give an example where encapsulation failed?**
+   - Making fields `public` exposes internal representation.
+
+8. **What is a JavaBean and how is it related to encapsulation?**
+   - JavaBean follows strict encapsulation: private properties with public getters/setters.
+
+9. **Difference between public and private fields?**
+   - Public fields are accessible from anywhere; private fields are accessible only within the class.
+
+10. **How can you make a class immutable using encapsulation?**
+    - Make fields `final` and `private`, and do not provide setters.
+
+11. **What role do access modifiers play in encapsulation?**
+    - They control visibility and access levels.
+
+12. **How to validate encapsulated data?**
+    - Perform checks inside setters.
+
+13. **What is a DTO and how does it relate to encapsulation?**
+    - DTOs expose only necessary data for transfer, promoting encapsulation.
+
+14. **How does encapsulation promote security?**
+    - It prevents unauthorized modification of object state.
+
+15. **Explain encapsulation with a bank account example.**
+    - Protecting balance by using methods to deposit and withdraw instead of directly modifying it.
+
+16. **Can encapsulation lead to performance issues?**
+    - Rarely; performance cost is negligible compared to benefits.
+
+17. **Is encapsulation mandatory in Java?**
+    - Not enforced by language, but strongly recommended.
+
+18. **Can encapsulation be broken?**
+    - Yes, via reflection (but usually controlled or restricted).
+
+19. **How does Spring Boot utilize encapsulation?**
+    - Through JPA Entities, Validation Annotations, Controllers exposing only DTOs.
+
+20. **Explain encapsulation vs information hiding.**
+    - Encapsulation implements information hiding.
+
+### Follow-Up Questions
+- How does encapsulation help in multithreaded programming?
+- How would you design a thread-safe encapsulated class?
+- How do Lombok annotations affect encapsulation?
+
+### Code Challenge
+
+**Problem**: Create a class `Product` that has `name`, `price`, and `quantity`. Ensure:
+- `price` and `quantity` cannot be negative.
+- Provide methods to update them safely.
+
+```java
+public class Product {
+    private String name;
+    private double price;
+    private int quantity;
+
+    public Product(String name, double price, int quantity) {
+        this.name = name;
+        setPrice(price);
+        setQuantity(quantity);
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public double getPrice() {
+        return price;
+    }
+
+    public void setPrice(double price) {
+        if (price < 0) {
+            throw new IllegalArgumentException("Price cannot be negative");
+        }
+        this.price = price;
+    }
+
+    public int getQuantity() {
+        return quantity;
+    }
+
+    public void setQuantity(int quantity) {
+        if (quantity < 0) {
+            throw new IllegalArgumentException("Quantity cannot be negative");
+        }
+        this.quantity = quantity;
+    }
+}
+```
+
+**Solution Explanation**:
+- Validations are done inside setters.
+- Direct field manipulation is avoided.
+- Constructor uses setters to ensure validation at object creation.
+
+### How to Demonstrate Deep Understanding
+- Mention importance of validation and thread safety.
+- Emphasize the use of DTOs in real-world projects.
+- Talk about reflection and security considerations.
+- Connect encapsulation with design patterns like Builder Pattern.
+
+---

@@ -1,0 +1,343 @@
+---
+title: Polymorphism, Dynamic Method Dispatch, and Final Keyword in Java
+description: Deep dive into Java's polymorphism, dynamic method dispatch, and final keyword with real-world Spring Boot integration, best practices, and interview preparation.
+date: '2025-04-29'
+---
+
+# Polymorphism
+
+## Definition and Fundamentals
+Polymorphism allows objects to be treated as instances of their parent class rather than their actual class. It enables a single interface to control access to a wide range of implementations.
+
+**Where it fits**: Core Object-Oriented Programming (OOP) principle.
+
+**Core principles**: Inheritance, method overriding, interfaces.
+
+**Why use**: Promotes code reusability, flexibility, and scalability.
+
+## Code Examples with Progressive Complexity
+
+### Beginner
+```java
+class Animal {
+    void sound() {
+        System.out.println("Animal makes a sound");
+    }
+}
+
+class Dog extends Animal {
+    void sound() {
+        System.out.println("Dog barks");
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Animal myAnimal = new Dog();
+        myAnimal.sound();
+    }
+}
+```
+
+### Intermediate
+```java
+interface Shape {
+    void draw();
+}
+
+class Circle implements Shape {
+    public void draw() {
+        System.out.println("Drawing Circle");
+    }
+}
+
+class Rectangle implements Shape {
+    public void draw() {
+        System.out.println("Drawing Rectangle");
+    }
+}
+
+public class DrawingApp {
+    public static void main(String[] args) {
+        Shape shape = new Circle();
+        shape.draw();
+
+        shape = new Rectangle();
+        shape.draw();
+    }
+}
+```
+
+### Advanced
+```java
+abstract class Payment {
+    abstract void pay(double amount);
+}
+
+class CreditCardPayment extends Payment {
+    @Override
+    void pay(double amount) {
+        System.out.println("Paid " + amount + " using Credit Card");
+    }
+}
+
+class PayPalPayment extends Payment {
+    @Override
+    void pay(double amount) {
+        System.out.println("Paid " + amount + " using PayPal");
+    }
+}
+
+public class PaymentGateway {
+    public static void processPayment(Payment payment, double amount) {
+        payment.pay(amount);
+    }
+
+    public static void main(String[] args) {
+        processPayment(new CreditCardPayment(), 200.00);
+        processPayment(new PayPalPayment(), 150.00);
+    }
+}
+```
+
+## Common Pitfalls and Best Practices
+- **Pitfalls**:
+  - Not understanding method overriding vs method overloading.
+  - Typecasting mistakes leading to `ClassCastException`.
+
+- **Best Practices**:
+  - Program to an interface, not an implementation.
+  - Keep polymorphic behavior predictable and consistent.
+
+## Real-World Spring Boot Integration
+**Problem**: Different types of notifications (Email, SMS).
+
+```java
+public interface NotificationService {
+    void sendNotification(String message);
+}
+
+@Service("emailService")
+class EmailNotificationService implements NotificationService {
+    public void sendNotification(String message) {
+        System.out.println("Sending Email: " + message);
+    }
+}
+
+@Service("smsService")
+class SmsNotificationService implements NotificationService {
+    public void sendNotification(String message) {
+        System.out.println("Sending SMS: " + message);
+    }
+}
+
+@RestController
+@RequestMapping("/notify")
+public class NotificationController {
+
+    private final Map<String, NotificationService> services;
+
+    @Autowired
+    public NotificationController(List<NotificationService> servicesList) {
+        this.services = servicesList.stream()
+            .collect(Collectors.toMap(s -> s.getClass().getSimpleName(), s -> s));
+    }
+
+    @PostMapping("/{type}")
+    public void notify(@PathVariable String type, @RequestBody String message) {
+        NotificationService service = services.get(type + "Service");
+        if (service != null) {
+            service.sendNotification(message);
+        } else {
+            throw new IllegalArgumentException("Unknown Notification Type");
+        }
+    }
+}
+```
+
+# Dynamic Method Dispatch
+
+## Definition and Fundamentals
+Dynamic Method Dispatch is the mechanism by which a call to an overridden method is resolved at runtime rather than compile-time.
+
+**Where it fits**: Enables runtime polymorphism.
+
+**Core principles**: Late binding, method overriding.
+
+**Why use**: Achieve flexible and scalable code behavior based on the object's runtime type.
+
+## Code Example
+```java
+class Parent {
+    void show() {
+        System.out.println("Parent's show()");
+    }
+}
+
+class Child extends Parent {
+    @Override
+    void show() {
+        System.out.println("Child's show()");
+    }
+}
+
+public class DispatchDemo {
+    public static void main(String[] args) {
+        Parent obj = new Child();
+        obj.show();
+    }
+}
+```
+
+## Common Pitfalls
+- Assuming the reference type determines the method called (it's the object type!).
+- Forgetting the importance of runtime binding.
+
+# Final Keyword
+
+## Definition and Fundamentals
+The `final` keyword can be applied to variables, methods, and classes.
+
+- **Final variable**: Constant value.
+- **Final method**: Cannot be overridden.
+- **Final class**: Cannot be subclassed.
+
+**Where it fits**: Security, performance optimization, design contracts.
+
+**Why use**: Ensure immutability, prevent inheritance for security.
+
+## Code Example
+```java
+final class Constants {
+    public static final double PI = 3.14159;
+}
+
+class Vehicle {
+    final void start() {
+        System.out.println("Vehicle started");
+    }
+}
+
+class Car extends Vehicle {
+    // Cannot override start()
+}
+```
+
+## Common Pitfalls
+- Misusing `final` when flexibility is needed.
+- Not using `final` on constants leading to accidental changes.
+
+## Best Practices
+- Use `final` for constants.
+- Use `final` parameters in methods when arguments should not change.
+
+# Interview Preparation
+
+## Top 20 Questions and Answers
+
+1. **What is Polymorphism?**
+   > Polymorphism allows one interface to be used for a general class of actions.
+
+2. **Types of Polymorphism in Java?**
+   > Compile-time (method overloading) and Runtime (method overriding).
+
+3. **Explain Dynamic Method Dispatch.**
+   > It allows method calls to be resolved at runtime based on object type.
+
+4. **Why is Polymorphism important?**
+   > It increases flexibility and reusability.
+
+5. **What happens if a method is not overridden?**
+   > The parent class version is executed.
+
+6. **Can a constructor be overridden?**
+   > No, constructors are not inherited.
+
+7. **What does the `final` keyword mean?**
+   > It restricts further modification.
+
+8. **Can you override a final method?**
+   > No.
+
+9. **Can a final class be extended?**
+   > No.
+
+10. **Advantages of using final keyword?**
+    > Safety, optimization, immutability.
+
+11. **What is method overriding?**
+    > Redefining a method in a subclass.
+
+12. **What is method overloading?**
+    > Same method name with different parameters.
+
+13. **Difference between overloading and overriding?**
+    > Overloading happens at compile-time, overriding at runtime.
+
+14. **When do you get `ClassCastException`?**
+    > Improper downcasting.
+
+15. **Is polymorphism achieved through interfaces?**
+    > Yes, extensively.
+
+16. **What is the impact of polymorphism on performance?**
+    > Slightly more runtime overhead.
+
+17. **What is late binding?**
+    > Binding which occurs during runtime.
+
+18. **Can a static method be overridden?**
+    > No, it's method hiding.
+
+19. **What is method hiding?**
+    > Defining a static method in a child class with same signature as the parent class static method.
+
+20. **Real-world example of Polymorphism?**
+    > Payment gateways processing different payment types.
+
+## Follow-Up Questions
+- What happens internally during dynamic method dispatch?
+- How does Java's JVM manage dynamic dispatch tables?
+- Explain double dispatch and its need?
+- How would you optimize polymorphic structures for performance?
+
+## Code Challenge
+
+### Problem
+Create an application that has a `Vehicle` base class and subclasses like `Bike` and `Car` implementing a `start()` method.
+
+### Solution
+```java
+class Vehicle {
+    void start() {
+        System.out.println("Vehicle is starting");
+    }
+}
+
+class Bike extends Vehicle {
+    void start() {
+        System.out.println("Bike is starting");
+    }
+}
+
+class Car extends Vehicle {
+    void start() {
+        System.out.println("Car is starting");
+    }
+}
+
+public class TestPolymorphism {
+    public static void main(String[] args) {
+        Vehicle v;
+        v = new Bike();
+        v.start();
+
+        v = new Car();
+        v.start();
+    }
+}
+```
+
+**Explanation**: Demonstrates dynamic method dispatch.
+
+---

@@ -1,0 +1,360 @@
+---
+title: Object Class, Upcasting and Downcasting, Abstract Keyword in Java
+description: Deep dive into Object Class methods, Casting between classes, and the Abstract Keyword in Java with examples, best practices, Spring Boot integration, and interview preparation
+date: '2025-04-29'
+---
+
+## 1. Object Class, equals(), toString(), hashCode()
+
+### Definition and Fundamentals
+- **Object Class** is the root class of the Java class hierarchy. Every class implicitly extends `java.lang.Object` if no superclass is explicitly defined.
+- **equals()**: Used to compare two objects for equality.
+- **toString()**: Returns a string representation of an object.
+- **hashCode()**: Returns an integer hash code representation of the object.
+
+### Where it fits in the Java Ecosystem
+- Foundation of all Java classes.
+- Crucial for collections (`HashMap`, `HashSet`, etc.), debugging, and identity comparison.
+
+### Core Principles and Background
+- Contracts between `equals()` and `hashCode()` must be maintained.
+- `toString()` helps in logging and debugging.
+
+### When and Why to Use
+- Override when you need custom comparison or string representations.
+
+### Code Examples
+
+**Beginner Level:**
+```java
+public class Person {
+    private String name;
+
+    public Person(String name) {
+        this.name = name;
+    }
+}
+
+Person p = new Person("John");
+System.out.println(p.toString()); // default Object@hashcode
+```
+
+**Intermediate Level:**
+```java
+@Override
+public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    Person person = (Person) o;
+    return Objects.equals(name, person.name);
+}
+
+@Override
+public int hashCode() {
+    return Objects.hash(name);
+}
+
+@Override
+public String toString() {
+    return "Person{name='" + name + "'}";
+}
+```
+
+**Advanced Level:**
+```java
+// Immutable class with proper equals and hashCode contract
+public final class ImmutablePerson {
+    private final String name;
+
+    public ImmutablePerson(String name) {
+        this.name = Objects.requireNonNull(name);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof ImmutablePerson)) return false;
+        ImmutablePerson that = (ImmutablePerson) o;
+        return name.equals(that.name);
+    }
+
+    @Override
+    public int hashCode() {
+        return name.hashCode();
+    }
+
+    @Override
+    public String toString() {
+        return String.format("ImmutablePerson{name='%s'}", name);
+    }
+}
+```
+
+### Common Pitfalls and Best Practices
+- **Mistake**: Not overriding `hashCode()` when overriding `equals()`.
+- **Best Practice**: Always override both together.
+- **Performance**: Poor `hashCode()` can cause hash collisions.
+
+---
+
+## 2. Upcasting and Downcasting
+
+### Definition and Fundamentals
+- **Upcasting**: Casting a subclass object to a superclass reference.
+- **Downcasting**: Casting a superclass reference back to a subclass reference.
+
+### Where it fits
+- Polymorphism, Collections, dynamic binding.
+
+### Core Principles
+- Upcasting is safe and implicit.
+- Downcasting must be done carefully and explicitly.
+
+### When and Why to Use
+- Upcasting for generalization.
+- Downcasting for accessing specific behaviors.
+
+### Code Examples
+
+**Beginner Level:**
+```java
+class Animal {}
+class Dog extends Animal {}
+
+Animal a = new Dog(); // Upcasting
+```
+
+**Intermediate Level:**
+```java
+if (a instanceof Dog) {
+    Dog d = (Dog) a; // Downcasting safely
+}
+```
+
+**Advanced Level:**
+```java
+// Method demonstrating polymorphism
+void makeSound(Animal animal) {
+    if (animal instanceof Dog dog) { // Java 17 Pattern Matching
+        dog.bark();
+    }
+}
+```
+
+### Common Pitfalls and Best Practices
+- **Mistake**: Unsafe downcasting causes `ClassCastException`.
+- **Best Practice**: Always check using `instanceof`.
+
+---
+
+## 3. Abstract Keyword
+
+### Definition and Fundamentals
+- Used to declare a class that cannot be instantiated directly or a method without a body.
+
+### Where it fits
+- Foundation for polymorphic hierarchies.
+- Template methods in design patterns.
+
+### Core Principles
+- An abstract class may contain abstract and concrete methods.
+- Child classes must implement abstract methods.
+
+### When and Why to Use
+- Common functionality in parent, specific behavior in child.
+
+### Code Examples
+
+**Beginner Level:**
+```java
+abstract class Animal {
+    abstract void makeSound();
+}
+```
+
+**Intermediate Level:**
+```java
+class Dog extends Animal {
+    @Override
+    void makeSound() {
+        System.out.println("Bark");
+    }
+}
+
+Animal animal = new Dog();
+animal.makeSound();
+```
+
+**Advanced Level:**
+```java
+abstract class Shape {
+    abstract double area();
+}
+
+class Circle extends Shape {
+    private final double radius;
+    Circle(double radius) { this.radius = radius; }
+
+    @Override
+    double area() { return Math.PI * radius * radius; }
+}
+```
+
+### Common Pitfalls and Best Practices
+- **Mistake**: Trying to instantiate an abstract class.
+- **Best Practice**: Use abstract classes for base templates and interfaces for multiple inheritances.
+
+---
+
+# Real-World Spring Boot Integration
+
+### Example: Abstract Base Controller for CRUD Operations
+
+```java
+public abstract class AbstractCrudController<T> {
+
+    public abstract List<T> findAll();
+
+    public abstract T findById(Long id);
+
+    public abstract T save(T entity);
+}
+
+@RestController
+@RequestMapping("/api/users")
+public class UserController extends AbstractCrudController<User> {
+
+    @Autowired
+    private UserService userService;
+
+    @Override
+    public List<User> findAll() {
+        return userService.findAll();
+    }
+
+    @Override
+    public User findById(Long id) {
+        return userService.findById(id);
+    }
+
+    @Override
+    public User save(User user) {
+        return userService.save(user);
+    }
+}
+```
+
+**Spring Boot Enhancements:**
+- Spring Dependency Injection for services.
+- `@RestController`, `@RequestMapping` for REST APIs.
+
+---
+
+# Interview Preparation
+
+## Common Interview Questions and Answers
+
+1. **What is the Object class?**
+   > The Object class is the parent of all Java classes. It provides essential methods like `equals()`, `hashCode()`, and `toString()`, which help define object identity and behavior.
+
+2. **Why should you override `equals()` and `hashCode()` together?**
+   > Collections like HashMap and HashSet depend on both methods. If you override `equals()`, you must override `hashCode()` to maintain consistency when objects are stored or retrieved from a collection.
+
+3. **What happens if you don't override `hashCode()`?**
+   > Objects that are logically equal might end up in different buckets in a hash-based collection, causing unexpected behavior.
+
+4. **What is the use of `toString()`?**
+   > Provides a string representation of an object, mainly used for debugging or logging.
+
+5. **What is upcasting?**
+   > Upcasting is casting a child class object to a parent class reference. It is safe and implicit.
+
+6. **What is downcasting?**
+   > Downcasting is casting a parent class reference back to a child class. It must be explicit and requires careful checking.
+
+7. **When do you use `instanceof` in Java?**
+   > To check an object’s type before downcasting it, avoiding `ClassCastException`.
+
+8. **Is upcasting safe?**
+   > Yes, upcasting is safe because the child class object "is-a" parent class object.
+
+9. **What are the risks with downcasting?**
+   > If the actual object isn't of the target subclass, a `ClassCastException` occurs at runtime.
+
+10. **What is an abstract class?**
+    > A class that cannot be instantiated and may contain abstract methods that must be implemented by its subclasses.
+
+11. **Difference between abstract class and interface?**
+    > Abstract class can have both abstract and concrete methods; interface traditionally had only abstract methods (before Java 8). Interfaces are used for multiple inheritance.
+
+12. **Can an abstract class have constructors?**
+    > Yes, abstract classes can have constructors to initialize common properties.
+
+13. **Can an abstract class have a main method?**
+    > Yes, abstract classes can have a `main()` method.
+
+14. **Why can't we instantiate abstract classes?**
+    > Abstract classes are incomplete by design and require concrete implementations.
+
+15. **Can an abstract class have a final method?**
+    > Yes, an abstract class can have a final method. It cannot be overridden by subclasses.
+
+16. **Why override `toString()`?**
+    > To provide a meaningful description of the object for debugging, logging, and better readability.
+
+17. **How does `equals()` relate to `==` operator?**
+    > `==` compares references (memory addresses); `equals()` compares logical equality of objects.
+
+18. **What happens if we use a wrong `hashCode()`?**
+    > It leads to inefficient hashing in collections, causing performance degradation.
+
+19. **How do Spring Boot repositories use upcasting?**
+    > Spring Data repositories often upcast specific entities to generic interfaces like `JpaRepository`, promoting loose coupling.
+
+20. **How can abstract classes be used in Spring Boot APIs?**
+    > Abstract classes can define common controller behaviors or service methods, which specific implementations extend.
+
+
+## Code Challenges
+
+**Challenge 1: Create an abstract class Animal with two child classes Cat and Dog. Each should implement a method `makeSound()`.**
+
+**Solution:**
+```java
+abstract class Animal {
+    abstract void makeSound();
+}
+
+class Cat extends Animal {
+    void makeSound() { System.out.println("Meow"); }
+}
+
+class Dog extends Animal {
+    void makeSound() { System.out.println("Bark"); }
+}
+```
+
+**Challenge 2: Write equals() and hashCode() for a class Car with properties make and model.**
+
+**Solution:**
+```java
+class Car {
+    private String make;
+    private String model;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Car car = (Car) o;
+        return Objects.equals(make, car.make) && Objects.equals(model, car.model);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(make, model);
+    }
+}
+```
+
+---

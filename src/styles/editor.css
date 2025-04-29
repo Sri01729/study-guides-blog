@@ -1,0 +1,165 @@
+/* Base editor styles */
+.w-md-editor {
+  background-color: #fff;
+  color: #000;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+}
+
+.w-md-editor-toolbar {
+  border-bottom: 1px solid #e5e7eb;
+  padding: 0.5rem;
+}
+
+.w-md-editor-toolbar-divider {
+  width: 1px;
+  margin: 0 0.5rem;
+  background-color: #e5e7eb;
+}
+
+.w-md-editor-toolbar button {
+  color: #4b5563;
+  padding: 0.25rem 0.5rem;
+  margin: 0 0.25rem;
+  border-radius: 0.25rem;
+}
+
+.w-md-editor-toolbar button:hover {
+  background-color: #f3f4f6;
+}
+
+.w-md-editor-content {
+  padding: 1rem;
+}
+
+.w-md-editor-preview {
+  padding: 1rem;
+}
+
+/* Dark mode styles */
+[data-color-mode="dark"] .w-md-editor {
+  background-color: #18181b;
+  color: #fff;
+  border-color: #3f3f46;
+}
+
+[data-color-mode="dark"] .w-md-editor-toolbar {
+  background-color: #27272a;
+  border-color: #3f3f46;
+}
+
+[data-color-mode="dark"] .w-md-editor-toolbar button {
+  color: #a1a1aa;
+}
+
+[data-color-mode="dark"] .w-md-editor-toolbar button:hover {
+  background-color: #3f3f46;
+}
+
+[data-color-mode="dark"] .w-md-editor-toolbar-divider {
+  background-color: #3f3f46;
+}
+
+[data-color-mode="dark"] .w-md-editor-preview {
+  background-color: #18181b;
+}
+
+/* Preview content styles */
+.wmde-markdown {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  line-height: 1.6;
+}
+
+.wmde-markdown h1,
+.wmde-markdown h2,
+.wmde-markdown h3,
+.wmde-markdown h4,
+.wmde-markdown h5,
+.wmde-markdown h6 {
+  font-weight: 600;
+  margin: 1.5em 0 0.5em;
+}
+
+.wmde-markdown h1 { font-size: 2em; }
+.wmde-markdown h2 { font-size: 1.5em; }
+.wmde-markdown h3 { font-size: 1.25em; }
+
+.wmde-markdown p {
+  margin: 1em 0;
+}
+
+.wmde-markdown code {
+  background-color: #f3f4f6;
+  padding: 0.2em 0.4em;
+  border-radius: 0.25em;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.9em;
+}
+
+[data-color-mode="dark"] .wmde-markdown code {
+  background-color: #27272a;
+}
+
+.wmde-markdown pre {
+  background-color: #f3f4f6;
+  padding: 1em;
+  border-radius: 0.5em;
+  overflow-x: auto;
+}
+
+[data-color-mode="dark"] .wmde-markdown pre {
+  background-color: #27272a;
+}
+
+.wmde-markdown pre code {
+  background: none;
+  padding: 0;
+}
+
+.wmde-markdown blockquote {
+  border-left: 4px solid #e5e7eb;
+  margin: 1em 0;
+  padding-left: 1em;
+  color: #6b7280;
+}
+
+[data-color-mode="dark"] .wmde-markdown blockquote {
+  border-left-color: #3f3f46;
+  color: #a1a1aa;
+}
+
+.wmde-markdown table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 1em 0;
+}
+
+.wmde-markdown th,
+.wmde-markdown td {
+  border: 1px solid #e5e7eb;
+  padding: 0.5em 1em;
+}
+
+[data-color-mode="dark"] .wmde-markdown th,
+[data-color-mode="dark"] .wmde-markdown td {
+  border-color: #3f3f46;
+}
+
+.wmde-markdown th {
+  background-color: #f3f4f6;
+}
+
+[data-color-mode="dark"] .wmde-markdown th {
+  background-color: #27272a;
+}
+
+.wmde-markdown ul,
+.wmde-markdown ol {
+  padding-left: 2em;
+  margin: 1em 0;
+}
+
+.wmde-markdown img {
+  max-width: 100%;
+  height: auto;
+}

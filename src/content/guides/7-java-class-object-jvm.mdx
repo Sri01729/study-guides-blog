@@ -1,0 +1,288 @@
+---
+title: Class, Object, JDK, JRE, and JVM in Java
+description: In-depth guide to Class and Object theory and practice, and how JDK, JRE, and JVM form the foundation of Java runtime.
+date: '2025-04-29'
+---
+
+### Class:
+- A **class** is a blueprint or template for creating objects.
+- It defines the structure (fields) and behavior (methods) that the objects created from it will have.
+
+```java
+public class Car {
+    String color;
+    int speed;
+
+    void drive() {
+        System.out.println("Car is driving...");
+    }
+}
+```
+
+### Object:
+- An **object** is an instance of a class.
+- It occupies memory and has a state (data) and behavior (methods).
+
+```java
+Car myCar = new Car();
+myCar.color = "Red";
+myCar.drive();
+```
+
+### Where It Fits:
+- Forms the core of **Object-Oriented Programming (OOP)** in Java.
+- Everything in Java revolves around classes and objects.
+
+### When and Why:
+- Use when you need to model real-world entities (e.g., Student, BankAccount, etc.)
+- Promotes **code reusability**, **encapsulation**, **inheritance**, and **polymorphism**.
+
+---
+
+## 🚦 Code Examples With Progressive Complexity
+
+### Beginner Level
+```java
+class Dog {
+    String breed = "Labrador";
+    void bark() {
+        System.out.println("Woof Woof!");
+    }
+
+    public static void main(String[] args) {
+        Dog d = new Dog();
+        d.bark();
+        System.out.println(d.breed);
+    }
+}
+```
+
+### Intermediate Level
+```java
+class BankAccount {
+    private double balance;
+
+    public BankAccount(double initialDeposit) {
+        this.balance = initialDeposit;
+    }
+
+    public void deposit(double amount) {
+        balance += amount;
+    }
+
+    public double getBalance() {
+        return balance;
+    }
+}
+```
+
+### Advanced Level
+```java
+class Singleton {
+    private static volatile Singleton instance;
+
+    private Singleton() {}
+
+    public static Singleton getInstance() {
+        if (instance == null) {
+            synchronized (Singleton.class) {
+                if (instance == null) {
+                    instance = new Singleton();
+                }
+            }
+        }
+        return instance;
+    }
+}
+```
+
+---
+
+## 🚨 Common Pitfalls and Best Practices
+
+### Pitfalls:
+- Forgetting to encapsulate data (use `private` + getters/setters).
+- Creating multiple instances unnecessarily.
+- Ignoring `final`, `static`, and access modifiers.
+
+### Best Practices:
+- Always initialize objects properly.
+- Use **constructor overloading** where needed.
+- Prefer composition over inheritance when applicable.
+- Avoid public fields; use accessors.
+
+---
+
+## 💡 Spring Boot Integration Example
+
+### Business Use Case: Car Rental API
+```java
+@Entity
+public class Car {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    private String model;
+    private String status;
+
+    // Getters and setters
+}
+
+@Repository
+public interface CarRepository extends JpaRepository<Car, Long> {}
+
+@Service
+public class CarService {
+    @Autowired
+    private CarRepository repo;
+
+    public Car rentCar(Long id) {
+        Car car = repo.findById(id).orElseThrow();
+        car.setStatus("rented");
+        return repo.save(car);
+    }
+}
+```
+
+- Spring Boot leverages objects as **Beans**, classes as **Entities, Services**, etc.
+- Uses **dependency injection** to manage object creation.
+
+---
+
+## 🧠 JDK vs JRE vs JVM
+
+### JVM (Java Virtual Machine):
+- Executes Java bytecode (.class files).
+- Platform-dependent.
+- Handles memory, garbage collection, security, etc.
+
+### JRE (Java Runtime Environment):
+- Contains JVM + libraries required to run Java applications.
+
+### JDK (Java Development Kit):
+- Includes JRE + compilers + tools (javac, javadoc, etc.) to develop Java apps.
+
+```text
+[JDK] = [JRE] + [Compiler, Debugger, Tools]
+[JRE] = [JVM] + [Runtime Libraries]
+```
+
+---
+
+## 🎯 Interview Questions and Answers
+
+### 1. What is a class in Java?
+**Answer:** A class is a template that defines data and behavior using fields and methods. Objects are created based on classes.
+
+### 2. What is an object?
+**Answer:** An object is an instance of a class. It has a unique identity, state, and behavior.
+
+### 3. How are classes and objects related?
+**Answer:** Classes define the blueprint; objects are created from it.
+
+### 4. What is the JVM?
+**Answer:** The Java Virtual Machine is responsible for executing Java bytecode.
+
+### 5. What is the difference between JDK and JRE?
+**Answer:** JDK is for development; JRE is for running Java apps.
+
+### 6. How do you create an object in Java?
+```java
+ClassName obj = new ClassName();
+```
+
+### 7. What is the use of constructors?
+**Answer:** Constructors initialize new objects with default or user-provided values.
+
+### 8. Can we override a constructor?
+**Answer:** No, constructors can't be overridden.
+
+### 9. Explain constructor overloading.
+**Answer:** Having multiple constructors with different parameters.
+
+### 10. What is the Singleton pattern?
+**Answer:** A design pattern ensuring only one object instance exists.
+
+### 11. How does Spring Boot use classes and objects?
+**Answer:** Spring Boot manages classes as beans, entities, controllers, etc.
+
+### 12. What's the role of `@Autowired`?
+**Answer:** Automatically injects object dependencies.
+
+### 13. Difference between `new` keyword and DI?
+**Answer:** `new` creates manually, DI lets Spring manage it.
+
+### 14. Can a class be private in Java?
+**Answer:** Only inner classes can be private.
+
+### 15. What is encapsulation?
+**Answer:** Wrapping data and methods into a single unit.
+
+### 16. What is method overloading?
+**Answer:** Defining methods with the same name but different parameters.
+
+### 17. What is method overriding?
+**Answer:** Redefining a method in subclass with same signature.
+
+### 18. Is JVM platform-independent?
+**Answer:** JVM is platform-dependent, but Java code is platform-independent.
+
+### 19. What is the role of garbage collector?
+**Answer:** Automatically deallocates unused objects.
+
+### 20. Can you create object without `new`?
+**Answer:** Yes, using reflection or deserialization.
+
+---
+
+## 🧪 Code Challenges
+
+### Challenge 1:
+**Task:** Create a class `Rectangle` with width, height, and method `area()`.
+
+```java
+class Rectangle {
+    int width, height;
+
+    Rectangle(int w, int h) {
+        this.width = w;
+        this.height = h;
+    }
+
+    int area() {
+        return width * height;
+    }
+
+    public static void main(String[] args) {
+        Rectangle r = new Rectangle(10, 20);
+        System.out.println("Area: " + r.area());
+    }
+}
+```
+
+### Challenge 2:
+**Task:** Implement a thread-safe Singleton.
+```java
+public class SafeSingleton {
+    private static final SafeSingleton instance = new SafeSingleton();
+
+    private SafeSingleton() {}
+
+    public static SafeSingleton getInstance() {
+        return instance;
+    }
+}
+```
+
+---
+
+## 💬 Demonstrating Deep Understanding
+- Use diagrams to explain JVM-JDK-JRE relationship.
+- Discuss how Spring Boot manages object lifecycles.
+- Describe trade-offs of Singleton vs DI.
+- Showcase debugging experience around object lifecycle, memory leaks.
+- Compare constructor injection vs setter injection.
+
+---
+

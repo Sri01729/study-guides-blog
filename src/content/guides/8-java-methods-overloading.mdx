@@ -1,0 +1,222 @@
+---
+title: Java Methods and Method Overloading
+description: Detailed guide on Java methods and method overloading with Spring Boot integration and interview prep
+date: '2025-04-29'
+---
+
+## 📘 Definition and Fundamentals
+
+### ✅ Methods in Java
+A **method** in Java is a block of code designed to perform a particular task. It is executed when called (or invoked). Methods are used to improve code modularity, reusability, and organization.
+
+- **Structure:** `returnType methodName(parameters) { // body }`
+- **Where it fits:** Methods are fundamental in OOP (Object-Oriented Programming), supporting encapsulation and code reuse.
+- **Core Concepts:**
+  - Declaration and definition
+  - Parameters and return types
+  - Access modifiers (`public`, `private`, etc.)
+  - Static vs instance methods
+
+### ✅ Method Overloading
+Method Overloading in Java means having **multiple methods with the same name** but different parameter lists in the same class.
+
+- **Purpose:** Increase flexibility and readability.
+- **Java handles it using:**
+  - Number of parameters
+  - Type of parameters
+  - Sequence of parameters
+
+## 💻 Code Examples with Progressive Complexity
+
+### Beginner Level
+```java
+public class Calculator {
+    int add(int a, int b) {
+        return a + b;
+    }
+
+    // Overloaded method
+    double add(double a, double b) {
+        return a + b;
+    }
+}
+```
+
+### Intermediate Level
+```java
+public class Logger {
+    void log(String message) {
+        System.out.println("INFO: " + message);
+    }
+
+    void log(String message, int severity) {
+        System.out.println("SEVERITY[" + severity + "]: " + message);
+    }
+}
+```
+
+### Advanced Level
+```java
+public class Formatter {
+    String format(String input) {
+        return input.trim();
+    }
+
+    String format(String input, boolean upperCase) {
+        input = input.trim();
+        return upperCase ? input.toUpperCase() : input;
+    }
+
+    String format(String input, String prefix, String suffix) {
+        return prefix + input.trim() + suffix;
+    }
+}
+```
+
+## ⚠️ Common Pitfalls and Best Practices
+
+### Pitfalls
+- Confusing overloading with overriding
+- Ambiguous method calls when overloading with varargs
+- Using same method name for unrelated functionality
+
+### Performance & Security
+- Avoid excessive overloading—it may complicate maintenance.
+- Don’t rely on automatic type promotion in overloads; it leads to ambiguity.
+- Overloaded methods should ideally perform similar logic to avoid confusion.
+
+### Best Practices
+- Group overloaded methods logically
+- Use Javadoc to clearly document each version
+- Prefer overloading for semantic clarity, not convenience
+
+## 🚀 Real-World Spring Boot Integration
+
+### Scenario: RESTful logging API
+```java
+@RestController
+@RequestMapping("/logs")
+public class LogController {
+
+    @GetMapping("/simple")
+    public String log(@RequestParam String message) {
+        return "Logged: " + message;
+    }
+
+    @GetMapping("/detailed")
+    public String log(@RequestParam String message, @RequestParam int severity) {
+        return "Severity[" + severity + "] Logged: " + message;
+    }
+}
+```
+
+### Explanation
+- Spring Boot calls appropriate overloaded method based on request parameters.
+- Each method can have the same name (`log`), Spring handles binding based on parameter names/types.
+
+## 🎯 Interview Preparation
+
+### Top 20 Questions & Answers
+
+1. **What is a method in Java?**
+   > A method is a collection of statements that performs a specific task and returns a result to the caller.
+
+2. **What is method overloading?**
+   > Method overloading is defining multiple methods with the same name but different parameters within the same class.
+
+3. **Can you overload methods by return type alone?**
+   > No, Java does not allow overloading methods by return type alone due to ambiguity.
+
+4. **Why use method overloading?**
+   > For code readability, flexibility, and avoiding redundant method names.
+
+5. **How does Java differentiate overloaded methods?**
+   > By the number, type, or order of parameters.
+
+6. **Is method overloading compile-time or runtime polymorphism?**
+   > Compile-time (static) polymorphism.
+
+7. **What happens if overloaded methods differ only by exception?**
+   > The compiler does not consider exceptions in method signatures for overloading.
+
+8. **Can constructors be overloaded?**
+   > Yes, constructors can be overloaded in the same way as methods.
+
+9. **Can overloaded methods be in different classes?**
+   > No. Overloading occurs in the same class. If in different classes, it could be overriding.
+
+10. **Difference between method overloading and overriding?**
+   > Overloading happens within a class with different signatures; overriding occurs across parent-child classes with the same signature.
+
+11. **Can you overload static methods?**
+   > Yes. Static methods can be overloaded.
+
+12. **Can varargs cause ambiguity in overloading?**
+   > Yes, especially when overloading with similar parameter types.
+
+13. **How does autoboxing affect method overloading?**
+   > It can cause the compiler to choose boxed versions which may be unexpected.
+
+14. **Can you overload private methods?**
+   > Yes, as long as they're in the same class.
+
+15. **Does method overloading break OOP principles?**
+   > No, it supports polymorphism and encapsulation.
+
+16. **Are overloaded methods part of the method signature?**
+   > Yes, method name + parameter types define the signature.
+
+17. **What’s the role of method resolution during overloading?**
+   > The compiler selects the most specific applicable method during compilation.
+
+18. **Can you overload a method with different access modifiers?**
+   > Yes, but access modifier is not part of the method signature.
+
+19. **How does Java resolve overloaded method calls with null?**
+   > Ambiguity may occur if multiple applicable overloads exist.
+
+20. **Is overloading supported in other OOP languages?**
+   > Yes, languages like C++, C#, and Kotlin support method overloading.
+
+### Follow-Up Questions
+- How does overloading interact with inheritance?
+- Can overloading affect runtime performance?
+- How to unit test overloaded methods?
+
+### Code Challenge
+
+**Problem:** Create a `BankAccount` class with overloaded `deposit()` methods:
+- One accepts `int` amount
+- Another accepts `double` amount with description
+- Another accepts `BigDecimal` with currency
+
+**Solution:**
+```java
+import java.math.BigDecimal;
+
+public class BankAccount {
+    public void deposit(int amount) {
+        System.out.println("Deposited: $" + amount);
+    }
+
+    public void deposit(double amount, String description) {
+        System.out.println("Deposited: $" + amount + " for " + description);
+    }
+
+    public void deposit(BigDecimal amount, String currency) {
+        System.out.println("Deposited: " + currency + " " + amount);
+    }
+}
+```
+
+**Explanation:** Demonstrates real-world use of overloading based on input types.
+
+## 🧠 Demonstrating Deep Understanding
+- Discuss when **method overloading** is appropriate and when composition is better.
+- Show examples where ambiguity can arise, e.g., `null`, `int` vs `Integer`.
+- Explain the compiler’s resolution mechanism.
+- Highlight the difference between static and dynamic binding in overloading vs overriding.
+
+---
+Would you like a mind map or diagram to visually organize these topics as well?
+

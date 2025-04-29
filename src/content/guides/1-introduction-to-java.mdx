@@ -1,0 +1,165 @@
+---
+title: Introduction to java
+description: Java history and the concepts
+date: '2025-04-29'
+---
+
+## 1. Core Java
+
+### Definition
+Core Java encompasses Java SE (Standard Edition), JVM (Java Virtual Machine), and foundational libraries such as `java.lang`, `java.util`, `java.io`, and `java.net`. It's the fundamental component supporting specialized applications.
+
+### Why Introduced
+Java was developed in the 1990s by Sun Microsystems for portability, simplicity, security, and network compatibility, ensuring code written once runs everywhere.
+
+### Real-world Analogy
+Core Java acts like a universal electrical outlet—appliances (applications) using Java can operate on various platforms seamlessly.
+
+### Applications
+- High-frequency trading platforms
+- Android applications
+- Development tools (e.g., Jenkins, IntelliJ IDEA)
+- Embedded systems (smart-cards, Blu-ray players)
+
+### Scenario Example
+**Problem:** A bank must process millions of transactions consistently across diverse operating systems.
+**Solution:** Utilize Core Java to ensure portability and ease of deployment across multiple platforms.
+
+### Mini Code Example
+```java
+Map<String, Integer> freq = new HashMap<>();
+for (String word : List.of("java", "rocks", "java")) {
+    freq.merge(word, 1, Integer::sum);
+}
+System.out.println(freq); // {java=2, rocks=1}
+```
+
+### Interview Q&A
+- **Q:** How does JVM achieve platform independence?
+  - **A:** By converting Java bytecode into native machine instructions for each OS.
+- **Q:** Difference between JDK and JRE?
+  - **A:** JRE includes JVM and libraries for running Java apps; JDK contains JRE plus development tools.
+- **Q:** Why are Strings immutable?
+  - **A:** Ensures security, thread safety, and efficient caching.
+
+---
+
+## 2. Java Development Kit (JDK)
+
+### Definition
+The JDK includes compilers, debuggers, JVM, package managers, and API documentation for Java development.
+
+### Why Introduced
+Standardization of tools across development environments ensures reproducibility and reliability.
+
+### Real-world Analogy
+Installing JDK is akin to using manufacturer-certified automotive tools, ensuring consistent and precise maintenance.
+
+### Scenario Example
+**Problem:** Diverse JDK builds cause compilation errors in distributed teams.
+**Solution:** Adopt a unified JDK version like Adoptium Temurin to ensure consistent builds.
+
+### Setup Steps
+```shell
+brew install temurin
+export JAVA_HOME=$(/usr/libexec/java_home -v 21)
+java --version
+```
+
+### Interview Q&A
+- **Q:** Managing multiple JDK versions?
+  - **A:** Use SDKMAN!, `jenv`, or Docker images.
+- **Q:** Role of module system in JDK setup?
+  - **A:** Modularizes Java runtime for efficiency and customization.
+
+---
+
+## 3. First Code in Java
+
+### Definition
+The initial Java program demonstrates basic syntax, compilation, and execution flow.
+
+### Importance
+It introduces beginners to Java class structure, entry points, and execution pipeline.
+
+### Real-world Analogy
+Comparable to sending a simple text message to confirm device functionality.
+
+### Step-by-step
+```java
+// Hello.java
+public class Hello {
+    public static void main(String[] args) {
+        System.out.println("Hello, World!");
+    }
+}
+```
+
+Compile and Run:
+```shell
+javac Hello.java
+java Hello
+```
+
+### Scenario Example
+**Problem:** New hire struggles with compilation errors due to misconfigured environment.
+**Solution:** Validate directory structure and classpath setup; use build tools like Maven.
+
+### Interview Q&A
+- **Q:** Why must main method be static?
+  - **A:** Allows JVM to invoke without instantiation.
+- **Q:** Difference between `System.out.print` and Logger?
+  - **A:** Logger provides configurable output levels and destinations, unlike simple standard output.
+
+---
+
+## 4. How Java Works
+
+### Definition
+Java source code compiles into platform-neutral bytecode executed by JVM via interpretation or JIT (Just-In-Time) compilation.
+
+### Why Exists
+Ensures portability, performance optimization at runtime, and enhanced security.
+
+### Real-world Analogy
+Netflix adaptive streaming—initial low-quality buffering followed by optimized high-quality playback.
+
+### Applications
+- High-performance applications (trading systems)
+- Big data platforms (Apache Spark)
+- Secure browser plugins (applets)
+
+### Scenario Example
+**Problem:** High CPU usage due to JVM warm-up during spikes.
+**Solution:** Use CDS (Class Data Sharing) or AOT (Ahead-Of-Time compilation).
+
+### Interview Q&A
+- **Q:** Difference between JIT and AOT?
+  - **A:** JIT compiles at runtime based on code hotspots; AOT precompiles code for faster startup.
+- **Q:** Garbage collection latency and tuning?
+  - **A:** Use specific algorithms (G1, ZGC) and JVM flags to minimize latency.
+
+---
+
+## Interview Question Bank
+
+| # | Question | Concept | Answer |
+|---|----------|---------|--------|
+| 1 | How Java achieves portability? | JVM | Bytecode interpretation by JVM |
+| 2 | JDK vs JRE vs JVM? | Setup | JVM runs code; JRE runs applications; JDK builds applications |
+| 3 | Why immutable Strings? | Core Java | Security, thread safety, caching |
+| 4 | Class-path vs module-path? | Java 9+ | Class-path is flat; module-path handles explicit dependencies |
+| 5 | Execution flow of `java Hello`? | JVM | Class loading → bytecode verification → initialization → main method execution |
+| 6 | G1 vs ZGC collectors? | JVM GC | G1: predictable pauses; ZGC: minimal pauses |
+| 7 | Reduce JVM warm-up? | JVM JIT | CDS, AOT compilation |
+
+---
+
+## Key Takeaways
+- **Core Java** underpins all Java technologies.
+- **Standard JDK** ensures reliable builds.
+- **First Java program** demonstrates essential execution flow.
+- Understanding JVM optimizes Java performance.
+
+Mastering these concepts prepares you comprehensively for Java interviews and practical Java application development.
+

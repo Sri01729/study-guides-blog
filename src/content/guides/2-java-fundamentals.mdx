@@ -1,0 +1,102 @@
+---
+title: Java Fundamentals
+description: Comprehensive overview of essential Java concepts
+date: '2025-04-29'
+---
+
+Below is an organized outline of essential Java concepts for beginners.
+
+## Variables in Java
+
+### Definition:
+Variables are containers that store data values in Java. Each variable has a type and name and can be manipulated throughout the program.
+
+### Example:
+```java
+// Declare and initialize an integer variable
+int age = 25;
+
+// Declare a string variable
+String name = "Alice";
+```
+
+### Real-world analogy:
+Variables are like labeled boxes where you store things. For example, a box labeled "Books" holds only books.
+
+### Interview Question:
+- **Question**: What is a variable in Java and how do you declare it?
+- **Answer**: A variable is a storage location paired with a name and data type, used to store data. You declare a variable using the syntax: `<data_type> <variable_name> = <value>;`
+
+---
+
+## Data Types in Java
+
+### Definition:
+Data types specify the kind of data a variable can hold. Java data types fall into two categories:
+- Primitive (int, byte, short, long, float, double, boolean, char)
+- Non-primitive or reference (String, Array, Class, Interface)
+
+### Example:
+```java
+int count = 10;          // Integer
+double price = 19.99;    // Double
+char letter = 'A';       // Character
+boolean isValid = true;  // Boolean
+```
+
+### Real-world analogy:
+Data types are similar to the types of containers used for specific purposes, like a water bottle holds liquids and a box holds solid items.
+
+### Interview Question:
+- **Question**: Differentiate between primitive and non-primitive data types.
+- **Answer**: Primitive data types hold simple values directly, like int or char, while non-primitive types reference objects or complex data structures, like String or arrays.
+
+---
+
+## Literals
+
+### Definition:
+Literals are constant values directly written in code that represent fixed values.
+
+### Example:
+```java
+int number = 100;            // Integer literal
+char grade = 'B';            // Character literal
+String greeting = "Hello";   // String literal
+double amount = 56.75;       // Floating-point literal
+```
+
+### Real-world analogy:
+Literals are like fixed price tags on products in a store; their values don't change once assigned.
+
+### Interview Question:
+- **Question**: What is a literal in Java?
+- **Answer**: A literal is a fixed, explicit value directly placed in the source code, such as numeric values, characters, strings, or boolean values.
+
+---
+
+## Type Conversion
+
+### Definition:
+Type conversion involves converting one data type to another. Java has two types:
+- **Implicit (automatic) type conversion**: Smaller data types to larger ones.
+- **Explicit (manual) type conversion**: Larger data types to smaller ones, potentially causing data loss.
+
+### Example:
+```java
+// Implicit conversion (int to double)
+int intVal = 10;
+double doubleVal = intVal; // 10.0
+
+// Explicit conversion (double to int)
+double originalValue = 9.78;
+int convertedValue = (int) originalValue; // 9
+```
+
+### Real-world analogy:
+Type conversion is like pouring water from a small cup into a larger jug (implicit, safe), or squeezing contents from a big jug into a small cup, which might spill (explicit, risky).
+
+### Interview Question:
+- **Question**: Explain type casting in Java.
+- **Answer**: Type casting is explicitly converting a variable from one data type to another using parentheses. For example, `(int)9.99` converts the double value `9.99` to an integer `9`.
+

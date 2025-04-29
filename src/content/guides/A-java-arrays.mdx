@@ -1,0 +1,242 @@
+---
+title: Arrays in Java
+description: In-depth guide on arrays, multi-dimensional arrays, jagged arrays, drawbacks, array of objects, and enhanced for-loop in Java with Spring Boot and interview prep
+date: '2025-04-29'
+---
+
+## 📘 Definition and Fundamentals
+
+### 1. Need of an Array
+Arrays are used in Java to store multiple values of the same type in a single container, enabling efficient data organization and indexed access.
+
+- **Fit in Ecosystem**: Foundation of data structures, commonly used in Java collections, APIs, and memory models.
+- **Principle**: Homogeneous data structure with indexed access, stored in contiguous memory.
+- **When to Use**: When dealing with fixed-size collections of data with uniform type.
+
+### 2. Creation of Arrays
+
+```java
+int[] numbers = new int[5];
+int[] ages = {23, 45, 32};
+```
+
+- Arrays are zero-indexed.
+- Data type and size must be specified or inferred.
+
+### 3. Multi-Dimensional Arrays
+A multi-dimensional array is essentially an array of arrays.
+
+```java
+int[][] matrix = new int[3][3];
+```
+
+- Used for grids, matrices, tables.
+
+### 4. Jagged and 3D Arrays
+- **Jagged Arrays**: Arrays of arrays with different lengths.
+- **3D Arrays**: Arrays with three dimensions.
+
+```java
+int[][] jagged = new int[3][];
+jagged[0] = new int[2];
+jagged[1] = new int[4];
+
+int[][][] cube = new int[2][3][4];
+```
+
+### 5. Drawbacks of Arrays
+- Fixed size (not dynamic like `ArrayList`)
+- No built-in methods like sorting or resizing
+- Type safety limits flexibility
+
+### 6. Array of Objects
+
+```java
+class Student {
+  String name;
+}
+Student[] students = new Student[3];
+students[0] = new Student();
+```
+
+- Stores references to objects.
+- Enables OOP operations on collections.
+
+### 7. Enhanced For Loop
+Simplified iteration over arrays and collections.
+
+```java
+for (int number : numbers) {
+  System.out.println(number);
+}
+```
+
+---
+
+## 🧑‍💻 Code Examples
+
+### Beginner Level
+```java
+int[] scores = {10, 20, 30};
+System.out.println(scores[0]); // Output: 10
+```
+
+### Intermediate Level
+```java
+int[][] matrix = {
+  {1, 2, 3},
+  {4, 5, 6},
+};
+for (int[] row : matrix) {
+  for (int val : row) {
+    System.out.print(val + " ");
+  }
+}
+```
+
+### Advanced Level
+```java
+import java.util.concurrent.atomic.AtomicInteger;
+
+public class ThreadSafeArray {
+  private final int[] data;
+  private final AtomicInteger index = new AtomicInteger(0);
+
+  public ThreadSafeArray(int size) {
+    this.data = new int[size];
+  }
+
+  public synchronized void add(int value) {
+    if (index.get() < data.length) {
+      data[index.getAndIncrement()] = value;
+    }
+  }
+}
+```
+
+---
+
+## ⚠️ Common Pitfalls and Best Practices
+
+- **Pitfalls**:
+  - ArrayIndexOutOfBoundsException
+  - Misunderstanding jagged vs multi-dimensional arrays
+  - Manual iteration where enhanced loop is better
+
+- **Best Practices**:
+  - Always check array length before accessing
+  - Use `Arrays` utility methods for sorting/searching
+  - Prefer `List` over arrays when flexibility needed
+
+---
+
+## 🌱 Real-World Spring Boot Integration
+
+### Scenario
+Storing survey responses in an array for submission.
+
+```java
+@RestController
+public class SurveyController {
+
+  @PostMapping("/submit")
+  public String submitAnswers(@RequestBody int[] answers) {
+    return "Submitted answers: " + Arrays.toString(answers);
+  }
+}
+```
+
+- **Spring Advantage**: Automatically maps JSON arrays to Java arrays.
+- **Config Tip**: Use `@RequestBody` to map JSON payloads.
+
+---
+
+## 🧠 Interview Preparation
+
+### Top 20 Questions with Answers
+
+1. **What is an array in Java?**
+   > A container object that holds a fixed number of values of a single type.
+
+2. **Why are arrays zero-indexed?**
+   > Due to pointer arithmetic in low-level implementation.
+
+3. **What are multi-dimensional arrays?**
+   > Arrays with more than one index, used for matrices.
+
+4. **Difference between jagged and 2D array?**
+   > Jagged has uneven row lengths; 2D is uniform.
+
+5. **Can you resize an array in Java?**
+   > No, use collections like `ArrayList`.
+
+6. **How are arrays stored in memory?**
+   > Contiguously, elements are accessed via offset.
+
+7. **What is an enhanced for loop?**
+   > A simplified syntax for iterating over elements.
+
+8. **How to copy arrays in Java?**
+   > Use `System.arraycopy()` or `Arrays.copyOf()`.
+
+9. **What is default value in arrays?**
+   > Depends on type: 0 for int, null for objects.
+
+10. **Array vs ArrayList?**
+   > Arrays are fixed-size; `ArrayList` is dynamic and feature-rich.
+
+11. **Can arrays be of objects?**
+   > Yes. Object arrays store references.
+
+12. **What is `Arrays.toString()` used for?**
+   > Print array in readable format.
+
+13. **What happens if you access invalid index?**
+   > `ArrayIndexOutOfBoundsException` is thrown.
+
+14. **Are arrays thread-safe?**
+   > No, manual synchronization needed.
+
+15. **How to reverse an array?**
+   > Swap elements from both ends to middle.
+
+16. **How to sort arrays?**
+   > Use `Arrays.sort()`.
+
+17. **When to use arrays over collections?**
+   > When size is fixed and performance is key.
+
+18. **What is the time complexity of array access?**
+   > O(1) — constant time.
+
+19. **What is the difference between `==` and `.equals()` in arrays?**
+   > `==` compares reference, `.equals()` is not overridden.
+
+20. **How to create a deep copy of an object array?**
+   > Manually clone each object if it supports `Cloneable`.
+
+### Follow-Up Questions
+- Explain the memory layout of a multi-dimensional array.
+- How does Java manage bounds checking?
+- Can you write your own version of `Arrays.toString()`?
+
+### Code Challenge
+**Problem**: Given an integer array, return a new array with elements doubled.
+
+```java
+public int[] doubleArray(int[] input) {
+  int[] result = new int[input.length];
+  for (int i = 0; i < input.length; i++) {
+    result[i] = input[i] * 2;
+  }
+  return result;
+}
+```
+
+### Demonstrating Deep Understanding
+- Talk about how arrays differ from Lists in terms of memory and performance.
+- Explain how arrays are used internally in Java collections like `ArrayList`.
+- Show understanding of boxing/unboxing when using arrays of primitives vs wrappers.
+
+---
+

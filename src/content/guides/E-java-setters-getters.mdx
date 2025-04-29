@@ -1,0 +1,348 @@
+---
+title: Getters, Setters, `this` Keyword, and Constructors in Java
+description: Comprehensive guide on Getters/Setters, `this` keyword, Constructors (Default and Parameterized) with fundamentals, code examples, Spring Boot integration, and interview preparation.
+date: '2025-04-29'
+---
+
+# Getters and Setters
+
+## Definition and Fundamentals
+**Getters and setters** are methods used to access (get) and update (set) the private fields of a class. This practice is central to **encapsulation** in Java.
+
+- **Where it fits:** Java OOP (Object-Oriented Programming) pillar - Encapsulation.
+- **Core Principle:** Hide data fields and expose controlled access.
+
+**Why use them?**
+- Protect internal state.
+- Add validation when setting values.
+- Maintain flexibility to modify internal implementation without breaking API.
+
+## Code Examples with Progressive Complexity
+
+### Beginner
+```java
+public class Person {
+    private String name;
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+}
+```
+
+### Intermediate
+Adding validation:
+```java
+public void setName(String name) {
+    if(name == null || name.isEmpty()) {
+        throw new IllegalArgumentException("Name cannot be null or empty");
+    }
+    this.name = name;
+}
+```
+
+### Advanced
+Immutable class pattern:
+```java
+public final class Person {
+    private final String name;
+
+    public Person(String name) {
+        if(name == null || name.isEmpty()) {
+            throw new IllegalArgumentException("Name cannot be null or empty");
+        }
+        this.name = name;
+    }
+
+    public String getName() {
+        return name;
+    }
+}
+```
+
+## Common Pitfalls and Best Practices
+
+- **Mistakes:**
+  - Exposing setters for immutable fields.
+  - Forgetting validation inside setters.
+- **Optimization:**
+  - Use records (`record` keyword) if all you need is a data carrier class.
+- **Security:**
+  - Never expose sensitive fields directly; always control access.
+- **Code smells:**
+  - Java Beans with too many getters and setters without behavior (Anemic Domain Model).
+
+**Modern practice:** Use Lombok (`@Getter`, `@Setter`) to reduce boilerplate.
+
+# `this` Keyword
+
+## Definition and Fundamentals
+The `this` keyword is a reference to the current object inside a method or constructor.
+
+- **Where it fits:** Java object referencing.
+- **Core Principle:** Differentiate between class fields and method parameters.
+
+**When to use?**
+- Name conflict resolution.
+- Method chaining.
+- Passing the current object.
+
+## Code Examples with Progressive Complexity
+
+### Beginner
+```java
+public class Car {
+    private String model;
+
+    public void setModel(String model) {
+        this.model = model;
+    }
+}
+```
+
+### Intermediate - Method chaining
+```java
+public class Car {
+    private String model;
+
+    public Car setModel(String model) {
+        this.model = model;
+        return this;
+    }
+}
+```
+
+### Advanced - Passing current object
+```java
+public class Car {
+    private String model;
+
+    public void printDetails(Car car) {
+        System.out.println(car.model);
+    }
+
+    public void show() {
+        printDetails(this);
+    }
+}
+```
+
+## Common Pitfalls and Best Practices
+
+- **Mistakes:**
+  - Overusing `this` when not needed, making code verbose.
+- **Best practice:**
+  - Use it only for clarity when there’s ambiguity.
+
+# Constructors
+
+## Definition and Fundamentals
+**Constructors** are special methods invoked when creating an object. They initialize object state.
+
+- **Where it fits:** Java class life cycle.
+- **Core Principle:** Object instantiation and initialization.
+
+**Default Constructor:** No parameters.
+**Parameterized Constructor:** Accepts arguments to initialize fields.
+
+## Code Examples with Progressive Complexity
+
+### Beginner - Default Constructor
+```java
+public class Student {
+    public Student() {
+        System.out.println("Student created");
+    }
+}
+```
+
+### Intermediate - Parameterized Constructor
+```java
+public class Student {
+    private String name;
+
+    public Student(String name) {
+        this.name = name;
+    }
+}
+```
+
+### Advanced - Constructor Overloading
+```java
+public class Student {
+    private String name;
+    private int age;
+
+    public Student() {
+        this("Unknown", 0);
+    }
+
+    public Student(String name) {
+        this(name, 0);
+    }
+
+    public Student(String name, int age) {
+        this.name = name;
+        this.age = age;
+    }
+}
+```
+
+## Common Pitfalls and Best Practices
+
+- **Mistakes:**
+  - Not initializing mandatory fields.
+- **Performance:**
+  - Heavy work inside constructors can delay object creation.
+- **Best practice:**
+  - Keep constructors lightweight.
+
+# Real-World Spring Boot Integration
+
+## Example
+
+```java
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+
+@Component
+public class AppConfig {
+    private final String appName;
+
+    public AppConfig(@Value("${app.name}") String appName) {
+        this.appName = appName;
+    }
+
+    public String getAppName() {
+        return appName;
+    }
+}
+```
+
+**Explanation:**
+- Constructor Injection is preferred in Spring Boot.
+- `@Value` injects properties.
+- `@Component` makes the class a Spring Bean.
+
+**Configuration considerations:**
+- Prefer constructor injection over field injection.
+- Immutable classes work beautifully with Spring Boot.
+
+# Interview Preparation
+
+## 20 Common Interview Questions and Answers
+
+### 1. What are getters and setters?
+**Answer:** Methods to access and modify private fields, supporting encapsulation.
+
+### 2. Why do we use the `this` keyword in Java?
+**Answer:** To refer to the current object and resolve naming conflicts between fields and parameters.
+
+### 3. Can a constructor be private?
+**Answer:** Yes. It's used in Singleton patterns and factory methods.
+
+### 4. What is a default constructor?
+**Answer:** A constructor with no parameters, created automatically if no other constructors are defined.
+
+### 5. What is a parameterized constructor?
+**Answer:** A constructor that takes arguments to initialize an object.
+
+### 6. Can you overload constructors?
+**Answer:** Yes. Multiple constructors with different parameter lists.
+
+### 7. What happens if you define only a parameterized constructor?
+**Answer:** Java no longer provides a default constructor.
+
+### 8. When should you make fields private and use getters/setters?
+**Answer:** Always, to maintain control over field access and ensure encapsulation.
+
+### 9. What's the risk of exposing setters freely?
+**Answer:** State inconsistency and violation of business rules.
+
+### 10. Why should constructors be lightweight?
+**Answer:** Heavy constructors delay object creation and slow system startup.
+
+### 11. How do Lombok annotations help?
+**Answer:** `@Getter`, `@Setter`, `@AllArgsConstructor`, etc., auto-generate boilerplate code.
+
+### 12. Can you call another constructor inside a constructor?
+**Answer:** Yes, using `this(...)`.
+
+### 13. How does Spring Boot use constructors?
+**Answer:** Through constructor-based dependency injection.
+
+### 14. Difference between field and constructor injection?
+**Answer:** Constructor injection ensures immutability and easier testing.
+
+### 15. When would you use a private constructor?
+**Answer:** In Singleton, Static Factory Methods, or Utility classes.
+
+### 16. What is method chaining?
+**Answer:** Using `this` to return the current object from a setter to chain calls.
+
+### 17. What if you don't write a constructor?
+**Answer:** Java supplies a no-argument default constructor.
+
+### 18. Is it mandatory to use `this` keyword?
+**Answer:** No, unless resolving name conflicts.
+
+### 19. How to create an immutable object?
+**Answer:** Make fields final, class final, provide only getters.
+
+### 20. Why use constructors over setters for initialization?
+**Answer:** Guarantees object integrity by enforcing mandatory field values at creation.
+
+## Follow-up Questions
+- Explain constructor overloading with an example.
+- How does the `this()` call work internally?
+- How would you implement a Singleton pattern with a private constructor?
+- How do frameworks like Hibernate use getters and setters?
+
+## Code Challenges
+
+### Challenge 1: Create a class with overloaded constructors
+```java
+class Employee {
+    private String name;
+    private int id;
+
+    public Employee() {
+        this("Unknown", -1);
+    }
+
+    public Employee(String name) {
+        this(name, -1);
+    }
+
+    public Employee(String name, int id) {
+        this.name = name;
+        this.id = id;
+    }
+}
+```
+
+**Solution Explanation:**
+- Default values are assigned if parameters are missing.
+- Reuse code with constructor chaining.
+
+### Challenge 2: Write a Spring Bean with constructor injection
+```java
+@Component
+public class ServiceLayer {
+    private final RepositoryLayer repositoryLayer;
+
+    public ServiceLayer(RepositoryLayer repositoryLayer) {
+        this.repositoryLayer = repositoryLayer;
+    }
+}
+```
+
+**Solution Explanation:**
+- Follows Spring Boot best practice: constructor-based injection.
+- Ensures immutability and easy unit testing.
+
+---

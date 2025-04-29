@@ -1,0 +1,315 @@
+---
+title: Static Keyword in Java
+description: Deep dive into static variables, static blocks, and static methods in Java with code examples, Spring Boot integration, common pitfalls, and interview preparation.
+date: '2025-04-29'
+---
+
+## Definition and Fundamentals
+
+### Static Variable
+- **Definition**: A variable declared with the `static` keyword belongs to the class rather than to instances of the class.
+- **Java Ecosystem Fit**: Shared data across all objects of the class.
+- **Core Principle**: Memory is allocated only once for a static variable when the class is loaded.
+- **When and Why to Use**: When you need a variable that should be common to all instances.
+
+### Static Block
+- **Definition**: A block of code inside a class that is run only once when the class is loaded into memory.
+- **Java Ecosystem Fit**: Useful for initializing static variables or performing configuration setups.
+- **Core Principle**: Executed automatically before the constructor or any static method.
+- **When and Why to Use**: When static initialization needs to be complex.
+
+### Static Method
+- **Definition**: A method declared with the `static` keyword can be called without creating an instance of the class.
+- **Java Ecosystem Fit**: Utility operations, factory methods.
+- **Core Principle**: Cannot access non-static members directly.
+- **When and Why to Use**: When the behavior is independent of object state.
+
+---
+
+## Code Examples with Progressive Complexity
+
+### Beginner Level
+```java
+// Static variable example
+class Counter {
+    static int count = 0; // static variable
+
+    Counter() {
+        count++;
+        System.out.println(count);
+    }
+}
+
+public class Test {
+    public static void main(String[] args) {
+        Counter c1 = new Counter();
+        Counter c2 = new Counter();
+        Counter c3 = new Counter();
+    }
+}
+```
+
+```java
+// Static block example
+class Example {
+    static int num;
+
+    static {
+        num = 10;
+        System.out.println("Static Block Executed");
+    }
+
+    public static void display() {
+        System.out.println("num = " + num);
+    }
+}
+
+public class TestStaticBlock {
+    public static void main(String[] args) {
+        Example.display();
+    }
+}
+```
+
+```java
+// Static method example
+class Utility {
+    public static int add(int a, int b) {
+        return a + b;
+    }
+}
+
+public class TestStaticMethod {
+    public static void main(String[] args) {
+        System.out.println(Utility.add(5, 10));
+    }
+}
+```
+
+### Intermediate Level
+```java
+// Static method as Factory
+class Car {
+    String model;
+
+    private Car(String model) {
+        this.model = model;
+    }
+
+    public static Car createSedan() {
+        return new Car("Sedan");
+    }
+
+    public static Car createSUV() {
+        return new Car("SUV");
+    }
+}
+
+public class CarFactory {
+    public static void main(String[] args) {
+        Car sedan = Car.createSedan();
+        Car suv = Car.createSUV();
+        System.out.println("Created cars: " + sedan.model + ", " + suv.model);
+    }
+}
+```
+
+### Advanced Level
+```java
+// Thread-safe Singleton using static block
+class Singleton {
+    private static final Singleton instance;
+
+    static {
+        try {
+            instance = new Singleton();
+        } catch (Exception e) {
+            throw new RuntimeException("Exception occurred in creating singleton instance");
+        }
+    }
+
+    private Singleton() {}
+
+    public static Singleton getInstance() {
+        return instance;
+    }
+}
+
+public class TestSingleton {
+    public static void main(String[] args) {
+        Singleton s1 = Singleton.getInstance();
+        Singleton s2 = Singleton.getInstance();
+        System.out.println(s1 == s2); // true
+    }
+}
+```
+
+---
+
+## Common Pitfalls and Best Practices
+
+- **Mistakes**:
+  - Overusing static methods leading to procedural-style code.
+  - Modifying static variables without thread safety.
+
+- **Performance**:
+  - Static methods are faster to invoke.
+  - Careful about memory leaks if static variables hold heavy resources.
+
+- **Security**:
+  - Avoid exposing static variables as `public`.
+
+- **Best Practices**:
+  - Make static variables `private static final` where possible.
+  - Use synchronized access if needed for multithreaded applications.
+
+- **Anti-Patterns**:
+  - Static-heavy classes making unit testing hard.
+  - Static mutable state causing hidden dependencies.
+
+---
+
+## Real-World Spring Boot Integration
+
+### Practical Example
+```java
+// Using static variable to hold an application-wide property
+@Component
+public class AppProperties {
+    public static String appName;
+
+    @Value("${spring.application.name}")
+    public void setAppName(String name) {
+        AppProperties.appName = name;
+    }
+}
+```
+
+```java
+// Using static method in a Utility class
+@Component
+public class EmailUtils {
+    public static boolean isValidEmail(String email) {
+        return email != null && email.matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$");
+    }
+}
+```
+
+**Explanation**:
+- Spring Boot uses static injection carefully.
+- Static utilities (like validation) can be safely used.
+- Avoid injecting beans into static fields directly.
+
+**Configuration Tips**:
+- Use `@Value` to inject configuration into static fields indirectly.
+- Favor Spring beans and DI over static singletons for services.
+
+---
+
+## Interview Preparation
+
+### 20 Interview Questions and Answers
+
+1. **What is a static variable in Java?**
+   - A variable shared among all instances of a class.
+
+2. **Can we override static methods?**
+   - No, static methods belong to the class, not instances.
+
+3. **When is a static block executed?**
+   - When the class is loaded into memory.
+
+4. **Can a static method access instance variables?**
+   - No, it can only access static variables.
+
+5. **Why use static methods?**
+   - For utility operations independent of object state.
+
+6. **How many times a static block executes?**
+   - Only once when the class is loaded.
+
+7. **What happens if there are multiple static blocks?**
+   - They execute in the order they appear.
+
+8. **Difference between static method and instance method?**
+   - Static belongs to class; instance belongs to objects.
+
+9. **Is static block mandatory?**
+   - No, it's optional.
+
+10. **Can constructors be static?**
+    - No, constructors are instance-specific.
+
+11. **Can we declare a static class?**
+    - Yes, but only nested classes can be static.
+
+12. **Use cases of static blocks?**
+    - Complex static initializations like database drivers.
+
+13. **Example of a real-world static method usage?**
+    - `Collections.sort()` is a static method.
+
+14. **What is the memory area for static variables?**
+    - Method Area in JVM.
+
+15. **Can a static method be synchronized?**
+    - Yes, static synchronized methods lock on the class object.
+
+16. **Static block exception handling?**
+    - You can handle exceptions in static block.
+
+17. **How to inject Spring property into static field?**
+    - Indirectly using setter method with `@Value`.
+
+18. **Disadvantages of static methods?**
+    - Hard to mock/test, tightly coupled code.
+
+19. **Best practice for static variables?**
+    - Use `private static final` if immutable.
+
+20. **Does inheritance apply to static methods?**
+    - Static methods can be hidden but not overridden.
+
+### Follow-up Questions
+- How do static blocks behave in inheritance?
+- Static vs Singleton design pattern?
+- Can we have static methods inside interfaces (Java 8+)?
+
+### Code Challenge
+
+**Problem**: Create a class that counts the number of objects created.
+
+```java
+class ObjectCounter {
+    private static int count = 0;
+
+    public ObjectCounter() {
+        count++;
+    }
+
+    public static int getCount() {
+        return count;
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        new ObjectCounter();
+        new ObjectCounter();
+        new ObjectCounter();
+
+        System.out.println("Objects created: " + ObjectCounter.getCount());
+    }
+}
+```
+
+**Explanation**:
+- `count` is static, hence shared.
+- `getCount()` gives how many instances created.
+
+**Demonstrating Deep Understanding**:
+- Discuss memory management (Method Area, Garbage Collection)
+- Explain thread-safety if multiple threads access static variables
+- Show use-cases for static factory methods vs constructors
+
+---

@@ -1,0 +1,439 @@
+---
+title: Java Inheritance Concepts
+description: Detailed guide on Inheritance in Java with examples, Spring Boot integration, interview preparation
+date: '2025-04-29'
+---
+
+## 1. Need of Inheritance
+
+### Definition and Fundamentals
+Inheritance promotes code reuse by allowing one class (child/subclass) to inherit fields and methods from another class (parent/superclass).
+
+**Where it fits:**
+- Core part of Java's OOP principles.
+- Foundational for frameworks like Spring Boot, Hibernate, etc.
+
+**Core Principles:**
+- Hierarchical relationship.
+- Promotes DRY (Don't Repeat Yourself).
+- Supports polymorphism and code extensibility.
+
+**When and Why to Use:**
+- When multiple classes share common properties and behaviors.
+- To extend or modify the behavior of existing classes.
+
+### Code Examples
+**Beginner Level:**
+```java
+class Animal {
+    void eat() {
+        System.out.println("This animal eats food.");
+    }
+}
+
+class Dog extends Animal {
+    void bark() {
+        System.out.println("Dog barks.");
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Dog dog = new Dog();
+        dog.eat(); // inherited method
+        dog.bark();
+    }
+}
+```
+
+**Intermediate Level:**
+```java
+class Vehicle {
+    int speed = 40;
+
+    void move() {
+        System.out.println("Vehicle moves at speed: " + speed);
+    }
+}
+
+class Car extends Vehicle {
+    int wheels = 4;
+
+    void display() {
+        System.out.println("Car has " + wheels + " wheels.");
+    }
+}
+```
+
+**Advanced Level:**
+```java
+abstract class Employee {
+    String name;
+    int id;
+
+    abstract double calculateSalary();
+}
+
+class Developer extends Employee {
+    @Override
+    double calculateSalary() {
+        return 70000.00;
+    }
+}
+
+class Manager extends Employee {
+    @Override
+    double calculateSalary() {
+        return 90000.00;
+    }
+}
+```
+
+---
+
+## 2. What is Inheritance
+
+### Definition and Fundamentals
+Inheritance is the mechanism in Java where one class acquires the properties (fields) and behaviors (methods) of another class.
+
+**Where it fits:**
+- Fundamental pillar of Object-Oriented Programming (OOP).
+
+**Core Principles:**
+- Reduces redundancy.
+- Improves code maintainability.
+- Enhances polymorphism.
+
+**When and Why to Use:**
+- Reusing existing code.
+- Extending class functionalities.
+
+### Code Examples
+**Beginner Level:**
+```java
+class Parent {
+    void display() {
+        System.out.println("Parent class method.");
+    }
+}
+
+class Child extends Parent {
+}
+
+public class TestInheritance {
+    public static void main(String[] args) {
+        Child obj = new Child();
+        obj.display();
+    }
+}
+```
+
+**Intermediate and Advanced examples** covered under "Need of Inheritance" above.
+
+---
+
+## 3. Single and Multilevel Inheritance
+
+### Definition and Fundamentals
+- **Single Inheritance:** A class inherits from one parent class.
+- **Multilevel Inheritance:** A class inherits from a class which in turn inherits from another class.
+
+**Where it fits:**
+- Simplifies code hierarchy.
+- Forms logical relationships.
+
+**Core Principles:**
+- Structured extension of behavior.
+
+**When and Why to Use:**
+- For complex hierarchies where behaviors build progressively.
+
+### Code Examples
+**Single Inheritance Example:**
+```java
+class Animal {
+    void sound() {
+        System.out.println("Animal makes a sound");
+    }
+}
+
+class Dog extends Animal {
+    void bark() {
+        System.out.println("Dog barks");
+    }
+}
+```
+
+**Multilevel Inheritance Example:**
+```java
+class Animal {
+    void sound() {
+        System.out.println("Animal makes a sound");
+    }
+}
+
+class Mammal extends Animal {
+    void walk() {
+        System.out.println("Mammal walks");
+    }
+}
+
+class Dog extends Mammal {
+    void bark() {
+        System.out.println("Dog barks");
+    }
+}
+```
+
+---
+
+## 4. Multiple Inheritance
+
+### Definition and Fundamentals
+- Java does **NOT** support multiple inheritance using classes to avoid ambiguity issues (Diamond Problem).
+- Achieved through **Interfaces**.
+
+**Where it fits:**
+- Important for designing flexible systems.
+
+**Core Principles:**
+- Interface-based multiple inheritance.
+
+**When and Why to Use:**
+- When a class needs functionalities from multiple sources.
+
+### Code Example
+```java
+interface A {
+    void displayA();
+}
+
+interface B {
+    void displayB();
+}
+
+class C implements A, B {
+    public void displayA() {
+        System.out.println("Display from A");
+    }
+    public void displayB() {
+        System.out.println("Display from B");
+    }
+}
+```
+
+---
+
+## 5. Method Overriding
+
+### Definition and Fundamentals
+Overriding allows a subclass to provide a specific implementation of a method declared in its parent class.
+
+**Where it fits:**
+- Key to achieving **runtime polymorphism**.
+
+**Core Principles:**
+- Method signatures must match.
+- Access level cannot be more restrictive.
+
+**When and Why to Use:**
+- To change inherited behavior.
+- To provide specialized functionality.
+
+### Code Example
+```java
+class Animal {
+    void sound() {
+        System.out.println("Animal makes a sound");
+    }
+}
+
+class Dog extends Animal {
+    @Override
+    void sound() {
+        System.out.println("Dog barks");
+    }
+}
+```
+
+---
+
+# Common Pitfalls and Best Practices
+
+### Pitfalls
+- Misunderstanding constructor invocation (Parent constructor must be called).
+- Accidentally hiding fields instead of overriding.
+- Misuse of `super` keyword.
+
+### Best Practices
+- Always use `@Override` annotation.
+- Favor composition over inheritance when appropriate.
+- Keep inheritance hierarchies shallow.
+- Design with interfaces for flexibility.
+
+---
+
+# Real-World Spring Boot Integration
+
+### Example: Entity Inheritance
+```java
+import jakarta.persistence.*;
+
+@Entity
+@Inheritance(strategy = InheritanceType.JOINED)
+public abstract class User {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    private String name;
+}
+
+@Entity
+public class AdminUser extends User {
+    private String adminSection;
+}
+```
+
+**How Spring Boot enhances Inheritance:**
+- Automatically maps inheritance using JPA.
+- Reduces boilerplate.
+
+**Configuration Considerations:**
+- Use appropriate `@Inheritance(strategy = ...)` type based on needs (JOINED, SINGLE_TABLE, TABLE_PER_CLASS).
+
+---
+
+# Interview Preparation
+
+### 20+ Common Interview Questions with Answers
+
+1. **What is inheritance in Java?**
+> Inheritance allows one class to inherit properties and methods of another class, promoting code reuse.
+
+2. **Why does Java not support multiple inheritance using classes?**
+> To avoid ambiguity issues like the Diamond Problem; instead, Java uses interfaces.
+
+3. **What is the difference between overriding and overloading?**
+> Overriding changes inherited method behavior; overloading means methods with same name but different parameters.
+
+4. **What is the use of `super` keyword?**
+> It refers to the immediate parent class and can call parent constructors or methods.
+
+5. **Explain method overriding rules.**
+> Same signature, cannot reduce visibility, can widen visibility, must maintain return type (covariant allowed).
+
+6. **What is runtime polymorphism?**
+> Behavior decided at runtime using method overriding.
+
+7. **What are the types of inheritance in Java?**
+> Single, multilevel, hierarchical (not multiple through classes).
+
+8. **What is multilevel inheritance?**
+> A class is derived from another derived class.
+
+9. **How is multiple inheritance achieved in Java?**
+> Using interfaces.
+
+10. **Can a constructor be inherited?**
+> No. Constructors are not inherited but parent constructors can be invoked.
+
+11. **What happens if you don't call `super()` explicitly?**
+> Compiler inserts a call to the no-argument constructor of the parent class.
+
+12. **What is the diamond problem?**
+> Ambiguity when two parent classes have same method signature.
+
+13. **What is the use of abstract classes in inheritance?**
+> Provides a base class with partial implementation.
+
+14. **What are the differences between abstract classes and interfaces?**
+> Abstract classes can have constructors and state; interfaces cannot (till Java 7).
+
+15. **Can a final method be overridden?**
+> No, final methods cannot be overridden.
+
+16. **Can a private method be overridden?**
+> No. Private methods are not inherited.
+
+17. **What is hierarchical inheritance?**
+> Multiple classes inherit from a single class.
+
+18. **What is the difference between IS-A and HAS-A relationship?**
+> IS-A: Inheritance (Dog IS-A Animal), HAS-A: Composition (Car HAS-A Engine).
+
+19. **When should you prefer composition over inheritance?**
+> When flexibility and loose coupling are needed.
+
+20. **What are marker interfaces?**
+> Interfaces with no methods (e.g., Serializable).
+
+---
+
+### Follow-Up Questions
+- Can you show an example where multiple interfaces solve a real-world problem?
+- How does JPA handle inheritance internally?
+- How to implement deep hierarchies with Spring Boot?
+
+---
+
+### Code Challenges
+
+**Challenge 1:** Create a base `Shape` class with a method `area()` and extend it with `Circle`, `Rectangle`, and `Triangle` classes.
+
+**Solution:**
+```java
+abstract class Shape {
+    abstract double area();
+}
+
+class Circle extends Shape {
+    double radius;
+
+    Circle(double r) {
+        radius = r;
+    }
+
+    @Override
+    double area() {
+        return Math.PI * radius * radius;
+    }
+}
+
+class Rectangle extends Shape {
+    double length, width;
+
+    Rectangle(double l, double w) {
+        length = l;
+        width = w;
+    }
+
+    @Override
+    double area() {
+        return length * width;
+    }
+}
+
+class Triangle extends Shape {
+    double base, height;
+
+    Triangle(double b, double h) {
+        base = b;
+        height = h;
+    }
+
+    @Override
+    double area() {
+        return 0.5 * base * height;
+    }
+}
+```
+
+### How to demonstrate deep understanding
+- Emphasize SOLID principles.
+- Explain when inheritance vs composition is preferred.
+- Talk about Java-specific features like `@Inheritance` annotation in Spring Boot.
+- Discuss handling pitfalls (e.g., constructor chaining, diamond problem).
+
+---
+
