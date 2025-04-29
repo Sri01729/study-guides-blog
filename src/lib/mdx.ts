@@ -4,6 +4,7 @@ import matter from 'gray-matter'
 import { serialize } from 'next-mdx-remote/serialize'
 import remarkGfm from 'remark-gfm'
 import remarkMath from 'remark-math'
+import remarkSlug from 'remark-slug'
 import rehypeKatex from 'rehype-katex'
 import rehypeHighlight from 'rehype-highlight'
 
@@ -43,7 +44,7 @@ export async function getPostBySlug(category: string, slug: string) {
   const mdxSource = await serialize(content, {
     parseFrontmatter: true,
     mdxOptions: {
-      remarkPlugins: [remarkGfm, remarkMath],
+      remarkPlugins: [remarkGfm, remarkMath, remarkSlug],
       rehypePlugins: [rehypeKatex, rehypeHighlight],
     },
   })
