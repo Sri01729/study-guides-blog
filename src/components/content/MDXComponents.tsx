@@ -9,6 +9,7 @@ interface Props {
   alt?: string
   width?: number
   height?: number
+  id?: string
 }
 
 const CustomLink = ({ href, children }: Props) => {
@@ -56,25 +57,25 @@ const CustomPre = ({ children }: Props) => {
   )
 }
 
-const CustomH1 = ({ children }: Props) => {
+const CustomH1 = ({ children, id }: Props) => {
   return (
-    <h1 className="mt-8 mb-4 text-4xl font-bold tracking-tight text-zinc-900 dark:text-white">
+    <h1 id={id} className="mt-8 mb-4 text-4xl font-bold tracking-tight text-zinc-900 dark:text-white">
       {children}
     </h1>
   )
 }
 
-const CustomH2 = ({ children }: Props) => {
+const CustomH2 = ({ children, id }: Props) => {
   return (
-    <h2 className="mt-8 mb-4 text-3xl font-bold tracking-tight text-zinc-900 dark:text-white">
+    <h2 id={id} className="mt-8 mb-4 text-3xl font-bold tracking-tight text-zinc-900 dark:text-white">
       {children}
     </h2>
   )
 }
 
-const CustomH3 = ({ children }: Props) => {
+const CustomH3 = ({ children, id }: Props) => {
   return (
-    <h3 className="mt-8 mb-4 text-2xl font-bold tracking-tight text-zinc-900 dark:text-white">
+    <h3 id={id} className="mt-8 mb-4 text-2xl font-bold tracking-tight text-zinc-900 dark:text-white">
       {children}
     </h3>
   )

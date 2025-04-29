@@ -17,24 +17,7 @@ const navigation: NavItem[] = [
     title: 'Guides',
     href: '/guides',
     items: [
-      { title: 'Installation', href: '/guides/installation' },
-      { title: 'Configuration', href: '/guides/configuration' },
-    ],
-  },
-  {
-    title: 'Concepts',
-    href: '/concepts',
-    items: [
-      { title: 'Core Principles', href: '/concepts/core-principles' },
-      { title: 'Architecture', href: '/concepts/architecture' },
-    ],
-  },
-  {
-    title: 'References',
-    href: '/references',
-    items: [
-      { title: 'API', href: '/references/api' },
-      { title: 'Components', href: '/references/components' },
+      { title: 'Java', href: '/guides/java' },
     ],
   },
 ]

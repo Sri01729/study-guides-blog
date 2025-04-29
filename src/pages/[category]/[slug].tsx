@@ -1,7 +1,8 @@
 import { GetStaticProps, GetStaticPaths } from 'next'
 import { MDXRemote } from 'next-mdx-remote'
-import { getAllPostSlugs, getPostBySlug } from '@/lib/mdx'
+import { getAllPostSlugs, getPostBySlug, getAdjacentPosts } from '@/lib/mdx'
 import TableOfContents from '@/components/content/TableOfContents'
+import PostNavigation from '@/components/content/PostNavigation'
 
 interface PostProps {
   source: any
@@ -9,10 +10,22 @@ interface PostProps {
     title: string
     description: string
     author: string
+    slug: string
+    category: string
   }
+  prevPost: {
+    title: string
+    slug: string
+    category: string
+  } | null
+  nextPost: {
+    title: string
+    slug: string
+    category: string
+  } | null
 }
 
-export default function Post({ source, frontMatter }: PostProps) {
+export default function Post({ source, frontMatter, prevPost, nextPost }: PostProps) {
   return (
     <div className="relative flex">
       <article className="min-w-0 max-w-3xl flex-auto px-4 py-16 lg:px-8 lg:pr-16">
@@ -37,6 +50,7 @@ export default function Post({ source, frontMatter }: PostProps) {
         <div className="prose prose-zinc max-w-none dark:prose-invert">
           <MDXRemote {...source} />
         </div>
+        <PostNavigation prev={prevPost} next={nextPost} />
       </article>
       <div className="hidden xl:sticky xl:top-[4.5rem] xl:-mr-4 xl:block xl:h-[calc(100vh-4.5rem)] xl:w-56 xl:flex-none xl:overflow-y-auto xl:py-16 xl:pr-6">
         <TableOfContents />
@@ -56,10 +70,13 @@ export const getStaticPaths: GetStaticPaths = async () => {
 export const getStaticProps: GetStaticProps = async ({ params }) => {
   const { category, slug } = params as { category: string; slug: string }
   const post = await getPostBySlug(category, slug)
+  const { prev, next } = await getAdjacentPosts(category, slug)
 
   return {
     props: {
       ...post,
+      prevPost: prev,
+      nextPost: next,
     },
   }
 }
