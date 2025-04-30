@@ -31,7 +31,7 @@
 
 @layer components {
   .prose :where(code):not(:where([class~="not-prose"] *)) {
-    @apply bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded;
+    @apply text-blue-600 dark:text-blue-400 px-1.5 py-0.5 rounded bg-transparent;
   }
 
   .prose :where(pre):not(:where([class~="not-prose"] *)) {
