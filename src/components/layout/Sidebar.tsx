@@ -107,7 +107,7 @@ export default function Sidebar() {
         className="fixed bottom-4 left-4 z-50 hidden lg:block rounded-lg p-2 text-zinc-600 hover:bg-zinc-100 dark:hover:bg-zinc-800"
         onClick={() => setIsCollapsed(!isCollapsed)}
       >
-        <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <svg className="h-6 w-6 transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -126,30 +126,62 @@ export default function Sidebar() {
 
       <aside
         className={`fixed inset-y-0 left-0 z-40 transform overflow-y-auto border-r border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-900 transition-all duration-300 ease-in-out lg:sticky lg:top-16 lg:z-0 ${
-          isCollapsed ? 'w-16 px-2' : 'w-64 px-4'
+          isCollapsed ? 'lg:w-16' : 'lg:w-64'
         } pb-10 pt-20 lg:pt-4 ${
           isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
         }`}
       >
-        <nav className={`space-y-6 ${isCollapsed ? 'hidden lg:block' : ''}`}>
-          <NavItems items={navigation} />
-        </nav>
-        {isCollapsed && (
-          <div className="hidden lg:flex flex-col items-center space-y-4 mt-4">
-            {navigation.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className="p-2 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800"
-                title={item.title}
-              >
-                {/* You can add icons here for each menu item */}
-                <span className="text-sm">{item.title[0]}</span>
-              </Link>
-            ))}
-          </div>
-        )}
+        <div className={`transition-all duration-300 ${isCollapsed ? 'lg:opacity-0 lg:invisible' : 'opacity-100 visible'}`}>
+          <nav className="space-y-6 px-4">
+            <NavItems items={navigation} />
+          </nav>
+        </div>
+
+        {/* Collapsed Menu Icons */}
+        <div className={`hidden lg:flex flex-col items-center space-y-4 mt-4 transition-all duration-300 ${
+          isCollapsed ? 'opacity-100 visible' : 'opacity-0 invisible absolute'
+        }`}>
+          {navigation.map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              className="p-2 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 tooltip-right"
+              title={item.title}
+            >
+              <div className="w-6 h-6 flex items-center justify-center text-zinc-600 dark:text-zinc-400">
+                {item.title === 'Getting Started' ? (
+                  <span>🚀</span>
+                ) : item.title === 'Guides' ? (
+                  <span>📚</span>
+                ) : (
+                  <span className="text-sm font-medium">{item.title[0]}</span>
+                )}
+              </div>
+            </Link>
+          ))}
+        </div>
       </aside>
+
+      <style jsx>{`
+        .tooltip-right {
+          position: relative;
+        }
+        .tooltip-right:hover::after {
+          content: attr(title);
+          position: absolute;
+          left: 100%;
+          top: 50%;
+          transform: translateY(-50%);
+          margin-left: 0.5rem;
+          padding: 0.25rem 0.5rem;
+          background-color: #27272a;
+          color: white;
+          border-radius: 0.25rem;
+          font-size: 0.875rem;
+          white-space: nowrap;
+          z-index: 50;
+        }
+      `}</style>
     </>
   )
 }
