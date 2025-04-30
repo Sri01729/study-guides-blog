@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import React, { useEffect, useState, useCallback } from 'react'
 
 interface Heading {
   id: string
@@ -10,23 +10,23 @@ export default function TableOfContents() {
   const [headings, setHeadings] = useState<Heading[]>([])
   const [activeId, setActiveId] = useState('')
 
+  // Memoize the getHeadings function
+  const getHeadings = useCallback(() => {
+    const elements = Array.from(document.querySelectorAll('h2, h3, h4'))
+      .filter(element => element.id)
+      .map((element) => ({
+        id: element.id,
+        text: element.textContent || '',
+        level: Number(element.tagName.charAt(1)),
+      }))
+    setHeadings(elements)
+  }, []) // Empty dependency array since it doesn't depend on any props or state
+
+  // Set up intersection observer
   useEffect(() => {
-    // Function to get all headings and their IDs
-    const getHeadings = () => {
-      const elements = Array.from(document.querySelectorAll('h2, h3, h4'))
-        .filter(element => element.id) // Only include headings with IDs
-        .map((element) => ({
-          id: element.id,
-          text: element.textContent || '',
-          level: Number(element.tagName.charAt(1)),
-        }))
-      setHeadings(elements)
-    }
+    // Skip if no headings
+    if (headings.length === 0) return
 
-    // Initial load of headings
-    getHeadings()
-
-    // Set up intersection observer
     const observer = new IntersectionObserver(
       (entries) => {
         // Find the first visible heading
@@ -54,11 +54,14 @@ export default function TableOfContents() {
       }
     })
 
+    // Initial load of headings
+    getHeadings()
+
     // Cleanup
     return () => {
       observer.disconnect()
     }
-  }, [headings]) // Update when headings change
+  }, [getHeadings]) // Only depend on the memoized getHeadings function
 
   const handleClick = (e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
     e.preventDefault()
