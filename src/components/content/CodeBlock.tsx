@@ -1,9 +1,9 @@
-import { useState } from 'react'
+import React, { useState } from 'react'
 import { Highlight } from 'prism-react-renderer'
 import { ClipboardIcon, CheckIcon } from '@heroicons/react/24/outline'
 
 interface Props {
-  children: string
+  children: string | React.ReactNode
   language: string
   filename?: string
 }
@@ -11,8 +11,21 @@ interface Props {
 export default function CodeBlock({ children, language, filename }: Props) {
   const [copied, setCopied] = useState(false)
 
+  // Convert children to string, handling different types
+  const getCodeString = (children: string | React.ReactNode): string => {
+    if (typeof children === 'string') {
+      return children
+    }
+    if (React.isValidElement(children) && children.props.children) {
+      return children.props.children
+    }
+    return ''
+  }
+
+  const codeString = getCodeString(children)
+
   const copyToClipboard = () => {
-    navigator.clipboard.writeText(children)
+    navigator.clipboard.writeText(codeString)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
   }
@@ -36,7 +49,7 @@ export default function CodeBlock({ children, language, filename }: Props) {
             <ClipboardIcon className="h-5 w-5" />
           )}
         </button>
-        <Highlight code={children.trim()} language={language}>
+        <Highlight code={codeString.trim()} language={language}>
           {({ className, style, tokens, getLineProps, getTokenProps }) => (
             <pre className={`${className} overflow-x-auto p-4`} style={style}>
               {tokens.map((line, i) => (
