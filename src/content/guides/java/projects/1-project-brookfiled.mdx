@@ -1,0 +1,217 @@
+# 🌱 Project Title: **EnergyIQ – Smart Energy Usage Dashboard**
+
+## 🧩 Business Need:
+Brookfield Renewable aimed to offer corporate customers real-time insights into their energy usage to promote sustainability and optimize power consumption. The existing legacy monitoring tools were outdated, non-scalable, and had performance bottlenecks.
+
+## 🔧 Technical Implementation:
+* **Architecture**: Microservices-based, containerized with Docker, deployed via AWS EC2 using CloudFormation.
+* **Backend**:
+  * Developed Spring Boot services with Java 11 to handle energy data ingestion, aggregation, and RESTful APIs.
+  * Integrated Apache Kafka + SNS/SQS for high-volume, event-driven data pipelines (from energy meters).
+  * Used RDBMS (PostgreSQL) for structured reporting and MongoDB for time-series data.
+  * Applied OAuth2 for secure API access.
+* **Frontend**:
+  * Built a React.js-based dashboard to visualize real-time energy usage, carbon footprint, and cost trends.
+  * Implemented reusable components to reduce duplication and improve maintainability.
+* **CI/CD**:
+  * Jenkins + Docker + Git for CI/CD.
+  * Introduced Canary deployments for stable rollouts.
+
+## 👤 Your Role & Responsibilities:
+* Spearheaded the migration from monolith to Spring Boot microservices.
+* Created and secured APIs for energy usage data and alert generation.
+* Built a performance monitoring module that detected hung threads and optimized load handling in multi-threaded APIs.
+* Managed cloud deployment infrastructure using AWS EC2 and CloudFormation.
+
+## 🧱 Challenges Overcome:
+* **Challenge**: Data ingestion latency from IoT energy meters.
+  * **Solution**: Used Kafka with async message handling (SNS + SQS) to decouple producer-consumer flow.
+* **Challenge**: High server load causing timeouts.
+  * **Solution**: Optimized DB queries, parallelized API processing, applied thread pool tuning in Spring Boot.
+
+## 📈 Business Impact:
+* Reduced operational cost by **20%** post migration from on-premise to AWS.
+* Improved dashboard response time by **25%** using optimized APIs and front-end lazy loading.
+* Enabled sustainability reporting for clients, increasing enterprise customer engagement.
+
+## 📅 Timeline:
+**7 months** (Nov 2023 – May 2024)
+
+## 👥 Team & Collaboration:
+* 6-member team: 2 frontend devs, 2 backend devs, 1 DevOps, 1 QA.
+* Daily Scrum, 2-week Sprints, Jira for tracking.
+
+## 🔁 Methodology:
+Agile (Scrum), CI/CD-first culture with code reviews, retrospectives, and sprint demos.
+
+
+
+# 🧠 Deep Dive: Understanding EnergyIQ Project Technologies
+
+This guide breaks down the technical aspects of the mock project **"EnergyIQ – Smart Energy Usage Dashboard"** into beginner-friendly explanations so you can confidently discuss them in interviews.
+
+---
+
+## 1. **Microservices Architecture**
+
+### 🔍 What it Means:
+Instead of building one large application (monolith), the system is split into smaller, independent services that each handle a specific business function.
+
+### 🧠 Why It's Used:
+It helps scale, deploy, and update individual components without affecting the whole system.
+
+### 💡 Why We Chose It:
+To allow the energy ingestion, analytics, and user dashboard to work independently.
+
+### 🔧 How It Solved the Problem:
+Allowed Brookfield to modernize its system, making updates easier and reducing downtime.
+
+### ❓ Possible Interview Questions:
+- What are the advantages of microservices?
+- How do services communicate with each other?
+
+### 🤓 Analogy:
+Think of a restaurant with separate chefs for pasta, pizza, and desserts. Each one can work and improve independently.
+
+---
+
+## 2. **Spring Boot with Java 11**
+
+### 🔍 What it Means:
+Spring Boot is a Java framework that simplifies backend application development by providing ready-to-use setups.
+
+### 🧠 Why It's Used:
+Reduces boilerplate code, speeds up development, and makes REST API creation simple.
+
+### 💡 Why We Chose It:
+For quick development of backend services with clean, testable code.
+
+### 🔧 How It Solved the Problem:
+Allowed fast creation of backend APIs to handle energy data securely and efficiently.
+
+### ❓ Possible Interview Questions:
+- What’s the difference between Spring and Spring Boot?
+- How does Spring Boot simplify development?
+
+### 🤓 Analogy:
+Like using a cake mix instead of baking from scratch—Spring Boot gives you the essentials already set up.
+
+---
+
+## 3. **Apache Kafka + SNS/SQS for Messaging**
+
+### 🔍 What it Means:
+Kafka, SNS (Simple Notification Service), and SQS (Simple Queue Service) are tools to send data between services asynchronously.
+
+### 🧠 Why It's Used:
+To handle large amounts of real-time data from energy meters without overwhelming the backend.
+
+### 💡 Why We Chose It:
+Kafka for speed and reliability, SNS/SQS for integration with AWS services.
+
+### 🔧 How It Solved the Problem:
+Allowed real-time ingestion of data while avoiding system crashes due to data spikes.
+
+### ❓ Possible Interview Questions:
+- What’s the difference between Kafka and SQS?
+- Why use asynchronous messaging?
+
+### 🤓 Analogy:
+Like a mailroom. Instead of delivering messages directly, you drop them into boxes, and someone else picks them up when ready.
+
+---
+
+## 4. **React.js Dashboard**
+
+### 🔍 What it Means:
+React is a JavaScript library for building user interfaces using components.
+
+### 🧠 Why It's Used:
+Provides a dynamic and interactive experience for users.
+
+### 💡 Why We Chose It:
+For its performance, reusability of components, and ease of maintenance.
+
+### 🔧 How It Solved the Problem:
+Enabled real-time data visualizations that help users understand their energy usage.
+
+### ❓ Possible Interview Questions:
+- What are React components?
+- How does React handle state changes?
+
+### 🤓 Analogy:
+Think of React like Lego blocks—you build complex UI with reusable, independent pieces.
+
+---
+
+## 5. **AWS EC2 + CloudFormation**
+
+### 🔍 What it Means:
+EC2 = Cloud servers. CloudFormation = Blueprint to automate the creation of AWS resources.
+
+### 🧠 Why It's Used:
+Provides scalable infrastructure and easy repeatable deployments.
+
+### 💡 Why We Chose It:
+To automate deployment and scale up during high traffic.
+
+### 🔧 How It Solved the Problem:
+Ensured consistent deployment across environments and handled load effectively.
+
+### ❓ Possible Interview Questions:
+- What is EC2?
+- How does CloudFormation help with infrastructure as code?
+
+### 🤓 Analogy:
+EC2 = renting a computer in the cloud. CloudFormation = your list of instructions to set up that computer every time.
+
+---
+
+## 6. **OAuth2 Authentication**
+
+### 🔍 What it Means:
+OAuth2 is a security standard that allows safe access without sharing passwords.
+
+### 🧠 Why It's Used:
+To secure APIs and user data.
+
+### 💡 Why We Chose It:
+It is industry-standard and trusted by major providers like Google and Facebook.
+
+### 🔧 How It Solved the Problem:
+Prevented unauthorized access to sensitive energy usage data.
+
+### ❓ Possible Interview Questions:
+- What is the OAuth2 flow?
+- How is OAuth2 different from basic auth?
+
+### 🤓 Analogy:
+Think of OAuth2 like a valet key—it gives access without revealing your full credentials.
+
+---
+
+## 7. **Jenkins + Docker for CI/CD**
+
+### 🔍 What it Means:
+Jenkins automates building and testing code. Docker packages your app and its dependencies into containers.
+
+### 🧠 Why It's Used:
+CI/CD ensures frequent, reliable deployments. Docker guarantees "it works on my machine" everywhere.
+
+### 💡 Why We Chose It:
+To streamline development and ensure consistency from development to production.
+
+### 🔧 How It Solved the Problem:
+Cut deployment time and reduced bugs during release.
+
+### ❓ Possible Interview Questions:
+- What’s the difference between Docker and a VM?
+- How does Jenkins trigger builds?
+
+### 🤓 Analogy:
+Docker = shipping container for your app. Jenkins = the crane that builds and ships it automatically.
+
+---
+
+Would you like me to add diagrams, code snippets, or an interview Q&A sheet next?
+

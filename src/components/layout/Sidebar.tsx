@@ -17,7 +17,14 @@ const navigation: NavItem[] = [
     title: 'Guides',
     href: '/guides',
     items: [
-      { title: 'Java', href: '/guides/java' },
+      {
+        title: 'Java',
+        href: '/guides/java',
+        items: [
+          { title: 'Core Java', href: '/guides/java/core' },
+          { title: 'Java Projects', href: '/guides/java/projects' }
+        ]
+      },
     ],
   },
 ]
