@@ -2,6 +2,9 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Import highlight.js styles */
+@import 'highlight.js/styles/github-dark.css';
+
 @layer base {
   :root {
     --tw-prose-body: theme('colors.zinc.700');
@@ -32,7 +35,69 @@
   }
 
   .prose :where(pre):not(:where([class~="not-prose"] *)) {
-    @apply bg-zinc-800 dark:bg-zinc-900 rounded-lg shadow-lg;
+    @apply bg-zinc-800 dark:bg-zinc-900 rounded-lg shadow-lg p-4;
+  }
+
+  /* Syntax highlighting customizations */
+  .hljs {
+    @apply bg-transparent;
+    color: inherit;
+  }
+
+  .hljs-comment,
+  .hljs-quote {
+    @apply text-zinc-500 dark:text-zinc-400 italic;
+  }
+
+  .hljs-keyword,
+  .hljs-selector-tag,
+  .hljs-subst {
+    @apply text-purple-600 dark:text-purple-400;
+  }
+
+  .hljs-number,
+  .hljs-literal,
+  .hljs-variable,
+  .hljs-template-variable,
+  .hljs-tag .hljs-attr {
+    @apply text-orange-600 dark:text-orange-400;
+  }
+
+  .hljs-string,
+  .hljs-doctag {
+    @apply text-green-600 dark:text-green-400;
+  }
+
+  .hljs-title,
+  .hljs-section,
+  .hljs-selector-id {
+    @apply text-blue-600 dark:text-blue-400 font-bold;
+  }
+
+  .hljs-type,
+  .hljs-class .hljs-title {
+    @apply text-teal-600 dark:text-teal-400 font-bold;
+  }
+
+  .hljs-tag,
+  .hljs-name,
+  .hljs-attribute {
+    @apply text-cyan-600 dark:text-cyan-400;
+  }
+
+  .hljs-regexp,
+  .hljs-link {
+    @apply text-red-600 dark:text-red-400;
+  }
+
+  .hljs-symbol,
+  .hljs-bullet {
+    @apply text-pink-600 dark:text-pink-400;
+  }
+
+  .hljs-built_in,
+  .hljs-builtin-name {
+    @apply text-yellow-600 dark:text-yellow-400;
   }
 }
 
