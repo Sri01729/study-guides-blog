@@ -53,18 +53,21 @@ const CustomImage = ({ src, alt, width, height }: Props) => {
 
 const CustomPre = ({ children, className }: Props) => {
   // Extract language from className (format: "language-{lang}")
-  const language = className?.replace(/language-/, '') || 'text'
+  const language = className?.replace(/^language-/, '') || 'text'
 
+  // If children is a string
   if (typeof children === 'string') {
     return <CodeBlock language={language}>{children}</CodeBlock>
   }
 
   // If children is a React element (likely a <code> element)
-  const childrenAsArray = React.Children.toArray(children)
-  const codeElement = childrenAsArray[0] as React.ReactElement
+  const childrenArray = React.Children.toArray(children)
+  const codeElement = childrenArray[0] as React.ReactElement
 
-  if (codeElement.type === 'code') {
-    return <CodeBlock language={language}>{codeElement.props.children}</CodeBlock>
+  if (codeElement?.type === 'code') {
+    const codeClassName = codeElement.props.className || className
+    const codeLang = codeClassName?.replace(/^language-/, '') || language
+    return <CodeBlock language={codeLang}>{codeElement.props.children}</CodeBlock>
   }
 
   // Fallback to basic pre
