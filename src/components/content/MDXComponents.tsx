@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import Image from 'next/image'
+import CodeBlock from './CodeBlock'
 import { ReactNode } from 'react'
 
 interface Props {
@@ -10,6 +11,8 @@ interface Props {
   width?: number
   height?: number
   id?: string
+  className?: string
+  language?: string
 }
 
 const CustomLink = ({ href, children }: Props) => {
@@ -37,19 +40,33 @@ const CustomLink = ({ href, children }: Props) => {
 
 const CustomImage = ({ src, alt, width, height }: Props) => {
   return (
-    <div className="relative my-8 overflow-hidden rounded-lg">
-      <Image
-        src={src || ''}
-        alt={alt || ''}
-        width={width || 800}
-        height={height || 400}
-        className="object-cover"
-      />
-    </div>
+    <Image
+      src={src || ''}
+      alt={alt || ''}
+      width={width || 1200}
+      height={height || 630}
+      className="rounded-lg"
+    />
   )
 }
 
-const CustomPre = ({ children }: Props) => {
+const CustomPre = ({ children, className }: Props) => {
+  // Extract language from className (format: "language-{lang}")
+  const language = className?.replace(/language-/, '') || 'text'
+
+  if (typeof children === 'string') {
+    return <CodeBlock language={language}>{children}</CodeBlock>
+  }
+
+  // If children is a React element (likely a <code> element)
+  const childrenAsArray = React.Children.toArray(children)
+  const codeElement = childrenAsArray[0] as React.ReactElement
+
+  if (codeElement.type === 'code') {
+    return <CodeBlock language={language}>{codeElement.props.children}</CodeBlock>
+  }
+
+  // Fallback to basic pre
   return (
     <pre className="relative my-8 overflow-x-auto rounded-lg bg-zinc-800 p-4 dark:bg-zinc-900">
       {children}
