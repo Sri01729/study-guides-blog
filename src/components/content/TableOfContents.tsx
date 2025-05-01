@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState } from 'react'
 
 interface Heading {
   id: string
@@ -10,29 +10,30 @@ export default function TableOfContents() {
   const [headings, setHeadings] = useState<Heading[]>([])
   const [activeId, setActiveId] = useState('')
 
-  // Memoize the getHeadings function
-  const getHeadings = useCallback(() => {
-    const elements = Array.from(document.querySelectorAll('h2, h3, h4'))
-      .filter(element => element.id)
-      .map((element) => ({
-        id: element.id,
-        text: element.textContent || '',
-        level: Number(element.tagName.charAt(1)),
-      }))
-    setHeadings(elements)
-  }, []) // Empty dependency array since it doesn't depend on any props or state
-
-  // Set up intersection observer
+  // Effect for getting headings - runs once on mount
   useEffect(() => {
-    // Skip if no headings
+    const getHeadings = () => {
+      const elements = Array.from(document.querySelectorAll('h2, h3, h4'))
+        .filter(element => element.id)
+        .map((element) => ({
+          id: element.id,
+          text: element.textContent || '',
+          level: Number(element.tagName.charAt(1)),
+        }))
+      setHeadings(elements)
+    }
+
+    getHeadings()
+  }, []) // Empty dependency array - only runs once on mount
+
+  // Separate effect for intersection observer
+  useEffect(() => {
     if (headings.length === 0) return
 
     const observer = new IntersectionObserver(
       (entries) => {
-        // Find the first visible heading
         const visible = entries.filter((entry) => entry.isIntersecting)
         if (visible.length > 0) {
-          // Get the heading that is most visible (highest intersection ratio)
           const mostVisible = visible.reduce((prev, current) =>
             current.intersectionRatio > prev.intersectionRatio ? current : prev
           )
@@ -40,9 +41,8 @@ export default function TableOfContents() {
         }
       },
       {
-        // Adjust margins to start highlighting a bit before the heading reaches the top
         rootMargin: '-80px 0px -80% 0px',
-        threshold: [0, 0.25, 0.5, 0.75, 1] // More granular thresholds for smoother transitions
+        threshold: [0, 0.25, 0.5, 0.75, 1]
       }
     )
 
@@ -54,14 +54,8 @@ export default function TableOfContents() {
       }
     })
 
-    // Initial load of headings
-    getHeadings()
-
-    // Cleanup
-    return () => {
-      observer.disconnect()
-    }
-  }, [getHeadings]) // Only depend on the memoized getHeadings function
+    return () => observer.disconnect()
+  }, [headings]) // Only re-run if headings array changes
 
   const handleClick = (e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
     e.preventDefault()
@@ -69,7 +63,6 @@ export default function TableOfContents() {
     if (element) {
       element.scrollIntoView({ behavior: 'smooth' })
       setActiveId(id)
-      // Update URL hash without scrolling
       window.history.pushState(null, '', `#${id}`)
     }
   }
