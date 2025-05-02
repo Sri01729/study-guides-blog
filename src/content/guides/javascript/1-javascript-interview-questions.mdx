@@ -1,0 +1,1913 @@
+# JavaScript Interview Guide with Examples
+
+## Core JavaScript Concepts
+
+### 1. What is JavaScript and where is it commonly used?
+
+**Answer:** JavaScript is a high-level, interpreted programming language primarily used to create interactive effects within web browsers. It has evolved to become one of the most versatile programming languages in the world.
+
+**Example:**
+```javascript
+// JavaScript can manipulate web page elements
+document.getElementById("demo").innerHTML = "Hello JavaScript!";
+
+// JavaScript can handle user events
+document.getElementById("button").addEventListener("click", function() {
+  alert("Button was clicked!");
+});
+
+// JavaScript can make API calls
+fetch('https://api.example.com/data')
+  .then(response => response.json())
+  .then(data => console.log(data));
+```
+
+JavaScript is used for:
+- Web development (front-end and back-end with Node.js)
+- Mobile app development (React Native, Ionic)
+- Desktop applications (Electron)
+- Game development
+- Internet of Things (IoT)
+
+### 2. What are template literals in JavaScript?
+
+**Answer:** Template literals (introduced in ES6) provide an improved way to work with strings, allowing for embedded expressions and multi-line strings using backticks (`` ` ``) instead of single or double quotes.
+
+**Example:**
+```javascript
+// Old way of string concatenation
+const name = "Alice";
+const greeting = "Hello, " + name + "! Welcome to " + 2023 + ".";
+
+// Using template literals
+const betterGreeting = `Hello, ${name}! Welcome to ${new Date().getFullYear()}.`;
+
+// Multi-line strings with template literals
+const multiLine = `This is a string
+that spans across
+multiple lines without needing escape characters.`;
+```
+
+### 3. What is hoisting and give an example?
+
+**Answer:** Hoisting is JavaScript's default behavior of moving declarations to the top of their scope before code execution. This means you can use variables and functions before they are declared in your code.
+
+**Function Hoisting Example:**
+```javascript
+// This works even though the function is defined later
+sayHello(); // Outputs: "Hello, world!"
+
+function sayHello() {
+  console.log("Hello, world!");
+}
+```
+
+**Variable Hoisting Examples:**
+```javascript
+// Using var (hoisted but initialized as undefined)
+console.log(x); // Outputs: undefined
+var x = 5;
+console.log(x); // Outputs: 5
+
+// Using let/const (hoisted but in "temporal dead zone" until declaration)
+console.log(y); // Error: Cannot access 'y' before initialization
+let y = 10;
+```
+
+### 4. Explain the difference between let, var, and const
+
+**Answer:** These keywords are used for variable declarations but differ in scope, hoisting behavior, and reassignment capabilities.
+
+**Example:**
+```javascript
+// var has function scope
+function varExample() {
+  if (true) {
+    var x = 10;
+  }
+  console.log(x); // 10 - var is accessible outside the if block
+}
+
+// let has block scope
+function letExample() {
+  if (true) {
+    let y = 20;
+  }
+  console.log(y); // Error: y is not defined - let is confined to the if block
+}
+
+// const prevents reassignment and has block scope
+function constExample() {
+  const z = 30;
+  z = 40; // Error: Assignment to constant variable
+
+  // However, for objects and arrays, the properties can be modified
+  const person = { name: "John" };
+  person.name = "Jane"; // This works - the object reference is constant, not its contents
+  person = {}; // Error: Assignment to constant variable
+}
+```
+
+### 5. What are data types available in JavaScript?
+
+**Answer:** JavaScript has primitive data types (immutable) and non-primitive data types (mutable).
+
+**Primitive Data Types Example:**
+```javascript
+// number
+let age = 25;
+let price = 99.99;
+let infinity = Infinity;
+let notANumber = NaN;
+
+// string
+let name = "John";
+let greeting = 'Hello';
+let template = `Value: ${age}`;
+
+// boolean
+let isActive = true;
+let isCompleted = false;
+
+// undefined
+let undefinedVar;
+console.log(undefinedVar); // undefined
+
+// null
+let emptyValue = null;
+
+// symbol (unique and immutable)
+let uniqueId = Symbol("id");
+let anotherUniqueId = Symbol("id");
+console.log(uniqueId === anotherUniqueId); // false
+
+// bigint (for very large integers)
+let bigNumber = 9007199254740991n;
+let anotherBigNumber = BigInt("9007199254740991");
+```
+
+**Non-Primitive Data Types Example:**
+```javascript
+// object
+let person = {
+  name: "Alice",
+  age: 30,
+  isEmployed: true
+};
+
+// array (special type of object)
+let colors = ["red", "green", "blue"];
+
+// function (also an object in JavaScript)
+let greet = function(name) {
+  return `Hello, ${name}!`;
+};
+```
+
+### 6. What is an array in JavaScript and how do you access its elements?
+
+**Answer:** An array is an ordered collection of values or elements, which can be of any data type. Arrays are zero-indexed, meaning the first element is at index 0.
+
+**Example:**
+```javascript
+// Creating arrays
+let fruits = ["apple", "banana", "orange"]; // Array literal
+let numbers = new Array(1, 2, 3, 4, 5);     // Array constructor
+
+// Accessing elements
+console.log(fruits[0]); // "apple" - accessing by index
+console.log(fruits[fruits.length - 1]); // "orange" - accessing last element
+
+// Modifying elements
+fruits[1] = "grape"; // Change "banana" to "grape"
+
+// Adding elements
+fruits.push("kiwi"); // Add to end
+fruits.unshift("mango"); // Add to beginning
+
+// Removing elements
+fruits.pop(); // Remove from end
+fruits.shift(); // Remove from beginning
+
+// Iterating through arrays
+// Using for loop
+for (let i = 0; i < fruits.length; i++) {
+  console.log(fruits[i]);
+}
+
+// Using forEach
+fruits.forEach(function(fruit) {
+  console.log(fruit);
+});
+
+// Using for...of (ES6)
+for (let fruit of fruits) {
+  console.log(fruit);
+}
+```
+
+### 7. Explain the difference between double equal to (==) and triple equal to (===) in JavaScript
+
+**Answer:** The double equals (`==`) performs type coercion before comparison, while triple equals (`===`) compares both value and type without coercion.
+
+**Example:**
+```javascript
+// Double equals (==) - compares value after type coercion
+console.log(5 == "5");        // true - string "5" is coerced to number 5
+console.log(0 == false);      // true - false is coerced to 0
+console.log(null == undefined); // true - both are considered "empty" values
+console.log(1 == true);       // true - true is coerced to 1
+
+// Triple equals (===) - strict equality, no type coercion
+console.log(5 === "5");       // false - different types
+console.log(0 === false);     // false - different types
+console.log(null === undefined); // false - different types
+console.log(1 === true);      // false - different types
+
+// Cases where both give the same result
+console.log(5 == 5);          // true
+console.log(5 === 5);         // true
+```
+
+### 8. What is the purpose of the `isNaN` function?
+
+**Answer:** The `isNaN()` function determines whether a value is NaN (Not-a-Number) or not. It returns true if the value is NaN, and false otherwise.
+
+**Example:**
+```javascript
+console.log(isNaN(123));       // false - 123 is a number
+console.log(isNaN("123"));     // false - "123" can be converted to a number
+console.log(isNaN("hello"));   // true - "hello" cannot be converted to a number
+console.log(isNaN(undefined)); // true - undefined cannot be converted to a number
+console.log(isNaN({}));        // true - empty object cannot be converted to a number
+
+// Caution: NaN is the only value that is not equal to itself
+console.log(NaN === NaN);      // false
+console.log(typeof NaN);       // "number" - this is a bit counterintuitive!
+
+// Better alternative in modern JavaScript
+console.log(Number.isNaN(NaN));        // true
+console.log(Number.isNaN("hello"));    // false - doesn't attempt conversion
+```
+
+### 9. What is null and undefined?
+
+**Answer:** Both `null` and `undefined` represent the absence of a value, but they're used in different contexts.
+
+**Example:**
+```javascript
+// undefined - variable declared but not assigned a value
+let notAssigned;
+console.log(notAssigned);      // undefined
+
+// undefined - accessing a non-existent object property
+let obj = {};
+console.log(obj.property);     // undefined
+
+// undefined - function with no return statement
+function noReturn() { }
+console.log(noReturn());       // undefined
+
+// null - intentional absence of value (must be explicitly assigned)
+let emptyValue = null;
+console.log(emptyValue);       // null
+
+// Differences
+console.log(typeof undefined); // "undefined"
+console.log(typeof null);      // "object" - this is considered a bug in JavaScript
+console.log(undefined == null);  // true - they are loosely equal
+console.log(undefined === null); // false - they are strictly different
+```
+
+### 10. Explain the use of the `typeof` operator
+
+**Answer:** The `typeof` operator returns a string indicating the type of the unevaluated operand.
+
+**Example:**
+```javascript
+console.log(typeof 42);           // "number"
+console.log(typeof "hello");      // "string"
+console.log(typeof true);         // "boolean"
+console.log(typeof undefined);    // "undefined"
+console.log(typeof null);         // "object" (historical bug in JavaScript)
+console.log(typeof {});           // "object"
+console.log(typeof []);           // "object" (arrays are objects)
+console.log(typeof function(){}); // "function"
+console.log(typeof Symbol());     // "symbol"
+console.log(typeof 42n);          // "bigint"
+
+// Practical usage
+function processValue(value) {
+  if (typeof value === "number") {
+    return value * 2;
+  } else if (typeof value === "string") {
+    return value.toUpperCase();
+  } else {
+    return "Unsupported type";
+  }
+}
+
+console.log(processValue(10));      // 20
+console.log(processValue("hello")); // "HELLO"
+console.log(processValue(true));    // "Unsupported type"
+```
+
+## Array Methods and Functions
+
+### 11. What is the purpose of the map method in JavaScript?
+
+**Answer:** The `map()` method creates a new array by applying a function to each element of the original array, without modifying the original array.
+
+**Example:**
+```javascript
+// Basic usage - double each number
+const numbers = [1, 2, 3, 4, 5];
+const doubled = numbers.map(num => num * 2);
+console.log(doubled);  // [2, 4, 6, 8, 10]
+console.log(numbers);  // [1, 2, 3, 4, 5] - original array unchanged
+
+// Transform objects in an array
+const users = [
+  { id: 1, name: "John" },
+  { id: 2, name: "Jane" },
+  { id: 3, name: "Bob" }
+];
+
+const usernames = users.map(user => user.name);
+console.log(usernames);  // ["John", "Jane", "Bob"]
+
+// More complex transformation
+const prices = [10.99, 5.99, 3.99, 6.59];
+const formattedPrices = prices.map(price => {
+  return {
+    original: price,
+    withTax: (price * 1.08).toFixed(2),
+    formatted: `$${price.toFixed(2)}`
+  };
+});
+console.log(formattedPrices);
+// [
+//   { original: 10.99, withTax: "11.87", formatted: "$10.99" },
+//   { original: 5.99, withTax: "6.47", formatted: "$5.99" },
+//   ...
+// ]
+```
+
+### 12. What is the purpose of the reduce method in JavaScript?
+
+**Answer:** The `reduce()` method executes a reducer function on each element of the array, resulting in a single output value. It's extremely versatile and can be used for summing numbers, flattening arrays, counting items, and many other transformations.
+
+**Example:**
+```javascript
+// Sum of all numbers in an array
+const numbers = [1, 2, 3, 4, 5];
+const sum = numbers.reduce((accumulator, currentValue) => {
+  return accumulator + currentValue;
+}, 0); // 0 is the initial value
+console.log(sum); // 15
+
+// Finding the maximum value
+const max = numbers.reduce((max, current) => {
+  return current > max ? current : max;
+}, numbers[0]);
+console.log(max); // 5
+
+// Counting occurrences of items
+const fruits = ['apple', 'banana', 'apple', 'orange', 'banana', 'apple'];
+const fruitCount = fruits.reduce((count, fruit) => {
+  count[fruit] = (count[fruit] || 0) + 1;
+  return count;
+}, {});
+console.log(fruitCount); // { apple: 3, banana: 2, orange: 1 }
+
+// Flattening an array of arrays
+const nestedArrays = [[1, 2], [3, 4], [5, 6]];
+const flattened = nestedArrays.reduce((result, array) => {
+  return result.concat(array);
+}, []);
+console.log(flattened); // [1, 2, 3, 4, 5, 6]
+
+// Grouping objects by a property
+const people = [
+  { name: 'Alice', age: 25 },
+  { name: 'Bob', age: 30 },
+  { name: 'Charlie', age: 25 },
+  { name: 'Dave', age: 30 }
+];
+
+const groupedByAge = people.reduce((groups, person) => {
+  const age = person.age;
+  groups[age] = groups[age] || [];
+  groups[age].push(person);
+  return groups;
+}, {});
+
+console.log(groupedByAge);
+// {
+//   25: [{ name: 'Alice', age: 25 }, { name: 'Charlie', age: 25 }],
+//   30: [{ name: 'Bob', age: 30 }, { name: 'Dave', age: 30 }]
+// }
+```
+
+## DOM and Events
+
+### 13. What is event bubbling and event capturing in JavaScript?
+
+**Answer:** These are two phases of event propagation in the DOM. When an event occurs on an element, it first runs the handlers on it, then on its parent, and all the way up (bubbling). In capturing, the event goes from the document root down to the target element.
+
+**Example:**
+```javascript
+// HTML structure:
+// <div id="outer">
+//   <div id="middle">
+//     <button id="inner">Click Me</button>
+//   </div>
+// </div>
+
+// Event Bubbling (default)
+document.getElementById("inner").addEventListener("click", function() {
+  console.log("Inner button clicked (bubble phase)");
+});
+
+document.getElementById("middle").addEventListener("click", function() {
+  console.log("Middle div clicked (bubble phase)");
+});
+
+document.getElementById("outer").addEventListener("click", function() {
+  console.log("Outer div clicked (bubble phase)");
+});
+
+// When clicking the button, the console will show:
+// "Inner button clicked (bubble phase)"
+// "Middle div clicked (bubble phase)"
+// "Outer div clicked (bubble phase)"
+
+// Event Capturing (set third parameter to true)
+document.getElementById("inner").addEventListener("click", function() {
+  console.log("Inner button clicked (capture phase)");
+}, true);
+
+document.getElementById("middle").addEventListener("click", function() {
+  console.log("Middle div clicked (capture phase)");
+}, true);
+
+document.getElementById("outer").addEventListener("click", function() {
+  console.log("Outer div clicked (capture phase)");
+}, true);
+
+// When clicking the button, the console will show:
+// "Outer div clicked (capture phase)"
+// "Middle div clicked (capture phase)"
+// "Inner button clicked (capture phase)"
+
+// Stopping propagation
+document.getElementById("middle").addEventListener("click", function(event) {
+  console.log("Middle div clicked - propagation stopped");
+  event.stopPropagation(); // Prevents the event from bubbling up further
+});
+```
+
+### 14. What is event delegation?
+
+**Answer:** Event delegation is a technique where you attach a single event listener to a parent element instead of multiple listeners on child elements. It leverages event bubbling to handle events for multiple elements with a single handler.
+
+**Example:**
+```javascript
+// Instead of attaching click handlers to each button in a list...
+// <ul id="todo-list">
+//   <li><button class="delete-btn">Delete Item 1</button></li>
+//   <li><button class="delete-btn">Delete Item 2</button></li>
+//   <li><button class="delete-btn">Delete Item 3</button></li>
+// </ul>
+
+// Without event delegation (not efficient for large lists)
+const deleteButtons = document.querySelectorAll('.delete-btn');
+deleteButtons.forEach(button => {
+  button.addEventListener('click', function() {
+    this.parentElement.remove();
+  });
+});
+
+// With event delegation (much more efficient)
+document.getElementById('todo-list').addEventListener('click', function(event) {
+  // Check if clicked element is a delete button
+  if (event.target.classList.contains('delete-btn')) {
+    // Handle the click
+    event.target.parentElement.remove();
+  }
+});
+
+// This works even for dynamically added items
+const newItem = document.createElement('li');
+newItem.innerHTML = '<button class="delete-btn">Delete Item 4</button>';
+document.getElementById('todo-list').appendChild(newItem);
+```
+
+## Higher-Order Functions and Functional Programming
+
+### 15. What are higher order functions? Can you give an example?
+
+**Answer:** Higher-order functions are functions that either take one or more functions as arguments or return a function as a result. They enable powerful functional programming patterns.
+
+**Example:**
+```javascript
+// Function that takes another function as an argument
+function applyOperation(x, y, operation) {
+  return operation(x, y);
+}
+
+// Functions to pass as arguments
+const add = (a, b) => a + b;
+const subtract = (a, b) => a - b;
+const multiply = (a, b) => a * b;
+
+console.log(applyOperation(5, 3, add));      // 8
+console.log(applyOperation(5, 3, subtract)); // 2
+console.log(applyOperation(5, 3, multiply)); // 15
+
+// Function that returns another function
+function createMultiplier(factor) {
+  // Returns a new function that multiplies its argument by factor
+  return function(number) {
+    return number * factor;
+  };
+}
+
+const double = createMultiplier(2);
+const triple = createMultiplier(3);
+
+console.log(double(5)); // 10
+console.log(triple(5)); // 15
+
+// Array methods like map, filter, and reduce are higher-order functions
+const numbers = [1, 2, 3, 4, 5];
+
+// map takes a function and applies it to each element
+const squared = numbers.map(num => num * num);
+
+// filter takes a function that tests each element
+const evenNumbers = numbers.filter(num => num % 2 === 0);
+
+// reduce takes a reducer function
+const sum = numbers.reduce((total, num) => total + num, 0);
+```
+
+### 16. Explain the concept of currying in JavaScript
+
+**Answer:** Currying is a functional programming technique that transforms a function with multiple arguments into a sequence of functions, each taking a single argument. It allows for partial application of a function's arguments.
+
+**Example:**
+```javascript
+// Regular function with multiple arguments
+function add(a, b, c) {
+  return a + b + c;
+}
+
+console.log(add(1, 2, 3)); // 6
+
+// Curried version
+function curriedAdd(a) {
+  return function(b) {
+    return function(c) {
+      return a + b + c;
+    };
+  };
+}
+
+console.log(curriedAdd(1)(2)(3)); // 6
+
+// With arrow functions (more concise)
+const arrowCurriedAdd = a => b => c => a + b + c;
+
+console.log(arrowCurriedAdd(1)(2)(3)); // 6
+
+// Practical example: Creating specialized functions
+const addTen = curriedAdd(10);
+const addTenAndFive = addTen(5);
+console.log(addTenAndFive(3)); // 18 (10 + 5 + 3)
+
+// Real-world example: Configurable DOM element updater
+const updateElement = id => property => value => {
+  const element = document.getElementById(id);
+  element[property] = value;
+  return element;
+};
+
+// Create specialized updaters
+const updateHeader = updateElement('header');
+const updateHeaderText = updateHeader('textContent');
+const updateHeaderColor = updateHeader('style')('color');
+
+// Use the specialized functions
+updateHeaderText('Hello World'); // Updates text of element with id 'header'
+updateHeaderColor('red');        // Updates text color of element with id 'header'
+```
+
+## Asynchronous JavaScript
+
+### 17. How do setTimeout and setInterval work?
+
+**Answer:** These are functions provided by Web APIs that allow you to schedule code execution after a delay (`setTimeout`) or repeatedly at specified intervals (`setInterval`).
+
+**Example:**
+```javascript
+// setTimeout: executes once after a delay
+console.log("Start");
+
+setTimeout(() => {
+  console.log("This runs after 2 seconds");
+}, 2000);
+
+console.log("End");
+
+// Output:
+// "Start"
+// "End"
+// "This runs after 2 seconds" (after 2 seconds)
+
+// setTimeout with 0ms delay
+console.log("First");
+
+setTimeout(() => {
+  console.log("Third - even with 0ms delay, this runs after synchronous code");
+}, 0);
+
+console.log("Second");
+
+// Output:
+// "First"
+// "Second"
+// "Third - even with 0ms delay, this runs after synchronous code"
+
+// setInterval: executes repeatedly
+let counter = 0;
+const intervalId = setInterval(() => {
+  counter++;
+  console.log(`Counter: ${counter}`);
+
+  // Stop after 5 executions
+  if (counter >= 5) {
+    clearInterval(intervalId);
+    console.log("Interval stopped");
+  }
+}, 1000);
+
+// Output (one line every second):
+// "Counter: 1"
+// "Counter: 2"
+// "Counter: 3"
+// "Counter: 4"
+// "Counter: 5"
+// "Interval stopped"
+
+// Clearing a timeout
+const timeoutId = setTimeout(() => {
+  console.log("This will never run");
+}, 5000);
+
+// Cancel the timeout before it executes
+clearTimeout(timeoutId);
+```
+
+### 18. Explain the Event Loop in JavaScript
+
+**Answer:** The Event Loop is a mechanism that enables JavaScript's single-threaded nature to handle asynchronous operations efficiently. It continuously checks if the call stack is empty and pushes callbacks from the task queue to the call stack when it's empty.
+
+**Example:**
+```javascript
+console.log("1. This runs first (synchronous)");
+
+setTimeout(() => {
+  console.log("4. This runs fourth (from the callback queue)");
+}, 0);
+
+Promise.resolve()
+  .then(() => {
+    console.log("3. This runs third (microtask)");
+  });
+
+console.log("2. This runs second (synchronous)");
+
+// Output:
+// "1. This runs first (synchronous)"
+// "2. This runs second (synchronous)"
+// "3. This runs third (microtask)"
+// "4. This runs fourth (from the callback queue)"
+
+/*
+Event Loop execution flow:
+1. Sync code executes first (logs 1 and 2)
+2. Call stack empties
+3. Microtasks (like Promise callbacks) execute (logs 3)
+4. Event Loop checks for tasks in callback queue
+5. setTimeout callback executes (logs 4)
+*/
+```
+
+**Visualization of the Event Loop:**
+```javascript
+/*
+┌─────────────────────────┐
+│        Call Stack       │
+└───────────┬─────────────┘
+            │
+            │
+┌───────────▼─────────────┐
+│          Browser        │
+│  (Web APIs/Node APIs)   │
+│   (setTimeout, fetch,   │
+│    DOM events, etc.)    │
+└───────────┬─────────────┘
+            │
+            │
+┌───────────▼─────────────┐
+│      Callback Queue     │
+│    (Task Queue for      │
+│     setTimeout, etc.)   │
+└───────────┬─────────────┘
+            │
+┌───────────▼─────────────┐
+│      Microtask Queue    │
+│   (for Promises, etc.)  │
+└───────────┬─────────────┘
+            │
+            ▼
+         Event Loop
+*/
+```
+
+### 19. Explain the concept of Promises in JavaScript
+
+**Answer:** Promises are objects representing the eventual completion or failure of an asynchronous operation. They help manage asynchronous code in a more structured way than callbacks.
+
+**Example:**
+```javascript
+// Creating a Promise
+const myPromise = new Promise((resolve, reject) => {
+  // Simulating an asynchronous operation
+  setTimeout(() => {
+    const success = Math.random() > 0.5;
+
+    if (success) {
+      resolve("Operation successful!");  // Promise fulfilled
+    } else {
+      reject("Operation failed!");       // Promise rejected
+    }
+  }, 1000);
+});
+
+// Using a Promise
+console.log("Promise started");
+
+myPromise
+  .then((result) => {
+    console.log("Success:", result);
+    return "Next value";
+  })
+  .then((nextValue) => {
+    console.log("Chained then:", nextValue);
+  })
+  .catch((error) => {
+    console.log("Error:", error);
+  })
+  .finally(() => {
+    console.log("Promise completed (whether successful or failed)");
+  });
+
+console.log("Code after promise (executes before promise resolves)");
+
+// Common Promise methods
+// Promise.all - waits for all promises to resolve
+const promise1 = Promise.resolve("First");
+const promise2 = new Promise((resolve) => setTimeout(() => resolve("Second"), 100));
+const promise3 = Promise.resolve("Third");
+
+Promise.all([promise1, promise2, promise3])
+  .then((values) => {
+    console.log("All promises resolved:", values);
+    // ["First", "Second", "Third"]
+  });
+
+// Promise.race - resolves or rejects as soon as one promise resolves/rejects
+Promise.race([
+  new Promise(resolve => setTimeout(() => resolve("Fast"), 100)),
+  new Promise(resolve => setTimeout(() => resolve("Slow"), 300))
+])
+  .then(result => {
+    console.log("Race winner:", result);  // "Fast"
+  });
+```
+
+### 20. What is the use of async and await in JavaScript?
+
+**Answer:** `async` and `await` are syntactic sugar built on top of Promises, making asynchronous code look and behave more like synchronous code. This makes it easier to understand and debug.
+
+**Example:**
+```javascript
+// Function that returns a Promise
+function fetchData(id) {
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      if (id > 0) {
+        resolve({ id, name: `Item ${id}` });
+      } else {
+        reject(new Error("Invalid ID"));
+      }
+    }, 1000);
+  });
+}
+
+// Using Promises with then/catch
+function getDataWithPromises() {
+  console.log("Fetching data with Promises...");
+
+  fetchData(1)
+    .then(data => {
+      console.log("First data:", data);
+      return fetchData(2);  // Return another promise for chaining
+    })
+    .then(data => {
+      console.log("Second data:", data);
+    })
+    .catch(error => {
+      console.error("Error fetching data:", error);
+    });
+}
+
+// Using async/await
+async function getDataWithAsyncAwait() {
+  console.log("Fetching data with async/await...");
+
+  try {
+    // await pauses execution until the promise resolves
+    const firstData = await fetchData(1);
+    console.log("First data:", firstData);
+
+    const secondData = await fetchData(2);
+    console.log("Second data:", secondData);
+  } catch (error) {
+    console.error("Error fetching data:", error);
+  }
+}
+
+// Error handling with async/await
+async function handleErrors() {
+  try {
+    const data = await fetchData(-1); // Will reject
+    console.log(data); // Never executes
+  } catch (error) {
+    console.error("Caught error:", error.message);
+  }
+}
+
+// Parallel execution with async/await
+async function fetchMultipleInParallel() {
+  try {
+    // Start both fetches in parallel
+    const promise1 = fetchData(1);
+    const promise2 = fetchData(2);
+
+    // Wait for both to complete
+    const [data1, data2] = await Promise.all([promise1, promise2]);
+
+    console.log("Data 1:", data1);
+    console.log("Data 2:", data2);
+  } catch (error) {
+    console.error("Error:", error);
+  }
+}
+```
+
+## Function Concepts
+
+### 21. What is the difference between call, apply, and bind?
+
+**Answer:** These methods allow you to explicitly set the `this` value when executing a function. The key differences are in how they pass arguments and when they execute the function.
+
+**Example:**
+```javascript
+const person = {
+  firstName: "John",
+  lastName: "Doe",
+  getFullName: function() {
+    return `${this.firstName} ${this.lastName}`;
+  }
+};
+
+// A function that needs a specific 'this' context
+function greet(greeting, punctuation) {
+  return `${greeting}, ${this.getFullName()}${punctuation}`;
+}
+
+// Different object to use as 'this'
+const anotherPerson = {
+  firstName: "Jane",
+  lastName: "Smith",
+  getFullName: function() {
+    return `${this.firstName} ${this.lastName}`;
+  }
+};
+
+// call: immediately invokes function with given 'this' and comma-separated arguments
+console.log(greet.call(person, "Hello", "!"));
+// "Hello, John Doe!"
+
+// apply: immediately invokes function with given 'this' and array of arguments
+console.log(greet.apply(anotherPerson, ["Hi", "?"]));
+// "Hi, Jane Smith?"
+
+// bind: returns a new function with 'this' permanently bound
+const greetJohn = greet.bind(person);
+console.log(greetJohn("Welcome", "."));
+// "Welcome, John Doe."
+
+// bind with pre-set parameters
+const sayHelloToJohn = greet.bind(person, "Hello");
+console.log(sayHelloToJohn("!!!"));
+// "Hello, John Doe!!!"
+
+// Real-world example: event handlers
+const button = {
+  content: "Submit",
+  click: function() {
+    console.log(`Button ${this.content} clicked`);
+  }
+};
+
+// Problem: 'this' in the callback refers to the window, not the button
+// setTimeout(button.click, 1000); // Would log "Button undefined clicked"
+
+// Solution 1: bind
+setTimeout(button.click.bind(button), 1000); // "Button Submit clicked"
+
+// Solution 2: arrow function (lexical this)
+setTimeout(() => button.click(), 1000); // "Button Submit clicked"
+```
+
+### 22. What is function declaration?
+
+**Answer:** Function declaration is a standard way to define a function, where the function keyword is followed by a name, parameters, and body. Functions declared this way are hoisted to the top of their scope.
+
+**Example:**
+```javascript
+// Function declaration
+function calculateArea(width, height) {
+  return width * height;
+}
+
+// Can be called before declaration due to hoisting
+console.log(getPerimeter(4, 5)); // 18
+
+function getPerimeter(width, height) {
+  return 2 * (width + height);
+}
+```
+
+### 23. What is function expression?
+
+**Answer:** Function expression is when a function is defined as part of an expression, typically by assigning an anonymous function to a variable. Function expressions are not hoisted like function declarations.
+
+**Example:**
+```javascript
+// Function expression
+const calculateArea = function(width, height) {
+  return width * height;
+};
+
+// Cannot be called before definition
+// console.log(getPerimeter(4, 5)); // Error: getPerimeter is not a function
+
+const getPerimeter = function(width, height) {
+  return 2 * (width + height);
+};
+
+console.log(getPerimeter(4, 5)); // 18
+
+// Anonymous function expression (no name)
+const greet = function(name) {
+  return `Hello, ${name}!`;
+};
+
+// Named function expression (has a name)
+const factorial = function calculateFactorial(n) {
+  if (n <= 1) return 1;
+  return n * calculateFactorial(n - 1); // The name is only available inside the function
+};
+
+console.log(factorial(5)); // 120
+// console.log(calculateFactorial(5)); // Error: calculateFactorial is not defined
+```
+
+### 24. What is IIFE (Immediately Invoked Function Expression)?
+
+**Answer:** An IIFE is a function expression that is defined and executed immediately after its creation. It's often used to create a private scope for variables.
+
+**Example:**
+```javascript
+// Basic IIFE
+(function() {
+  console.log("This function is executed immediately");
+})();
+
+// IIFE with parameters
+(function(name) {
+  console.log(`Hello, ${name}!`);
+})("John");
+
+// IIFE with return value
+const result = (function() {
+  const hidden = "I'm private";
+  return {
+    getMessage: function() {
+      return hidden;
+    }
+  };
+})();
+
+console.log(result.getMessage()); // "I'm private"
+console.log(result.hidden); // undefined - can't access directly
+
+// Common use case: avoiding global scope pollution
+const counter = (function() {
+  let count = 0; // Private variable
+
+  return {
+    increment: function() {
+      count++;
+    },
+    decrement: function() {
+      count--;
+    },
+    getCount: function() {
+      return count;
+    }
+  };
+})();
+
+counter.increment();
+counter.increment();
+console.log(counter.getCount()); // 2
+counter.decrement();
+console.log(counter.getCount()); // 1
+```
+
+## Scope and Closures
+
+### 25. Explain the concept of lexical scoping and the scope chain
+
+**Answer:** Lexical scoping means that the scope of a variable is determined by its position in the source code. The scope chain is the hierarchy of scopes that JavaScript uses to resolve variable names.
+
+**Example:**
+```javascript
+// Global scope
+const globalVar = "I'm global";
+
+function outerFunction() {
+  // Outer function scope
+  const outerVar = "I'm from outer";
+
+  function innerFunction() {
+    // Inner function scope
+    const innerVar = "I'm from inner";
+
+    // innerFunction has access to all variables:
+    console.log(innerVar); // "I'm from inner"
+    console.log(outerVar); // "I'm from outer"
+    console.log(globalVar); // "I'm global"
+  }
+
+  // outerFunction has access to:
+  console.log(outerVar); // "I'm from outer"
+  console.log(globalVar); // "I'm global"
+  // console.log(innerVar); // Error: innerVar is not defined
+
+  innerFunction();
+}
+
+// Global scope has access to:
+console.log(globalVar); // "I'm global"
+// console.log(outerVar); // Error: outerVar is not defined
+// console.log(innerVar); // Error: innerVar is not defined
+
+outerFunction();
+
+// Scope chain example with variable shadowing
+function scopeExample() {
+  const value = "outer";
+
+  function inner() {
+    const value = "inner";
+    console.log("Inner value:", value); // "inner" - finds it in current scope
+  }
+
+  console.log("Outer value:", value); // "outer" - finds it in current scope
+  inner();
+}
+
+scopeExample();
+```
+
+### 26. What is shadowing?
+
+**Answer:** Shadowing occurs when a variable in an inner scope has the same name as a variable in an outer scope, effectively hiding the outer variable within that inner scope.
+
+**Example:**
+```javascript
+// Variable shadowing
+const x = 10; // Global variable
+
+function printX() {
+  console.log(x); // 10 - references global x
+}
+
+function shadowX() {
+  const x = 20; // Local variable shadows the global x
+  console.log(x); // 20 - references local x
+}
+
+printX(); // 10
+shadowX(); // 20
+console.log(x); // 10 - global x is unchanged
+
+// Block scope shadowing
+function blockShadowing() {
+  let value = "outer";
+  console.log(value); // "outer"
+
+  if (true) {
+    let value = "inner"; // Shadows the outer value
+    console.log(value); // "inner"
+  }
+
+  console.log(value); // "outer" - the original value remains
+}
+
+blockShadowing();
+
+// Parameter shadowing
+const name = "Global";
+
+function greet(name) { // Parameter shadows global variable
+  console.log(`Hello, ${name}!`);
+}
+
+greet("Alice"); // "Hello, Alice!"
+console.log(name); // "Global" - unchanged
+```
+
+### 27. What are Closures?
+
+**Answer:** A closure is a function that retains access to variables from its outer (enclosing) scope, even after the outer function has returned. This is a powerful concept in JavaScript.
+
+**Example:**
+```javascript
+// Basic closure example
+function createCounter() {
+  let count = 0; // Local variable
+
+  return function() {
+    count++; // Accesses and modifies the variable from parent scope
+    return count;
+  };
+}
+
+const counter = createCounter();
+console.log(counter()); // 1
+console.log(counter()); // 2
+console.log(counter()); // 3
+
+// Another instance doesn't share the same count
+const counter2 = createCounter();
+console.log(counter2()); // 1
+
+// Practical example: creating private variables
+function createPerson(name) {
+  // Private variables
+  let age = 0;
+
+  return {
+    getName: function() {
+      return name;
+    },
+    getAge: function() {
+      return age;
+    },
+    setAge: function(newAge) {
+      if (newAge >= 0) {
+        age = newAge;
+      }
+    },
+    celebrateBirthday: function() {
+      age++;
+      console.log(`Happy birthday! ${name} is now ${age} years old.`);
+    }
+  };
+}
+
+const person = createPerson("Alice");
+console.log(person.getName()); // "Alice"
+person.setAge(30);
+console.log(person.getAge()); // 30
+person.celebrateBirthday(); // "Happy birthday! Alice is now 31 years old."
+
+// Closures capturing shared variables
+function createButtons() {
+  let buttons = [];
+
+  for (var i = 0; i < 3; i++) {
+    // Problem: all buttons share the same i (=3) due to var's function scope
+    buttons.push(function() {
+      console.log(`Button ${i} clicked`);
+    });
+  }
+
+  return buttons;
+}
+
+const buttons = createButtons();
+buttons[0](); // "Button 3 clicked" (not 0 as expected)
+buttons[1](); // "Button 3 clicked" (not 1 as expected)
+
+// Fix: use let (block scope) or an IIFE
+function createButtonsFixed() {
+  let buttons = [];
+
+  for (let i = 0; i < 3; i++) {
+    // Each iteration has its own i due to let's block scope
+    buttons.push(function() {
+      console.log(`Button ${i} clicked`);
+    });
+  }
+
+  return buttons;
+}
+
+const fixedButtons = createButtonsFixed();
+fixedButtons[0](); // "Button 0 clicked"
+fixedButtons[1](); // "Button 1 clicked"
+```
+
+### 28. How can we use closures to optimize code (Memoization)?
+
+**Answer:** Memoization is an optimization technique that stores the results of expensive function calls and returns the cached result when the same inputs occur again. Closures are perfect for implementing memoization.
+
+**Example:**
+```javascript
+// Without memoization - inefficient for repeated calls
+function fibonacci(n) {
+  console.log(`Computing fibonacci(${n})`);
+  if (n <= 1) return n;
+  return fibonacci(n - 1) + fibonacci(n - 2);
+}
+
+console.log(fibonacci(5)); // Many redundant calculations
+
+// With memoization using closure
+function memoizedFibonacci() {
+  // Cache stored in closure
+  const cache = {};
+
+  return function fib(n) {
+    // If the result is in cache, return it
+    if (n in cache) {
+      console.log(`Using cached result for fibonacci(${n})`);
+      return cache[n];
+    }
+
+    console.log(`Computing fibonacci(${n})`);
+    let result;
+
+    if (n <= 1) {
+      result = n;
+    } else {
+      result = fib(n - 1) + fib(n - 2);
+    }
+
+    // Store result in cache before returning
+    cache[n] = result;
+    return result;
+  };
+}
+
+const efficientFib = memoizedFibonacci();
+console.log(efficientFib(5)); // Computes only once per unique value
+console.log(efficientFib(5)); // Uses cached value
+
+// Generic memoization function
+function memoize(fn) {
+  const cache = {};
+
+  return function(...args) {
+    const key = JSON.stringify(args);
+
+    if (key in cache) {
+      console.log('Returning from cache');
+      return cache[key];
+    }
+
+    console.log('Computing result');
+    const result = fn.apply(this, args);
+    cache[key] = result;
+    return result;
+  };
+}
+
+// Using the generic memoize function
+const memoizedAdd = memoize((a, b) => {
+  console.log('Expensive calculation...');
+  return a + b;
+});
+
+console.log(memoizedAdd(2, 3)); // Computes
+console.log(memoizedAdd(2, 3)); // From cache
+console.log(memoizedAdd(3, 4)); // Computes
+```
+
+### 29. Make a function run only once
+
+**Answer:** You can use a closure to create a function that only runs the first time it's called and then either does nothing or returns a cached result on subsequent calls.
+
+**Example:**
+```javascript
+// Basic implementation
+function once(fn) {
+  let hasRun = false;
+  let result;
+
+  return function(...args) {
+    if (!hasRun) {
+      hasRun = true;
+      result = fn.apply(this, args);
+      return result;
+    } else {
+      console.log("Function already executed once");
+      return result; // Return the cached result
+    }
+  };
+}
+
+// Example usage
+const processPayment = once(function(amount) {
+  console.log(`Processing payment of ${amount}`);
+  return `Payment of ${amount} processed successfully`;
+});
+
+console.log(processPayment(100)); // Processes payment
+console.log(processPayment(50));  // Already executed message, returns first result
+
+// Initialization example
+const initialize = once(function() {
+  console.log("Initializing system...");
+  // Expensive setup operations
+  return "System initialized";
+});
+
+// Will only initialize once no matter how many times called
+initialize();
+initialize();
+initialize();
+
+// Real-world example: API configuration that should only happen once
+const configureAPI = once(function(apiKey) {
+  console.log("Configuring API with key:", apiKey);
+  // Set up API with the provided key
+  return { status: "configured", key: apiKey };
+});
+
+configureAPI("abc123"); // Configures API
+configureAPI("xyz789"); // Does nothing, returns result from first call
+```
+
+## Memory Management and Performance
+
+### 30. Describe the difference between shallow and deep copying
+
+**Answer:** Shallow copying creates a new object with copies of the top-level properties, but nested objects are still shared references. Deep copying creates a completely new object with copies of all nested objects as well.
+
+**Example:**
+```javascript
+// Original object with nested structure
+const original = {
+  name: "John",
+  age: 30,
+  address: {
+    city: "New York",
+    zip: "10001"
+  },
+  hobbies: ["reading", "running"]
+};
+
+// Shallow copy methods:
+
+// 1. Using spread operator (...)
+const shallowCopy1 = { ...original };
+
+// 2. Using Object.assign()
+const shallowCopy2 = Object.assign({}, original);
+
+// 3. For arrays, using slice() or spread
+const shallowArrayCopy = original.hobbies.slice();
+
+// Testing shallow copy
+shallowCopy1.name = "Alice"; // This changes only the copy
+shallowCopy1.address.city = "Boston"; // This changes BOTH objects!
+
+console.log(original.name); // "John" - unchanged
+console.log(original.address.city); // "Boston" - changed!
+console.log(shallowCopy1.name); // "Alice"
+
+// Deep copy methods:
+
+// 1. Using JSON (with limitations - doesn't handle functions, undefined, etc.)
+const deepCopy1 = JSON.parse(JSON.stringify(original));
+
+// 2. Custom recursive function
+function deepCopy(obj) {
+  if (obj === null || typeof obj !== "object") {
+    return obj; // Return primitive values as is
+  }
+
+  // Handle Date
+  if (obj instanceof Date) {
+    return new Date(obj);
+  }
+
+  // Handle Array
+  if (Array.isArray(obj)) {
+    return obj.map(item => deepCopy(item));
+  }
+
+  // Handle Object
+  if (obj instanceof Object) {
+    const copy = {};
+    for (const key in obj) {
+      if (Object.prototype.hasOwnProperty.call(obj, key)) {
+        copy[key] = deepCopy(obj[key]);
+      }
+    }
+    return copy;
+  }
+
+  throw new Error("Unable to copy obj! Its type isn't supported.");
+}
+
+const deepCopy2 = deepCopy(original);
+
+// Testing deep copy
+deepCopy2.name = "Bob"; // This changes only the copy
+deepCopy2.address.city = "Chicago"; // This changes only the copy
+
+console.log(original.name); // "John" - unchanged
+console.log(original.address.city); // "Boston" - unchanged
+console.log(deepCopy2.name); // "Bob"
+console.log(deepCopy2.address.city); // "Chicago"
+```
+
+### 31. Explain the use of strict mode ('use strict') in JavaScript
+
+**Answer:** Strict mode is an opt-in feature that enables a stricter set of rules for JavaScript code, helping to catch common coding mistakes and "unsafe" actions. It makes code more secure and optimizable.
+
+**Example:**
+```javascript
+// Non-strict mode (default)
+function nonStrictExample() {
+  x = 10; // Implicitly creates a global variable - bad practice!
+  console.log(x);
+}
+
+nonStrictExample(); // 10
+console.log(x); // 10 - leaks to global scope!
+
+// Strict mode enabled
+function strictExample() {
+  'use strict';
+  // y = 20; // ReferenceError: y is not defined
+
+  let y = 20; // Must be properly declared
+  console.log(y);
+}
+
+strictExample(); // 20
+// console.log(y); // ReferenceError: y is not defined
+
+// Other strict mode behaviors:
+
+// 1. Cannot use with statement
+'use strict';
+// with (Math) { // SyntaxError in strict mode
+//   console.log(PI);
+// }
+
+// 2. Duplicate parameter names are not allowed
+// function dupParams(a, a, b) { // SyntaxError in strict mode
+//   return a + b;
+// }
+
+// 3. Octal syntax requires explicit 0o prefix
+'use strict';
+// const octal = 010; // SyntaxError in strict mode
+const properOctal = 0o10; // 8 in decimal
+
+// 4. 'this' is not coerced to global object in functions
+function checkThis() {
+  'use strict';
+  console.log(this);
+}
+
+checkThis(); // undefined, not window/global object
+
+// 5. Cannot delete non-configurable properties
+'use strict';
+// delete Object.prototype; // TypeError in strict mode
+
+// 6. Cannot assign to read-only properties
+'use strict';
+const obj = {};
+Object.defineProperty(obj, 'readOnly', { value: 42, writable: false });
+// obj.readOnly = 100; // TypeError in strict mode
+```
+
+## Design Patterns and Advanced Concepts
+
+### 32. Explain the Observer pattern and how it relates to JavaScript
+
+**Answer:** The Observer pattern creates a subscription model where objects (observers) "subscribe" to an object (subject) and are notified when the subject changes state. This pattern is fundamental to event-driven programming in JavaScript.
+
+**Example:**
+```javascript
+// Basic Observer pattern implementation
+class Subject {
+  constructor() {
+    this.observers = [];
+  }
+
+  subscribe(observer) {
+    this.observers.push(observer);
+  }
+
+  unsubscribe(observer) {
+    this.observers = this.observers.filter(obs => obs !== observer);
+  }
+
+  notify(data) {
+    this.observers.forEach(observer => observer.update(data));
+  }
+}
+
+class Observer {
+  constructor(name) {
+    this.name = name;
+  }
+
+  update(data) {
+    console.log(`${this.name} received update: ${data}`);
+  }
+}
+
+// Using the Observer pattern
+const subject = new Subject();
+
+const observer1 = new Observer("Observer 1");
+const observer2 = new Observer("Observer 2");
+
+subject.subscribe(observer1);
+subject.subscribe(observer2);
+
+subject.notify("Important update!");
+// Observer 1 received update: Important update!
+// Observer 2 received update: Important update!
+
+subject.unsubscribe(observer2);
+subject.notify("Another update");
+// Observer 1 received update: Another update
+
+// Real-world example: DOM events are an implementation of Observer pattern
+document.addEventListener('click', function() {
+  console.log('Document was clicked!');
+});
+
+// Event emitter (similar to Node.js EventEmitter)
+class EventEmitter {
+  constructor() {
+    this.events = {};
+  }
+
+  on(event, listener) {
+    if (!this.events[event]) {
+      this.events[event] = [];
+    }
+    this.events[event].push(listener);
+  }
+
+  emit(event, ...args) {
+    if (!this.events[event]) {
+      return false;
+    }
+    this.events[event].forEach(listener => listener(...args));
+    return true;
+  }
+
+  removeListener(event, listener) {
+    if (!this.events[event]) {
+      return;
+    }
+    this.events[event] = this.events[event].filter(l => l !== listener);
+  }
+}
+
+// Using EventEmitter
+const emitter = new EventEmitter();
+
+function dataReceived(data) {
+  console.log(`Data received: ${data}`);
+}
+
+emitter.on('data', dataReceived);
+emitter.on('data', data => console.log(`Processing: ${data}`));
+
+emitter.emit('data', 'Some information');
+// Data received: Some information
+// Processing: Some information
+```
+
+### 33. What is a generator function and how is it used?
+
+**Answer:** Generator functions are special functions that can be paused and resumed, yielding multiple values over time. They're defined using the `function*` syntax and use the `yield` keyword to pause and return values.
+
+**Example:**
+```javascript
+// Basic generator function
+function* simpleGenerator() {
+  console.log('Generator started');
+  yield 1;
+  console.log('After first yield');
+  yield 2;
+  console.log('After second yield');
+  yield 3;
+  console.log('Generator completed');
+}
+
+// Using a generator
+const gen = simpleGenerator(); // Generator is created but not started yet
+
+console.log(gen.next()); // Generator started, { value: 1, done: false }
+console.log(gen.next()); // After first yield, { value: 2, done: false }
+console.log(gen.next()); // After second yield, { value: 3, done: false }
+console.log(gen.next()); // Generator completed, { value: undefined, done: true }
+
+// Generator with infinite sequence
+function* infiniteSequence() {
+  let i = 0;
+  while (true) {
+    yield i++;
+  }
+}
+
+const numbers = infiniteSequence();
+console.log(numbers.next().value); // 0
+console.log(numbers.next().value); // 1
+console.log(numbers.next().value); // 2
+
+// Generator that receives values
+function* twoWayGenerator() {
+  const first = yield 'Send me a value';
+  console.log(`Received: ${first}`);
+
+  const second = yield 'Send another value';
+  console.log(`Received: ${second}`);
+
+  return 'All done!';
+}
+
+const twoWay = twoWayGenerator();
+console.log(twoWay.next().value); // 'Send me a value'
+console.log(twoWay.next('Hello').value); // logs 'Received: Hello', returns 'Send another value'
+console.log(twoWay.next('World').value); // logs 'Received: World', returns 'All done!'
+
+// Practical example: Iterating through a tree structure
+class TreeNode {
+  constructor(value) {
+    this.value = value;
+    this.children = [];
+  }
+
+  addChild(value) {
+    this.children.push(new TreeNode(value));
+    return this.children[this.children.length - 1];
+  }
+
+  // Generator method for depth-first traversal
+  *depthFirstTraversal() {
+    yield this.value;
+    for (const child of this.children) {
+      yield* child.depthFirstTraversal();
+    }
+  }
+}
+
+// Create a simple tree
+const root = new TreeNode('A');
+const nodeB = root.addChild('B');
+const nodeC = root.addChild('C');
+nodeB.addChild('D');
+nodeB.addChild('E');
+nodeC.addChild('F');
+
+// Traverse the tree
+for (const value of root.depthFirstTraversal()) {
+  console.log(value); // A, B, D, E, C, F
+}
+```
+
+## Special Data Types
+
+### 34. What are weak maps and weak sets in JavaScript?
+
+**Answer:** WeakMap and WeakSet are special collections that hold "weak" references to objects, allowing those objects to be garbage collected if there are no other references to them. They're useful for memory management with temporary or volatile data.
+
+**Example:**
+```javascript
+// WeakMap example
+// Regular Map keeps strong references to keys
+let regularMap = new Map();
+
+let obj = { name: "Example" };
+regularMap.set(obj, "metadata");
+
+// Even if we remove our reference to obj
+obj = null;
+
+// The object is still in memory due to the Map reference
+console.log(regularMap.size); // 1
+
+// Using WeakMap
+let weakMap = new WeakMap();
+
+let user = { name: "John" };
+weakMap.set(user, "user data");
+
+// Get data
+console.log(weakMap.get(user)); // "user data"
+
+// If we remove all references to the key object
+user = null;
+
+// The entry in WeakMap will be automatically garbage collected
+// Note: WeakMap has no size property or iteration methods
+// console.log(weakMap.size); // undefined
+
+// WeakMap use case: storing private data for objects
+const privateData = new WeakMap();
+
+class User {
+  constructor(name, age) {
+    this.name = name; // Public property
+
+    // Store private data
+    privateData.set(this, {
+      age: age
+    });
+  }
+
+  getAge() {
+    return privateData.get(this).age;
+  }
+
+  setAge(age) {
+    privateData.get(this).age = age;
+  }
+}
+
+const user1 = new User("Alice", 30);
+console.log(user1.name);    // "Alice" - public property
+console.log(user1.getAge()); // 30 - private data
+
+// WeakSet example
+let weakSet = new WeakSet();
+
+let obj1 = { data: 123 };
+let obj2 = { data: 456 };
+
+weakSet.add(obj1);
+weakSet.add(obj2);
+
+console.log(weakSet.has(obj1)); // true
+
+// When the object is no longer referenced
+obj1 = null;
+
+// The object is automatically removed from the WeakSet
+// No iteration methods or size property
+
+// Common use case: marking objects as "visited"
+const visited = new WeakSet();
+
+function processNode(node) {
+  if (visited.has(node)) {
+    return; // Already processed this node
+  }
+
+  visited.add(node);
+
+  // Process the node...
+  console.log("Processing:", node.id);
+
+  // Process children
+  node.children.forEach(processNode);
+}
+
+// Example graph with cycles
+const nodeA = { id: 'A', children: [] };
+const nodeB = { id: 'B', children: [] };
+nodeA.children.push(nodeB);
+nodeB.children.push(nodeA); // Creates a cycle
+
+processNode(nodeA); // Only processes each node once despite the cycle
+```
+
+## Output-Based Questions
+
+### 35. Hoisting and Scope Behavior
+
+**Question:** What will be the output of the following code?
+
+```javascript
+console.log(a);
+var a = 5;
+
+console.log(b);
+let b = 10;
+```
+
+**Answer:**
+```
+undefined
+ReferenceError: Cannot access 'b' before initialization
+```
+
+**Explanation:**
+- `var` variables are hoisted but initialized as `undefined` until they're assigned
+- `let` and `const` variables are hoisted but remain in the "temporal dead zone" until declaration, throwing a `ReferenceError` if accessed before
+
+### 36. Closures and Scope
+
+**Question:** What will be the output of the following code?
+
+```javascript
+function createFunctions() {
+  var result = [];
+  for (var i = 0; i < 3; i++) {
+    result.push(function() { console.log(i); });
+  }
+  return result;
+}
+
+var functions = createFunctions();
+functions[0]();
+functions[1]();
+functions[2]();
+```
+
+**Answer:**
+```
+3
+3
+3
+```
+
+**Explanation:**
+- The `var` declaration has function scope, so there's only one `i` variable shared by all functions
+- By the time the functions are called, the loop has completed and `i` is 3
+- To get 0, 1, 2 as output, you would need to use `let` instead of `var` (block scope) or create a closure for each iteration
+
+### 37. Event Loop and Asynchronous Behavior
+
+**Question:** What will be the output of the following code?
+
+```javascript
+console.log("Start");
+
+setTimeout(function() {
+  console.log("Timeout");
+}, 0);
+
+Promise.resolve().then(function() {
+  console.log("Promise");
+});
+
+console.log("End");
+```
+
+**Answer:**
+```
+Start
+End
+Promise
+Timeout
+```
+
+**Explanation:**
+- Synchronous code runs first: "Start" and "End" are logged immediately
+- The Promise callback (microtask) executes before the setTimeout callback (task)
+- Even with a delay of 0ms, setTimeout goes to the task queue which is processed after all microtasks
+"

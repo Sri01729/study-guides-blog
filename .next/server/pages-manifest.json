@@ -3,5 +3,7 @@
   "/_error": "pages/_error.js",
   "/_document": "pages/_document.js",
   "/guides/[subcategory]/[slug]": "pages/guides/[subcategory]/[slug].js",
-  "/guides": "pages/guides.js"
+  "/guides": "pages/guides.js",
+  "/guides/[subcategory]": "pages/guides/[subcategory].js",
+  "/": "pages/index.js"
 }

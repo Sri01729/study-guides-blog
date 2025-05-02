@@ -1,0 +1,1662 @@
+# JavaScript Essentials Cheatsheet
+
+## Variables and Data Types
+
+### Variable Declaration
+```javascript
+// var - function scoped (older)
+var count = 10;
+
+// let - block scoped, can be reassigned
+let score = 0;
+score = 5; // Valid
+
+// const - block scoped, cannot be reassigned
+const PI = 3.14159;
+// PI = 3; // Error: Assignment to constant variable
+```
+
+### Primitive Data Types
+```javascript
+// String
+const name = "John";
+const template = `Hello, ${name}`; // Template literals
+
+// Number
+const integer = 42;
+const float = 3.14;
+const scientific = 2.998e8; // 2.998 × 10^8
+const binary = 0b1010; // 10 in decimal
+const hex = 0xFF; // 255 in decimal
+const octal = 0o77; // 63 in decimal
+
+// Boolean
+const isActive = true;
+const isComplete = false;
+
+// Undefined
+let variable; // Value is undefined
+console.log(variable); // undefined
+
+// Null
+const empty = null;
+
+// Symbol (unique identifiers)
+const id = Symbol('id');
+const id2 = Symbol('id'); // id !== id2
+
+// BigInt (for integers larger than 2^53 - 1)
+const bigNumber = 9007199254740991n;
+const anotherBigNumber = BigInt("9007199254740991");
+```
+
+### Type Conversion
+```javascript
+// String to Number
+const strNum = "42";
+const num1 = Number(strNum); // 42
+const num2 = parseInt(strNum, 10); // 42
+const num3 = parseFloat("3.14"); // 3.14
+const num4 = +"42"; // Unary plus operator: 42
+
+// Number to String
+const num = 42;
+const str1 = String(num); // "42"
+const str2 = num.toString(); // "42"
+const str3 = `${num}`; // Template literal: "42"
+
+// To Boolean
+const bool1 = Boolean(1); // true
+const bool2 = !!(0); // false
+const bool3 = Boolean(""); // false
+const bool4 = Boolean("hello"); // true
+
+// Truthy values: true, non-zero numbers, non-empty strings, objects, arrays
+// Falsy values: false, 0, "", null, undefined, NaN
+```
+
+## Operators
+
+### Arithmetic Operators
+```javascript
+let a = 10;
+let b = 3;
+
+// Basic operators
+console.log(a + b); // Addition: 13
+console.log(a - b); // Subtraction: 7
+console.log(a * b); // Multiplication: 30
+console.log(a / b); // Division: 3.3333...
+console.log(a % b); // Modulus (remainder): 1
+console.log(a ** b); // Exponentiation: 1000 (10^3)
+
+// Increment/Decrement
+let count = 5;
+count++; // Post-increment: count = 6
+++count; // Pre-increment: count = 7
+count--; // Post-decrement: count = 6
+--count; // Pre-decrement: count = 5
+```
+
+### Comparison Operators
+```javascript
+let a = 10;
+let b = "10";
+
+// Equality
+console.log(a == b); // True (loose equality, type coercion)
+console.log(a === b); // False (strict equality, no type coercion)
+console.log(a != b); // False (loose inequality)
+console.log(a !== b); // True (strict inequality)
+
+// Relational
+console.log(a > 5); // True
+console.log(a < 5); // False
+console.log(a >= 10); // True
+console.log(a <= 10); // True
+```
+
+### Logical Operators
+```javascript
+const a = true;
+const b = false;
+
+// AND, OR, NOT
+console.log(a && b); // False (both must be true)
+console.log(a || b); // True (at least one must be true)
+console.log(!a); // False (negation)
+
+// Short-circuit evaluation
+let obj = null;
+let name = obj && obj.name; // No error, name is null
+let defaultName = obj?.name || "Default"; // Nullish property access + default
+
+// Nullish coalescing
+let value = null;
+let result = value ?? "Default"; // "Default" (only null/undefined trigger default)
+```
+
+### Assignment Operators
+```javascript
+let a = 10;
+
+// Combined assignment
+a += 5; // a = a + 5 (15)
+a -= 3; // a = a - 3 (12)
+a *= 2; // a = a * 2 (24)
+a /= 4; // a = a / 4 (6)
+a %= 4; // a = a % 4 (2)
+a **= 3; // a = a ** 3 (8)
+
+// Logical assignment (ES2021)
+let value = 0;
+value ||= 10; // value = value || 10 (10)
+value &&= 5; // value = value && 5 (5)
+value ??= 20; // value = value ?? 20 (5, not applied since value isn't null/undefined)
+```
+
+## Functions
+
+### Function Declarations & Expressions
+```javascript
+// Function declaration (hoisted)
+function greet(name) {
+  return `Hello, ${name}!`;
+}
+
+// Function expression (not hoisted)
+const sayHello = function(name) {
+  return `Hello, ${name}!`;
+};
+
+// Arrow function
+const greetPerson = (name) => `Hello, ${name}!`;
+const square = x => x * x; // Single parameter can omit parentheses
+const calculate = (a, b) => {
+  const result = a * b;
+  return result; // Multi-line needs explicit return
+};
+
+// Immediately Invoked Function Expression (IIFE)
+(function() {
+  console.log('This runs immediately!');
+})();
+
+// With parameters
+((name) => {
+  console.log(`Hello, ${name}!`);
+})('John');
+```
+
+### Parameters and Arguments
+```javascript
+// Default parameters
+function greet(name = 'Guest') {
+  return `Hello, ${name}!`;
+}
+console.log(greet()); // "Hello, Guest!"
+
+// Rest parameters
+function sum(...numbers) {
+  return numbers.reduce((total, num) => total + num, 0);
+}
+console.log(sum(1, 2, 3, 4)); // 10
+
+// Parameter destructuring
+function displayPerson({ name, age }) {
+  console.log(`${name} is ${age} years old.`);
+}
+displayPerson({ name: 'John', age: 30 }); // "John is 30 years old."
+```
+
+### Closure
+```javascript
+function createCounter() {
+  let count = 0; // Private variable
+
+  return {
+    increment() {
+      count++;
+      return count;
+    },
+    decrement() {
+      count--;
+      return count;
+    },
+    getCount() {
+      return count;
+    }
+  };
+}
+
+const counter = createCounter();
+console.log(counter.increment()); // 1
+console.log(counter.increment()); // 2
+console.log(counter.getCount()); // 2
+console.log(counter.decrement()); // 1
+```
+
+### Currying
+```javascript
+// Converting a function with multiple arguments into a sequence of functions
+const multiply = a => b => a * b;
+
+const double = multiply(2);
+const triple = multiply(3);
+
+console.log(double(5)); // 10
+console.log(triple(5)); // 15
+
+// Practical example with configuration
+const formatCurrency = currency => amount =>
+  new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency
+  }).format(amount);
+
+const formatUSD = formatCurrency('USD');
+const formatEUR = formatCurrency('EUR');
+
+console.log(formatUSD(100)); // "$100.00"
+console.log(formatEUR(100)); // "€100.00"
+```
+
+## Objects
+
+### Object Creation
+```javascript
+// Object literal
+const person = {
+  name: 'John',
+  age: 30,
+  greet() {
+    return `Hello, my name is ${this.name}`;
+  }
+};
+
+// Constructor function
+function Person(name, age) {
+  this.name = name;
+  this.age = age;
+  this.greet = function() {
+    return `Hello, my name is ${this.name}`;
+  };
+}
+const john = new Person('John', 30);
+
+// ES6 Class (syntactic sugar over prototypes)
+class User {
+  constructor(name, age) {
+    this.name = name;
+    this.age = age;
+  }
+
+  greet() {
+    return `Hello, my name is ${this.name}`;
+  }
+}
+const alice = new User('Alice', 25);
+
+// Object.create()
+const personProto = {
+  greet() {
+    return `Hello, my name is ${this.name}`;
+  }
+};
+const bob = Object.create(personProto);
+bob.name = 'Bob';
+bob.age = 35;
+```
+
+### Object Properties
+```javascript
+const user = {
+  firstName: 'John',
+  lastName: 'Doe',
+
+  // Computed property
+  ['user_' + 123]: 'ID',
+
+  // Method shorthand
+  greet() {
+    return `Hello, ${this.firstName}`;
+  },
+
+  // Getter
+  get fullName() {
+    return `${this.firstName} ${this.lastName}`;
+  },
+
+  // Setter
+  set fullName(value) {
+    [this.firstName, this.lastName] = value.split(' ');
+  }
+};
+
+// Using properties
+console.log(user.firstName); // "John"
+console.log(user['lastName']); // "Doe"
+console.log(user.fullName); // "John Doe"
+user.fullName = 'Jane Smith';
+console.log(user.firstName); // "Jane"
+```
+
+### Prototypes
+```javascript
+// Constructor function
+function Person(name) {
+  this.name = name;
+}
+
+// Adding methods to prototype
+Person.prototype.greet = function() {
+  return `Hello, my name is ${this.name}`;
+};
+
+const john = new Person('John');
+console.log(john.greet()); // "Hello, my name is John"
+
+// Checking prototype chain
+console.log(john.__proto__ === Person.prototype); // true
+console.log(john.__proto__.__proto__ === Object.prototype); // true
+
+// Inheritance
+function Employee(name, position) {
+  Person.call(this, name); // Call parent constructor
+  this.position = position;
+}
+
+// Set up prototype chain
+Employee.prototype = Object.create(Person.prototype);
+Employee.prototype.constructor = Employee;
+
+// Add methods to child
+Employee.prototype.getRole = function() {
+  return `${this.name} works as ${this.position}`;
+};
+
+const jane = new Employee('Jane', 'Developer');
+console.log(jane.greet()); // "Hello, my name is Jane"
+console.log(jane.getRole()); // "Jane works as Developer"
+```
+
+## Arrays
+
+### Array Creation and Access
+```javascript
+// Array literal
+const fruits = ['Apple', 'Banana', 'Cherry'];
+
+// Array constructor
+const numbers = new Array(1, 2, 3, 4);
+const emptyArray = new Array(5); // Creates array with 5 empty slots
+
+// Array.from
+const characters = Array.from('hello'); // ['h', 'e', 'l', 'l', 'o']
+const mapped = Array.from([1, 2, 3], x => x * 2); // [2, 4, 6]
+
+// Array.of
+const items = Array.of(1, 'two', true); // [1, 'two', true]
+
+// Accessing elements
+console.log(fruits[0]); // "Apple"
+console.log(fruits[fruits.length - 1]); // "Cherry"
+
+// Destructuring
+const [first, second, ...rest] = fruits;
+```
+
+### Array Methods for Transformation
+```javascript
+const numbers = [1, 2, 3, 4, 5];
+
+// map - creates a new array with the results of calling a function on every element
+const doubled = numbers.map(num => num * 2); // [2, 4, 6, 8, 10]
+
+// filter - creates a new array with elements that pass the test
+const evens = numbers.filter(num => num % 2 === 0); // [2, 4]
+
+// reduce - applies a function against an accumulator and each element
+const sum = numbers.reduce((total, num) => total + num, 0); // 15
+const product = numbers.reduce((result, num) => result * num, 1); // 120
+
+// flatMap - map followed by flat with depth 1
+const pairs = numbers.flatMap(num => [num, num * 2]);
+// [1, 2, 2, 4, 3, 6, 4, 8, 5, 10]
+```
+
+### Array Methods for Searching
+```javascript
+const numbers = [1, 2, 3, 4, 5];
+const people = [
+  { name: 'John', age: 30 },
+  { name: 'Jane', age: 25 },
+  { name: 'Alex', age: 35 }
+];
+
+// find - returns the first element that satisfies the testing function
+const found = numbers.find(num => num > 3); // 4
+const jane = people.find(person => person.name === 'Jane'); // { name: 'Jane', age: 25 }
+
+// findIndex - returns the index of the first element that satisfies the testing function
+const index = numbers.findIndex(num => num > 3); // 3
+
+// indexOf - returns the first index at which a given element can be found
+const position = numbers.indexOf(3); // 2
+const missing = numbers.indexOf(10); // -1 (not found)
+
+// includes - determines whether an array includes a certain value
+const hasThree = numbers.includes(3); // true
+```
+
+### Array Methods for Modification
+```javascript
+const letters = ['a', 'b', 'c'];
+
+// push - adds elements to the end
+letters.push('d', 'e'); // Returns new length: 5
+// letters is now ['a', 'b', 'c', 'd', 'e']
+
+// pop - removes the last element
+const last = letters.pop(); // Returns 'e'
+// letters is now ['a', 'b', 'c', 'd']
+
+// unshift - adds elements to the beginning
+letters.unshift('z'); // Returns new length: 5
+// letters is now ['z', 'a', 'b', 'c', 'd']
+
+// shift - removes the first element
+const first = letters.shift(); // Returns 'z'
+// letters is now ['a', 'b', 'c', 'd']
+
+// splice - changes contents by removing/replacing elements
+letters.splice(1, 2, 'x', 'y'); // Returns ['b', 'c']
+// letters is now ['a', 'x', 'y', 'd']
+
+// slice - returns a shallow copy of a portion of an array
+const portion = letters.slice(1, 3); // ['x', 'y']
+// letters remains unchanged
+
+// sort - sorts the elements of an array in place
+const unsorted = [3, 1, 4, 2];
+unsorted.sort(); // [1, 2, 3, 4]
+
+// custom sort
+people.sort((a, b) => a.age - b.age); // Sort by age ascending
+```
+
+## Asynchronous JavaScript
+
+### Promises
+```javascript
+// Creating a promise
+const promise = new Promise((resolve, reject) => {
+  // Async operation
+  const success = true;
+
+  if (success) {
+    resolve('Operation succeeded');
+  } else {
+    reject(new Error('Operation failed'));
+  }
+});
+
+// Consuming a promise
+promise
+  .then(result => {
+    console.log(result); // "Operation succeeded"
+    return 'Next step';
+  })
+  .then(nextResult => {
+    console.log(nextResult); // "Next step"
+  })
+  .catch(error => {
+    console.error(error); // Error handling
+  })
+  .finally(() => {
+    console.log('Promise settled'); // Runs regardless of success/failure
+  });
+
+// Promise methods
+const promises = [
+  Promise.resolve('Success 1'),
+  Promise.resolve('Success 2'),
+  Promise.reject(new Error('Failure'))
+];
+
+// Promise.all - waits for all promises (rejects if any promise rejects)
+Promise.all([Promise.resolve(1), Promise.resolve(2)])
+  .then(results => console.log(results)); // [1, 2]
+
+// Promise.allSettled - waits for all promises (never rejects)
+Promise.allSettled(promises)
+  .then(results => console.log(results));
+  // [{status: "fulfilled", value: "Success 1"},
+  //  {status: "fulfilled", value: "Success 2"},
+  //  {status: "rejected", reason: Error}]
+
+// Promise.race - returns first settled promise (success or failure)
+Promise.race([
+  new Promise(resolve => setTimeout(() => resolve('Fast'), 100)),
+  new Promise(resolve => setTimeout(() => resolve('Slow'), 200))
+])
+  .then(result => console.log(result)); // "Fast"
+
+// Promise.any - returns first fulfilled promise (ES2021)
+Promise.any([
+  Promise.reject(new Error('Failure 1')),
+  Promise.resolve('Success'),
+  Promise.reject(new Error('Failure 2'))
+])
+  .then(result => console.log(result)); // "Success"
+```
+
+### Async/Await
+```javascript
+// Async function declaration
+async function fetchData() {
+  try {
+    // await suspends execution until promise is settled
+    const response = await fetch('https://api.example.com/data');
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Fetching data failed:', error);
+    throw error; // Re-throw or handle
+  }
+}
+
+// Using an async function
+fetchData()
+  .then(data => console.log('Data:', data))
+  .catch(error => console.error('Error in caller:', error));
+
+// Async arrow function
+const getData = async (id) => {
+  const response = await fetch(`https://api.example.com/data/${id}`);
+  return response.json();
+};
+
+// Parallel async operations
+async function fetchMultiple() {
+  // Start both fetch operations in parallel
+  const userPromise = fetch('https://api.example.com/user').then(r => r.json());
+  const postsPromise = fetch('https://api.example.com/posts').then(r => r.json());
+
+  // Await results
+  const user = await userPromise;
+  const posts = await postsPromise;
+
+  return { user, posts };
+}
+
+// Alternative with Promise.all
+async function fetchMultipleWithPromiseAll() {
+  const [user, posts] = await Promise.all([
+    fetch('https://api.example.com/user').then(r => r.json()),
+    fetch('https://api.example.com/posts').then(r => r.json())
+  ]);
+
+  return { user, posts };
+}
+```
+
+## Modules
+
+### ES Modules
+```javascript
+// file: math.js
+// Named exports
+export const PI = 3.14159;
+export function add(a, b) {
+  return a + b;
+}
+
+export function multiply(a, b) {
+  return a * b;
+}
+
+// Default export
+export default class Calculator {
+  add(a, b) {
+    return a + b;
+  }
+}
+
+// file: app.js
+// Import default export
+import Calculator from './math.js';
+
+// Import named exports
+import { PI, add } from './math.js';
+
+// Import all named exports as namespace
+import * as MathUtils from './math.js';
+
+// Rename imports
+import { add as sum, multiply as product } from './math.js';
+
+// Mixed imports
+import Calculator, { PI } from './math.js';
+
+// Dynamic import (returns a promise)
+async function loadModule() {
+  const mathModule = await import('./math.js');
+  console.log(mathModule.PI);
+}
+```
+
+## Error Handling
+
+### Try/Catch/Finally
+```javascript
+try {
+  // Code that might throw an error
+  const result = riskyOperation();
+  console.log(result);
+} catch (error) {
+  // Error handling
+  console.error('An error occurred:', error.message);
+
+  // Check error type
+  if (error instanceof TypeError) {
+    console.log('Type error occurred');
+  } else if (error instanceof ReferenceError) {
+    console.log('Reference error occurred');
+  }
+} finally {
+  // Runs regardless of success/error
+  console.log('Cleanup operations');
+}
+
+// Try/catch with async/await
+async function fetchUserData() {
+  try {
+    const response = await fetch('https://api.example.com/user');
+    if (!response.ok) throw new Error(`HTTP error: ${response.status}`);
+    return await response.json();
+  } catch (error) {
+    console.error('Could not fetch user data:', error);
+    return null; // Fallback value
+  }
+}
+```
+
+### Custom Errors
+```javascript
+// Creating a custom error class
+class ValidationError extends Error {
+  constructor(message, field) {
+    super(message);
+    this.name = 'ValidationError';
+    this.field = field;
+  }
+}
+
+// Using a custom error
+function validateUser(user) {
+  if (!user.name) {
+    throw new ValidationError('Name is required', 'name');
+  }
+
+  if (!user.email) {
+    throw new ValidationError('Email is required', 'email');
+  }
+}
+
+try {
+  validateUser({ name: 'John' });
+} catch (error) {
+  if (error instanceof ValidationError) {
+    console.log(`${error.name}: ${error.message} (Field: ${error.field})`);
+  } else {
+    console.error('Unknown error:', error);
+  }
+}
+```
+
+## Advanced JavaScript Features
+
+### Iterators and Generators
+```javascript
+// Iterator
+const range = {
+  from: 1,
+  to: 5,
+
+  // Make the object iterable
+  [Symbol.iterator]() {
+    let current = this.from;
+    const last = this.to;
+
+    // Iterator object
+    return {
+      next() {
+        if (current <= last) {
+          return { value: current++, done: false };
+        } else {
+          return { done: true };
+        }
+      }
+    };
+  }
+};
+
+// Using iterator in for...of loop
+for (const num of range) {
+  console.log(num); // 1, 2, 3, 4, 5
+}
+
+// Generator function (simpler way to create iterators)
+function* generateSequence(from, to) {
+  for (let i = from; i <= to; i++) {
+    yield i;
+  }
+}
+
+const generator = generateSequence(1, 5);
+console.log(generator.next()); // { value: 1, done: false }
+console.log(generator.next()); // { value: 2, done: false }
+
+// Using generator in for...of loop
+for (const num of generateSequence(1, 5)) {
+  console.log(num); // 1, 2, 3, 4, 5
+}
+
+// Async generator
+async function* fetchPages() {
+  let page = 1;
+  while (page <= 3) {
+    const response = await fetch(`https://api.example.com/pages?page=${page}`);
+    const data = await response.json();
+    yield data;
+    page++;
+  }
+}
+
+// Using async generator with for await...of
+async function processPages() {
+  for await (const page of fetchPages()) {
+    console.log(page);
+  }
+}
+```
+
+### Proxies
+```javascript
+// Object to proxy
+const user = {
+  name: 'John',
+  age: 30
+};
+
+// Handler with traps
+const handler = {
+  // Intercept property access
+  get(target, prop) {
+    if (prop === 'fullName') {
+      return `${target.name} Doe`;
+    }
+    return target[prop];
+  },
+
+  // Intercept property assignment
+  set(target, prop, value) {
+    if (prop === 'age') {
+      if (typeof value !== 'number') {
+        throw new TypeError('Age must be a number');
+      }
+      if (value < 0 || value > 120) {
+        throw new RangeError('Age must be between 0 and 120');
+      }
+    }
+    target[prop] = value;
+    return true; // Indicate success
+  },
+
+  // Define if property exists on object
+  has(target, prop) {
+    if (prop === 'fullName') return true;
+    return prop in target;
+  }
+};
+
+// Create proxy
+const userProxy = new Proxy(user, handler);
+
+// Usage
+console.log(userProxy.name); // "John"
+console.log(userProxy.fullName); // "John Doe"
+console.log('fullName' in userProxy); // true
+
+userProxy.age = 35; // OK
+// userProxy.age = 150; // RangeError
+// userProxy.age = "thirty"; // TypeError
+```
+
+### Reflect API
+```javascript
+// Object to work with
+const user = {
+  name: 'John',
+  age: 30
+};
+
+// Get properties
+console.log(Reflect.get(user, 'name')); // "John"
+
+// Set properties
+Reflect.set(user, 'age', 31);
+console.log(user.age); // 31
+
+// Check if property exists
+console.log(Reflect.has(user, 'name')); // true
+console.log(Reflect.has(user, 'address')); // false
+
+// Delete property
+Reflect.deleteProperty(user, 'age');
+console.log(user.age); // undefined
+
+// Get all own keys
+console.log(Reflect.ownKeys(user)); // ["name"]
+
+// Define a property
+Reflect.defineProperty(user, 'email', {
+  value: 'john@example.com',
+  writable: true,
+  enumerable: true,
+  configurable: true
+});
+
+// Create an object with a prototype
+const person = { greet() { return `Hello, ${this.name}`; } };
+const employee = Reflect.construct(function() {}, [], person);
+Reflect.set(employee, 'name', 'John');
+console.log(employee.greet()); // "Hello, John"
+```
+
+### Optional Chaining and Nullish Coalescing
+```javascript
+// Optional chaining (?.) - safely access nested properties
+const user = {
+  name: 'John',
+  address: null,
+  // profile: { settings: { theme: 'dark' } }
+};
+
+// Without optional chaining
+const theme1 = user.profile && user.profile.settings && user.profile.settings.theme; // undefined
+
+// With optional chaining
+const theme2 = user.profile?.settings?.theme; // undefined, no error
+const city = user.address?.city; // undefined, no error
+const nameLength = user.name?.length; // 4
+
+// Optional method call
+const result = user.calculateTotal?.(100, 20) ?? 0; // 0 (method doesn't exist)
+
+// Optional element access
+const firstSetting = user.settings?.[0] ?? 'default'; // "default"
+
+// Nullish coalescing (??) - provides default for null/undefined only
+const count = 0;
+const quantity1 = count || 10; // 10 (0 is falsy)
+const quantity2 = count ?? 10; // 0 (preserves 0, '', false)
+
+const userName = user.name ?? 'Anonymous'; // "John"
+const userCity = user.address?.city ?? 'Unknown'; // "Unknown"
+```
+
+### Map, Set, WeakMap, WeakSet
+```javascript
+// Map - key-value collection where keys can be any type
+const userMap = new Map();
+
+// Set entries
+userMap.set('name', 'John');
+userMap.set(42, 'Answer');
+userMap.set(true, 'Boolean key');
+
+// Object as key
+const userObject = { id: 1 };
+userMap.set(userObject, { name: 'John', role: 'Admin' });
+
+// Get values
+console.log(userMap.get('name')); // "John"
+console.log(userMap.get(userObject)); // { name: 'John', role: 'Admin' }
+
+// Check if key exists
+console.log(userMap.has(true)); // true
+
+// Delete entry
+userMap.delete(42);
+
+// Size and clearing
+console.log(userMap.size); // 3
+userMap.clear(); // Removes all entries
+
+// Iteration
+const fruitMap = new Map([
+  ['apple', 5],
+  ['banana', 10],
+  ['orange', 7]
+]);
+
+// Iterate over [key, value] pairs
+for (const [fruit, count] of fruitMap) {
+  console.log(`${fruit}: ${count}`);
+}
+
+// Get iterators
+console.log([...fruitMap.keys()]); // ["apple", "banana", "orange"]
+console.log([...fruitMap.values()]); // [5, 10, 7]
+console.log([...fruitMap.entries()]); // [["apple", 5], ["banana", 10], ["orange", 7]]
+
+// Set - collection of unique values
+const uniqueNumbers = new Set([1, 2, 3, 3, 4, 4, 5]);
+console.log([...uniqueNumbers]); // [1, 2, 3, 4, 5]
+
+// Add and delete
+uniqueNumbers.add(6);
+uniqueNumbers.delete(1);
+
+// Check if value exists
+console.log(uniqueNumbers.has(3)); // true
+
+// Size and clearing
+console.log(uniqueNumbers.size); // 5
+uniqueNumbers.clear();
+
+// WeakMap - keys must be objects, doesn't prevent garbage collection
+let obj1 = { name: 'Object 1' };
+let obj2 = { name: 'Object 2' };
+
+const weakMap = new WeakMap();
+weakMap.set(obj1, 'Data for object 1');
+weakMap.set(obj2, 'Data for object 2');
+
+console.log(weakMap.get(obj1)); // "Data for object 1"
+
+obj1 = null; // Now the entry in weakMap can be garbage collected
+
+// WeakSet - contains only objects, doesn't prevent garbage collection
+const visited = new WeakSet();
+let user1 = { name: 'John' };
+let user2 = { name: 'Jane' };
+
+visited.add(user1);
+visited.add(user2);
+
+console.log(visited.has(user1)); // true
+
+user1 = null; // Now user1 can be garbage collected from the WeakSet
+```
+
+## DOM Manipulation
+
+### Selecting Elements
+```javascript
+// Get element by ID
+const main = document.getElementById('main');
+
+// Query selector (returns first matching element)
+const container = document.querySelector('.container');
+
+// Query selector all (returns NodeList)
+const items = document.querySelectorAll('.item');
+items.forEach(item => console.log(item));
+
+// Get elements by class name (returns HTMLCollection)
+const buttons = document.getElementsByClassName('btn');
+
+// Get elements by tag name (returns HTMLCollection)
+const divs = document.getElementsByTagName('div');
+
+// Get by attribute
+const dataElements = document.querySelectorAll('[data-type]');
+
+// Traversing
+const parent = item.parentElement;
+const children = item.children; // HTMLCollection
+const siblings = item.parentElement.children;
+const nextSibling = item.nextElementSibling;
+const prevSibling = item.previousElementSibling;
+```
+
+### Manipulating Elements
+```javascript
+// Creating elements
+const div = document.createElement('div');
+const textNode = document.createTextNode('Hello World');
+
+// Setting content
+element.textContent = 'New text content'; // Text only
+element.innerHTML = '<span>HTML content</span>'; // HTML (be careful with XSS)
+element.innerText = 'Text as rendered'; // Text as visibly rendered
+
+// Appending
+parent.appendChild(child); // Add at end
+parent.prepend(child); // Add at beginning
+parent.insertBefore(newNode, referenceNode); // Add before specific node
+
+// Modern methods
+parent.append(elem1, elem2, 'text'); // Multiple nodes + text
+parent.prepend(elem1, 'text');
+elem.before(newElem); // Insert before elem
+elem.after(newElem); // Insert after elem
+elem.replaceWith(newElem); // Replace elem
+
+// Removing elements
+element.remove(); // Modern method
+parent.removeChild(child); // Older method
+
+// Cloning
+const clone = element.cloneNode(true); // Deep clone with all descendants
+const shallowClone = element.cloneNode(false); // Just the element itself
+```
+
+### Attributes and Properties
+```javascript
+// Get, set, check attributes
+const value = element.getAttribute('data-id');
+element.setAttribute('data-id', '123');
+const hasAttr = element.hasAttribute('disabled');
+element.removeAttribute('disabled');
+
+// Direct property access
+element.id = 'newId';
+element.className = 'btn primary';
+element.disabled = true;
+
+// Classes
+element.classList.add('active');
+element.classList.remove('hidden');
+element.classList.toggle('selected');
+element.classList.replace('old', 'new');
+const hasClass = element.classList.contains('active');
+
+// Styles
+element.style.color = 'red';
+element.style.backgroundColor = 'blue'; // Camel case for CSS properties
+element.style.cssText = 'color: red; background-color: blue;'; // Multiple styles
+
+// Get computed style (actual applied style)
+const computedStyle = getComputedStyle(element);
+console.log(computedStyle.color);
+
+// Dataset for data-* attributes
+console.log(element.dataset.id); // Gets data-id
+element.dataset.status = 'active'; // Sets data-status
+```
+
+### Events
+```javascript
+// Adding event listeners
+element.addEventListener('click', handleClick);
+element.addEventListener('mouseover', handleMouseOver, { once: true }); // Fire once only
+
+function handleClick(event) {
+  console.log('Clicked!', event.target);
+  event.preventDefault(); // Prevent default behavior
+  event.stopPropagation(); // Stop event bubbling
+}
+
+// Removing event listeners
+element.removeEventListener('click', handleClick);
+
+// Event delegation
+document.getElementById('parent').addEventListener('click', function(event) {
+  if (event.target.matches('.button')) {
+    console.log('Button clicked:', event.target);
+  }
+});
+
+// Common events
+// Mouse: click, dblclick, mousedown, mouseup, mousemove, mouseover, mouseout
+// Keyboard: keydown, keyup, keypress
+// Form: submit, reset, change, input
+// Document: DOMContentLoaded, load, resize, scroll
+// Drag: dragstart, dragend, dragover, drop
+
+// Custom events
+const customEvent = new CustomEvent('userAction', {
+  detail: { username: 'john' },
+  bubbles: true,
+  cancelable: true
+});
+element.dispatchEvent(customEvent);
+
+// Listen for custom event
+element.addEventListener('userAction', (event) => {
+  console.log('User:', event.detail.username);
+});
+```
+
+## Browser APIs
+
+### Fetch API
+```javascript
+// Basic GET request
+fetch('https://api.example.com/data')
+  .then(response => {
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    return response.json(); // Parse JSON response
+  })
+  .then(data => {
+    console.log('Data:', data);
+  })
+  .catch(error => {
+    console.error('Error:', error);
+  });
+
+// POST request with options
+fetch('https://api.example.com/submit', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'Authorization': 'Bearer token123'
+  },
+  body: JSON.stringify({
+    name: 'John',
+    email: 'john@example.com'
+  })
+})
+  .then(response => response.json())
+  .then(data => console.log('Success:', data))
+  .catch(error => console.error('Error:', error));
+
+// Async/await with fetch
+async function fetchData() {
+  try {
+    const response = await fetch('https://api.example.com/data');
+    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Fetching data failed:', error);
+    throw error;
+  }
+}
+
+// Abort a fetch request
+const controller = new AbortController();
+const signal = controller.signal;
+
+fetch('https://api.example.com/data', { signal })
+  .then(response => response.json())
+  .then(data => console.log(data))
+  .catch(error => {
+    if (error.name === 'AbortError') {
+      console.log('Fetch aborted');
+    } else {
+      console.error('Error:', error);
+    }
+  });
+
+// Abort after timeout
+setTimeout(() => controller.abort(), 5000); // Abort after 5 seconds
+```
+
+### LocalStorage and SessionStorage
+```javascript
+// LocalStorage - persists across browser sessions
+// Store data
+localStorage.setItem('username', 'john');
+localStorage.setItem('preferences', JSON.stringify({ theme: 'dark', fontSize: 14 }));
+
+// Retrieve data
+const username = localStorage.getItem('username'); // "john"
+const preferences = JSON.parse(localStorage.getItem('preferences'));
+
+// Remove single item
+localStorage.removeItem('username');
+
+// Clear all items
+localStorage.clear();
+
+// Storage events (fires in OTHER tabs when storage changes)
+window.addEventListener('storage', event => {
+  console.log('Key changed:', event.key);
+  console.log('Old value:', event.oldValue);
+  console.log('New value:', event.newValue);
+  console.log('Storage area:', event.storageArea); // localStorage or sessionStorage
+});
+
+// SessionStorage - clears when the session ends (tab closes)
+sessionStorage.setItem('temp', 'value');
+const temp = sessionStorage.getItem('temp');
+sessionStorage.removeItem('temp');
+sessionStorage.clear();
+```
+
+### Web Workers
+```javascript
+// Main thread code
+// Create a new worker
+const worker = new Worker('worker.js');
+
+// Send message to worker
+worker.postMessage({ action: 'calculate', data: [1, 2, 3, 4, 5] });
+
+// Receive message from worker
+worker.onmessage = function(event) {
+  console.log('Result from worker:', event.data);
+};
+
+// Handle errors
+worker.onerror = function(error) {
+  console.error('Worker error:', error.message);
+};
+
+// Terminate worker
+worker.terminate();
+
+// ---- worker.js (separate file) ----
+// Worker thread code
+self.onmessage = function(event) {
+  const { action, data } = event.data;
+
+  if (action === 'calculate') {
+    // Perform heavy calculation
+    const result = data.reduce((sum, num) => sum + num, 0);
+
+    // Send result back to main thread
+    self.postMessage({ result });
+  }
+};
+```
+
+### Intersection Observer
+```javascript
+// Detect when elements enter/exit the viewport
+const options = {
+  root: null, // viewport
+  rootMargin: '0px',
+  threshold: 0.5 // 50% of element visible
+};
+
+const callback = (entries, observer) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      console.log('Element is visible');
+      entry.target.classList.add('visible');
+
+      // Stop observing if needed
+      // observer.unobserve(entry.target);
+    } else {
+      console.log('Element is not visible');
+      entry.target.classList.remove('visible');
+    }
+  });
+};
+
+const observer = new IntersectionObserver(callback, options);
+
+// Start observing elements
+const elements = document.querySelectorAll('.lazy-load');
+elements.forEach(element => {
+  observer.observe(element);
+});
+
+// Lazy loading images example
+document.querySelectorAll('img[data-src]').forEach(img => {
+  observer.observe(img);
+});
+
+// In the callback
+if (entry.isIntersecting) {
+  const img = entry.target;
+  img.src = img.dataset.src;
+  img.removeAttribute('data-src');
+  observer.unobserve(img);
+}
+```
+
+## Regular Expressions
+
+### Regexp Creation and Testing
+```javascript
+// Literal notation
+const pattern1 = /hello/;
+const pattern2 = /hello/i; // i flag: case-insensitive
+const pattern3 = /hello/g; // g flag: global (all matches)
+const pattern4 = /hello/m; // m flag: multiline
+
+// Constructor
+const pattern5 = new RegExp('hello');
+const pattern6 = new RegExp('hello', 'ig'); // Multiple flags
+
+// Testing for matches
+const text = 'Hello, world!';
+console.log(/hello/i.test(text)); // true - checks if pattern exists
+console.log(/bye/.test(text)); // false
+```
+
+### Pattern Matching
+```javascript
+const text = 'Hello, my phone number is 555-123-4567 and my email is john@example.com';
+
+// exec() - returns array with match info or null
+const phoneRegex = /(\d{3})-(\d{3})-(\d{4})/;
+const match = phoneRegex.exec(text);
+console.log(match[0]); // "555-123-4567" (full match)
+console.log(match[1]); // "555" (first group)
+console.log(match[2]); // "123" (second group)
+console.log(match.index); // Position of match
+
+// match() - returns array of matches or null
+const result = text.match(/\d{3}-\d{3}-\d{4}/);
+console.log(result[0]); // "555-123-4567"
+
+// Global matching with match()
+const emails = 'Contact john@example.com or mary@example.org';
+const allEmails = emails.match(/\w+@\w+\.\w+/g);
+console.log(allEmails); // ["john@example.com", "mary@example.org"]
+
+// matchAll() - returns iterator of all matches (ES2020)
+const emailsIterator = emails.matchAll(/(\w+)@(\w+)\.(\w+)/g);
+for (const match of emailsIterator) {
+  console.log(match[0]); // Full match
+  console.log(match[1]); // Username
+  console.log(match[2]); // Domain
+  console.log(match[3]); // TLD
+}
+
+// search() - returns index of match or -1
+const index = text.search(/phone/);
+console.log(index); // 9
+```
+
+### String Methods with RegExp
+```javascript
+const text = 'Hello, world! Hello, JavaScript!';
+
+// replace() - replace matches
+const noHellos = text.replace(/Hello/g, 'Hi');
+console.log(noHellos); // "Hi, world! Hi, JavaScript!"
+
+// Using capture groups in replacement
+const phones = 'Call 555-123-4567 or 555-987-6543';
+const formattedPhones = phones.replace(/(\d{3})-(\d{3})-(\d{4})/g, '($1) $2-$3');
+console.log(formattedPhones); // "Call (555) 123-4567 or (555) 987-6543"
+
+// replaceAll() - replace all matches (ES2021)
+// Same as replace with global flag
+const allReplaced = text.replaceAll('Hello', 'Hi');
+console.log(allReplaced); // "Hi, world! Hi, JavaScript!"
+
+// split() - split string by pattern
+const csv = 'apple,orange,banana';
+const fruits = csv.split(/,/);
+console.log(fruits); // ["apple", "orange", "banana"]
+
+// Split with capturing groups
+const dateString = '2023-04-15';
+const dateParts = dateString.split(/([-/])/);
+console.log(dateParts); // ["2023", "-", "04", "-", "15"]
+```
+
+### Common Regexp Patterns
+```javascript
+// Email validation
+const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+console.log(emailRegex.test('user@example.com')); // true
+
+// URL validation
+const urlRegex = /^(https?:\/\/)?([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}(\/\S*)?$/;
+console.log(urlRegex.test('https://example.com/path')); // true
+
+// US phone number
+const phoneRegex = /^\(?(\d{3})\)?[-. ]?(\d{3})[-. ]?(\d{4})$/;
+console.log(phoneRegex.test('(555) 123-4567')); // true
+
+// Password strength (min 8 chars, at least 1 uppercase, 1 lowercase, 1 number)
+const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+console.log(passwordRegex.test('Passw0rd')); // true
+
+// Date validation (YYYY-MM-DD)
+const dateRegex = /^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/;
+console.log(dateRegex.test('2023-01-15')); // true
+
+// IPv4 address
+const ipv4Regex = /^(?:(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]\d|\d)\.){3}(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]\d|\d)$/;
+console.log(ipv4Regex.test('192.168.1.1')); // true
+```
+
+## Debugging Techniques
+
+### Console Methods
+```javascript
+// Basic logging
+console.log('Basic message');
+console.info('Informational message');
+console.warn('Warning message');
+console.error('Error message');
+
+// Grouped logs
+console.group('User Details');
+console.log('Name: John');
+console.log('Age: 30');
+console.groupEnd();
+
+// Collapsed group
+console.groupCollapsed('Advanced Options');
+console.log('Option 1');
+console.log('Option 2');
+console.groupEnd();
+
+// Timing
+console.time('Operation');
+// ...some operation...
+console.timeEnd('Operation'); // "Operation: 5.67ms"
+
+// Counting
+for (let i = 0; i < 3; i++) {
+  console.count('Loop iteration');
+}
+console.countReset('Loop iteration');
+
+// Table format
+console.table([
+  { name: 'John', age: 30 },
+  { name: 'Jane', age: 25 }
+]);
+
+// Assertion
+console.assert(1 === 2, 'This will be shown because the assertion failed');
+
+// Custom styling
+console.log('%cStyled text', 'color: red; font-size: 20px; background: yellow;');
+```
+
+### Debugger Statement
+```javascript
+function calculateTotal(items) {
+  let total = 0;
+
+  for (let i = 0; i < items.length; i++) {
+    debugger; // Execution will pause here when dev tools are open
+    total += items[i].price * items[i].quantity;
+  }
+
+  return total;
+}
+```
+
+### Performance Testing
+```javascript
+// Measure time
+const start = performance.now();
+// ...code to measure...
+const end = performance.now();
+console.log(`Operation took ${end - start} milliseconds`);
+
+// Performance marks and measures
+performance.mark('start');
+// ...code to measure...
+performance.mark('end');
+performance.measure('Operation', 'start', 'end');
+
+// Get all measurements
+const measures = performance.getEntriesByType('measure');
+console.log(measures);
+
+// Clear marks and measures
+performance.clearMarks();
+performance.clearMeasures();
+```
+
+## Modern JavaScript Tips
+
+### Nullish Coalescing and Optional Chaining
+```javascript
+// Nullish coalescing (??) - provides default only for null/undefined
+const count = 0;
+const qty = count ?? 10; // 0 (preserves 0, empty string, false)
+
+// Logical OR (||) for truly default values
+const text = "" || "Default"; // "Default" (replaces all falsy values)
+
+// Optional chaining (?.) - safely access properties
+const user = {
+  name: 'John',
+  // address doesn't exist
+};
+
+// Safe property access
+const city = user?.address?.city; // undefined, no error
+
+// Safe method call
+user.updateProfile?.(); // No error if method doesn't exist
+
+// Safe array access
+const firstItem = itemList?.[0]; // undefined if itemList is null/undefined
+```
+
+### Numeric Separators
+```javascript
+// Make numbers more readable
+const oneMillion = 1_000_000;
+const binary = 0b1010_1010;
+const hex = 0xA0_B0_C0;
+```
+
+### Private Class Fields
+```javascript
+class User {
+  // Public field
+  role = 'user';
+
+  // Private field (# prefix)
+  #apiKey = 'secret';
+
+  constructor(name) {
+    this.name = name;
+  }
+
+  // Public method
+  getProfile() {
+    return {
+      name: this.name,
+      role: this.role
+    };
+  }
+
+  // Private method
+  #validateApiKey(key) {
+    return key === this.#apiKey;
+  }
+
+  authenticate(key) {
+    return this.#validateApiKey(key);
+  }
+}
+
+const user = new User('John');
+console.log(user.role); // "user"
+// console.log(user.#apiKey); // SyntaxError - private field
+```
+
+### Top-Level Await (ES2022)
+```javascript
+// In modules, await can be used outside async functions
+// Before ES2022:
+const getData = async () => {
+  const response = await fetch('https://api.example.com/data');
+  return response.json();
+};
+
+const data = await getData();
+
+// With top-level await (ES2022):
+const response = await fetch('https://api.example.com/data');
+const data = await response.json();
+console.log(data);
+```
+
+### Object Rest/Spread Properties
+```javascript
+// Object spread (shallow copy)
+const user = { name: 'John', age: 30 };
+const userCopy = { ...user };
+
+// Merge objects
+const defaults = { theme: 'light', notifications: true };
+const userSettings = { theme: 'dark' };
+const settings = { ...defaults, ...userSettings }; // Later properties override earlier ones
+
+// Object rest (collect remaining properties)
+const { name, ...rest } = user;
+console.log(name); // "John"
+console.log(rest); // { age: 30 }
+```
+
+### Method Chaining
+```javascript
+// Basic example
+class Calculator {
+  constructor() {
+    this.value = 0;
+  }
+
+  add(num) {
+    this.value += num;
+    return this; // Return this for chaining
+  }
+
+  subtract(num) {
+    this.value -= num;
+    return this;
+  }
+
+  multiply(num) {
+    this.value *= num;
+    return this;
+  }
+
+  getValue() {
+    return this.value;
+  }
+}
+
+// Using method chaining
+const result = new Calculator()
+  .add(5)
+  .multiply(2)
+  .subtract(3)
+  .getValue(); // 7
+
+// Array method chaining
+const result = [1, 2, 3, 4, 5]
+  .filter(num => num % 2 === 0)
+  .map(num => num * 2)
+  .reduce((sum, num) => sum + num, 0); // 12
+```

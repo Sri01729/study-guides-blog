@@ -6,213 +6,196 @@ category: "guides"
 subcategory: "projects"
 ---
 
-# 🌱 Project Title: **EnergyIQ – Smart Energy Usage Dashboard**
+# EnergyIQ – Detailed Project Explanation
 
-## 🧩 Business Need:
-Brookfield Renewable aimed to offer corporate customers real-time insights into their energy usage to promote sustainability and optimize power consumption. The existing legacy monitoring tools were outdated, non-scalable, and had performance bottlenecks.
+## Introduction
+I’m **Srinivas Alahari**, a Full Stack Developer with over 5 years of experience in designing and building scalable microservices-based applications. Currently at **Brookfield Renewable** in Toronto, I specialize in Java Spring Boot backends, React.js frontends, and cloud-native deployments on AWS. In this project, I led the migration of legacy energy monitoring tools to a modern platform, delivering real-time insights and driving operational efficiencies.
 
-## 🔧 Technical Implementation:
-* **Architecture**: Microservices-based, containerized with Docker, deployed via AWS EC2 using CloudFormation.
-* **Backend**:
-  * Developed Spring Boot services with Java 11 to handle energy data ingestion, aggregation, and RESTful APIs.
-  * Integrated Apache Kafka + SNS/SQS for high-volume, event-driven data pipelines (from energy meters).
-  * Used RDBMS (PostgreSQL) for structured reporting and MongoDB for time-series data.
-  * Applied OAuth2 for secure API access.
-* **Frontend**:
-  * Built a React.js-based dashboard to visualize real-time energy usage, carbon footprint, and cost trends.
-  * Implemented reusable components to reduce duplication and improve maintainability.
-* **CI/CD**:
-  * Jenkins + Docker + Git for CI/CD.
-  * Introduced Canary deployments for stable rollouts.
 
-## 👤 Your Role & Responsibilities:
-* Spearheaded the migration from monolith to Spring Boot microservices.
-* Created and secured APIs for energy usage data and alert generation.
-* Built a performance monitoring module that detected hung threads and optimized load handling in multi-threaded APIs.
-* Managed cloud deployment infrastructure using AWS EC2 and CloudFormation.
+Based on the sources provided, here is a detailed explanation of the EnergyIQ project, connecting concepts mentioned in the references:
 
-## 🧱 Challenges Overcome:
-* **Challenge**: Data ingestion latency from IoT energy meters.
-  * **Solution**: Used Kafka with async message handling (SNS + SQS) to decouple producer-consumer flow.
-* **Challenge**: High server load causing timeouts.
-  * **Solution**: Optimized DB queries, parallelized API processing, applied thread pool tuning in Spring Boot.
+## Project Overview
+Your project involved migrating Brookfield Renewable’s legacy energy monitoring tools to a modern, scalable platform to provide corporate customers with **real-time insights into their energy usage**. This initiative aimed to promote sustainability and optimize power consumption. The existing tools were outdated, non‑scalable, and suffered from performance bottlenecks.
 
-## 📈 Business Impact:
-* Reduced operational cost by **20%** post migration from on-premise to AWS.
-* Improved dashboard response time by **25%** using optimized APIs and front-end lazy loading.
-* Enabled sustainability reporting for clients, increasing enterprise customer engagement.
+## Technical Implementation
+- **Microservices Architecture**
+  The system is composed of independent Spring Boot microservices, each responsible for a distinct business function. Spring Cloud was used to manage service discovery, traffic balancing, and secret management.
 
-## 📅 Timeline:
-**7 months** (Nov 2023 – May 2024)
+- **Docker for Containerization**
+  Services were packaged as Docker images (via Dockerfile specifying Java version and application JAR) and deployed on AWS EC2 using CloudFormation templates to automate infrastructure provisioning.
 
-## 👥 Team & Collaboration:
-* 6-member team: 2 frontend devs, 2 backend devs, 1 DevOps, 1 QA.
-* Daily Scrum, 2-week Sprints, Jira for tracking.
+## Data Flow & Architecture Components
 
-## 🔁 Methodology:
-Agile (Scrum), CI/CD-first culture with code reviews, retrospectives, and sprint demos.
+1. **IoT Devices (D1 – Smart Meter Device)**
+   Energy meters generate voltage, current, and power usage readings as the initial data source.
 
-# 🧠 Deep Dive: Understanding EnergyIQ Project Technologies
+2. **Edge Gateway (D2)**
+   Smart meters **publish readings** to an Edge Gateway which aggregates and forwards data.
 
-This guide breaks down the technical aspects of the mock project **"EnergyIQ – Smart Energy Usage Dashboard"** into beginner-friendly explanations so you can confidently discuss them in interviews.
+3. **Messaging Layer**
+   - **Apache Kafka Topic (K)**: Edge Gateway pushes events to Kafka, acting as a high-throughput message broker for energy data.
+   - **AWS SNS & SQS**: Kafka integrates with SNS (publish notifications) and SQS (durable queuing) for asynchronous message handling and decoupling producers/consumers.
+   - **Energy Ingestion Service (E1)** subscribes to Kafka to receive raw meter readings.
 
----
+4. **Backend Services**
+   - **Energy Ingestion Service (E1)** (Spring Boot, Java 11): Subscribes to Kafka, **stores raw data** in **MongoDB (MG)**, and **publishes alerts** via AWS SNS.
+   - **Analytics Engine (A1)**: Triggered by SQS messages (alerts), processes and **stores metrics** in **PostgreSQL (PG)**.
+   - **User Service (U1)**: Manages user profiles and preferences, **reads user settings** from PostgreSQL, and exposes RESTful APIs for the dashboard.
 
-## 1. **Microservices Architecture**
+   ### How E1 Sends Data to A1
+After ingesting meter readings, **E1 publishes events** in two ways:
+1. **Kafka Publish**: E1’s Kafka producer writes each reading event or batch event to a predefined topic. A1 runs a Kafka consumer that subscribes to this topic, receives new events in real time, and processes them.
+2. **SNS→SQS Workflow**: E1 also pushes notifications to an AWS SNS topic; that SNS topic is subscribed by an SQS queue. A1 polls this SQS queue for new messages, ensuring durable, ordered delivery and enabling retries.
 
-### 🔍 What it Means:
-Instead of building one large application (monolith), the system is split into smaller, independent services that each handle a specific business function.
+> **Note:** The Analytics Engine (A1) does **not** call the Energy Ingestion Service (E1) directly via REST or RPC. All communication is handled asynchronously by consuming events from Kafka topics or polling the SQS queue.
 
-### 🧠 Why It's Used:
-It helps scale, deploy, and update individual components without affecting the whole system.
+**Example: Voltage Reading Flow**
+- **Sample Payload** (JSON):
+  ```json
+  {
+    "meterId": "SM-12345",
+    "timestamp": "2025-04-30T14:35:00Z",
+    "readings": {
+      "voltage": 230.5,
+      "current": 5.2,
+      "power": 1200
+    }
+  }
+  ```
+- **Step-by-Step**:
+  1. The Edge Gateway publishes this JSON to the Kafka topic `energy-readings`.
+  2. **Ingestion Service** (E1) consumes the message, validates the payload, and writes it to MongoDB:
+     ```java
+     @KafkaListener(topics = "energy-readings")
+     public void onMessage(ReadingEvent event) {
+         // save raw data
+         mongoTemplate.insert(event, "raw_readings");
+         // publish alert if voltage > threshold
+         if (event.getReadings().getVoltage() > 240) {
+             snsClient.publish(alertTopicArn, event.toString());
+         }
+     }
+     ```
+  3. E1’s Kafka producer then **re-publishes** the same or enriched event to `analytics-readings` topic.
+  4. **Analytics Engine** (A1) consumes from `analytics-readings`, transforms the data (e.g., computes rolling average), and writes metrics to PostgreSQL:
+     ```java
+     @KafkaListener(topics = "analytics-readings")
+     public void processReading(ReadingEvent event) {
+         double rollingAvg = computeRollingAverage(event);
+         jdbcTemplate.update("INSERT INTO metrics (meter_id, timestamp, voltage_avg) VALUES (?, ?, ?)",
+             event.getMeterId(), event.getTimestamp(), rollingAvg);
+     }
+     ```
 
-### 💡 Why We Chose It:
-To allow the energy ingestion, analytics, and user dashboard to work independently.
+This example shows how a single voltage reading flows from ingestion through analytics, demonstrating both code-level handling and end-to-end data movement.
 
-### 🔧 How It Solved the Problem:
-Allowed Brookfield to modernize its system, making updates easier and reducing downtime.
+This dual-path design ensures high throughput (Kafka) plus reliable, decoupled processing (SNS/SQS). A1 picks up messages from either source, applies analytics logic, and writes results to PostgreSQL. (Kafka) plus reliable, decoupled processing (SNS/SQS). A1 picks up messages from either source, applies analytics logic, and writes results to PostgreSQL.
 
-### ❓ Possible Interview Questions:
-- What are the advantages of microservices?
-- How do services communicate with each other?
+### Detailed SNS → SQS Workflow Steps
+1. **Alert Publishing**: Within the `onMessage` listener, when a voltage reading exceeds the threshold, E1 calls:
+   ```java
+   snsClient.publish(alertTopicArn, eventJson);
+   ```
+2. **SNS Fan-out**: AWS SNS receives the `alertTopicArn` publish and immediately pushes the message to all its subscribers, one of which is an SQS queue subscription.
+3. **SQS Ingestion**: The subscribed SQS queue stores the message durably. If SNS delivery fails, it retries (default retry policy).
+4. **Polling by Analytics Engine**: A1 polls the SQS queue at regular intervals (e.g., every 500ms):
+   ```java
+   ReceiveMessageRequest request = new ReceiveMessageRequest(sqsQueueUrl)
+       .withMaxNumberOfMessages(10)
+       .withWaitTimeSeconds(20);
+   List<Message> messages = sqsClient.receiveMessage(request).getMessages();
+   ```
+5. **Message Processing**: For each received `Message`, A1:
+   - Deserializes the JSON payload.
+   - Performs analytics computations.
+   - Writes metrics to PostgreSQL.
+6. **Message Deletion**: After successful processing, A1 deletes the message to prevent reprocessing:
+   ```java
+   sqsClient.deleteMessage(new DeleteMessageRequest(sqsQueueUrl, message.getReceiptHandle()));
+   ```
+7. **Error Handling & Retries**:
+   - If A1 fails to process a message (e.g., DB timeout), the message becomes visible again after the visibility timeout (default 30s).
+   - After a configurable number of retries (e.g., 3), messages can be moved to a dead-letter queue (DLQ) for manual inspection.
 
-### 🤓 Analogy:
-Think of a restaurant with separate chefs for pasta, pizza, and desserts. Each one can work and improve independently.
+This step-by-step SNS → SQS flow ensures that critical alert messages are delivered reliably and processed exactly once by the Analytics Engine.
 
----
+5. **Database Layer**
+   - **MongoDB (MG)**: Time-series storage for raw meter readings.
+   - **PostgreSQL (PG)**: Structured storage for aggregated metrics and user preferences.
 
-## 2. **Spring Boot with Java 11**
+6. **Frontend**
+   - **React.js Dashboard (R)**: Visualizes real-time usage, carbon footprint, and cost trends.
+   - Communicates via RESTful APIs to U1 and A1.
+   - Utilizes reusable components and lazy loading to improve performance.
+ **Frontend**
+   - **React.js Dashboard (R)**: Visualizes real‑time usage, carbon footprint, and cost trends.
+   - Communicates via RESTful APIs to U1 and A1.
+   - Utilizes reusable components and lazy loading to improve performance.
 
-### 🔍 What it Means:
-Spring Boot is a Java framework that simplifies backend application development by providing ready-to-use setups.
+## Relevant Spring Boot Concepts & Practices
 
-### 🧠 Why It's Used:
-Reduces boilerplate code, speeds up development, and makes REST API creation simple.
+- **Microservices & Communication**: REST templates, Feign Client, or message brokers (Kafka/RabbitMQ) for inter‑service calls.
+- **Spring Boot Simplifications**: `@SpringBootApplication` (combines configuration, auto‑configuration, component scanning), JPA Repositories, and conditional configuration (`@ConditionalOnClass`).
+- **REST API Best Practices**: Versioning via URLs, headers, or media types; secured with OAuth2 and Spring Security.
+- **Security**: OAuth2 for token‑based authentication, externalized secrets via Spring Cloud Config or Vault, API Gateway for routing and rate limiting.
+- **Performance Optimization**: Kafka’s async messaging for low latency, optimized DB queries, thread‑pool tuning, caching (`@Cacheable`), and async methods (`@Async`).
+- **CI/CD & Deployment**: Jenkins + Docker + Git with Canary deployments, CloudFormation for infrastructure as code.
+- **Monitoring & Troubleshooting**: Spring Boot Actuator, distributed tracing (Sleuth/Zipkin), ELK stack for centralized logging.
+- **Externalized Configuration**: YAML, environment variables, Spring Cloud Config.
+- **Testing**: Unit tests (JUnit/Mockito), integration tests (`@SpringBootTest`), mocks (WireMock).
+- **Resilience**: Circuit breakers and retries (Resilience4j), timeouts, bulkheads.
+- **Event‑Driven Architecture**: Custom events (`ApplicationEvent`), listeners (`@EventListener`), Kafka/SNS/SQS for cross‑service events.
 
-### 💡 Why We Chose It:
-For quick development of backend services with clean, testable code.
+## Timeline & Team
+- **Duration**: 7 months
+- **Team**: 6 members (2 frontend, 2 backend, 1 DevOps, 1 QA)
+- **Methodology**: Agile Scrum with 2‑week sprints, daily standups, Jira tracking, code reviews, and sprint demos.
 
-### 🔧 How It Solved the Problem:
-Allowed fast creation of backend APIs to handle energy data securely and efficiently.
-
-### ❓ Possible Interview Questions:
-- What's the difference between Spring and Spring Boot?
-- How does Spring Boot simplify development?
-
-### 🤓 Analogy:
-Like using a cake mix instead of baking from scratch—Spring Boot gives you the essentials already set up.
-
----
-
-## 3. **Apache Kafka + SNS/SQS for Messaging**
-
-### 🔍 What it Means:
-Kafka, SNS (Simple Notification Service), and SQS (Simple Queue Service) are tools to send data between services asynchronously.
-
-### 🧠 Why It's Used:
-To handle large amounts of real-time data from energy meters without overwhelming the backend.
-
-### 💡 Why We Chose It:
-Kafka for speed and reliability, SNS/SQS for integration with AWS services.
-
-### 🔧 How It Solved the Problem:
-Allowed real-time ingestion of data while avoiding system crashes due to data spikes.
-
-### ❓ Possible Interview Questions:
-- What's the difference between Kafka and SQS?
-- Why use asynchronous messaging?
-
-### 🤓 Analogy:
-Like a mailroom. Instead of delivering messages directly, you drop them into boxes, and someone else picks them up when ready.
-
----
-
-## 4. **React.js Dashboard**
-
-### 🔍 What it Means:
-React is a JavaScript library for building user interfaces using components.
-
-### 🧠 Why It's Used:
-Provides a dynamic and interactive experience for users.
-
-### 💡 Why We Chose It:
-For its performance, reusability of components, and ease of maintenance.
-
-### 🔧 How It Solved the Problem:
-Enabled real-time data visualizations that help users understand their energy usage.
-
-### ❓ Possible Interview Questions:
-- What are React components?
-- How does React handle state changes?
-
-### 🤓 Analogy:
-Think of React like Lego blocks—you build complex UI with reusable, independent pieces.
-
----
-
-## 5. **AWS EC2 + CloudFormation**
-
-### 🔍 What it Means:
-EC2 = Cloud servers. CloudFormation = Blueprint to automate the creation of AWS resources.
-
-### 🧠 Why It's Used:
-Provides scalable infrastructure and easy repeatable deployments.
-
-### 💡 Why We Chose It:
-To automate deployment and scale up during high traffic.
-
-### 🔧 How It Solved the Problem:
-Ensured consistent deployment across environments and handled load effectively.
-
-### ❓ Possible Interview Questions:
-- What is EC2?
-- How does CloudFormation help with infrastructure as code?
-
-### 🤓 Analogy:
-EC2 = renting a computer in the cloud. CloudFormation = your list of instructions to set up that computer every time.
+## Business Impact
+- **20% reduction** in operational costs post-migration to AWS.
+- **25% improvement** in dashboard response time.
+- Enabled sustainability reporting, boosting enterprise client engagement.
 
 ---
 
-## 6. **OAuth2 Authentication**
+## Q&A: SNS/SQS Fallback Behavior
+**Q: Does SNS push alerts to A1 when Kafka fails, and then A1 gets data from SQS?**
+> **Answer:**
+> - **Parallel Publishing:** The Ingestion Service (E1) publishes each event to **both** Kafka and SNS at the same time, not only on Kafka failure.
+> - **Primary Path:** A1 normally consumes events directly from the Kafka topic for real-time analytics.
+> - **Fallback Path:** Simultaneously, E1 publishes to an SNS topic which fans out to an SQS queue. A1 continuously polls this SQS queue as a fallback.
+> - **Failure Scenario:** If Kafka becomes unavailable, the SQS-backed path still buffers all incoming events. A1 processes messages from SQS at its regular polling interval, ensuring no data loss.
+> - **Consumer Logic:** A1 can deduplicate if it processes the same event from both Kafka and SQS (e.g., by checking unique IDs).
 
-### 🔍 What it Means:
-OAuth2 is a security standard that allows safe access without sharing passwords.
+This setup guarantees continuous data delivery and fault tolerance, using SQS as a reliable backup when Kafka is down.
 
-### 🧠 Why It's Used:
-To secure APIs and user data.
-
-### 💡 Why We Chose It:
-It is industry-standard and trusted by major providers like Google and Facebook.
-
-### 🔧 How It Solved the Problem:
-Prevented unauthorized access to sensitive energy usage data.
-
-### ❓ Possible Interview Questions:
-- What is the OAuth2 flow?
-- How is OAuth2 different from basic auth?
-
-### 🤓 Analogy:
-Think of OAuth2 like a valet key—it gives access without revealing your full credentials.
 
 ---
 
-## 7. **Jenkins + Docker for CI/CD**
+**15. What React hooks were used in the EnergyIQ frontend?**
+> **Answer:**
+> - **useState**: For managing component-level state, such as selected time range or chart visibility.
+> - **useEffect**: To fetch dashboard data on mount and re-fetch when filters change—handles side effects like API calls.
+> - **useContext**: To access global contexts, e.g., theme settings or authentication tokens, without prop drilling.
+> - **useMemo**: To memoize expensive calculations (like processing large arrays of time-series data) and avoid re-computing on every render.
+> - **useCallback**: To memoize event handlers passed to child components (e.g., filter change handlers), preventing unnecessary re-renders.
+> - **useRef**: To hold mutable values (like a reference to a DOM element for dynamic chart resizing) without triggering re-renders.
+> - **useReducer**: For managing complex state logic in a structured way, such as multi-step filter forms or batch data manipulations.
 
-### 🔍 What it Means:
-Jenkins automates building and testing code. Docker packages your app and its dependencies into containers.
+> **Concept & Why It Works:**
+> Hooks allow functional components to manage state and lifecycle events cleanly, replacing class-based patterns and improving code readability and reuse.
 
-### 🧠 Why It's Used:
-CI/CD ensures frequent, reliable deployments. Docker guarantees "it works on my machine" everywhere.
+> **Use Case in EnergyIQ:**
+> - `useState` kept track of user-selected date ranges and alert toggles.
+> - `useEffect` triggered data fetches from the User Service whenever selections changed.
+> - `useContext` provided app-wide theme (light/dark) and user authorization context for API calls.
+> - `useMemo` optimized chart data transformations so charts render smoothly even with high-frequency updates.
+> - `useCallback` stabilized callback references passed into a chart component’s props to avoid unnecessary redraws.
+> - `useRef` captured chart container dimensions to implement a responsive resizing behavior.
+> - `useReducer` managed state transitions for a complex filter panel that combined multiple criteria.
 
-### 💡 Why We Chose It:
-To streamline development and ensure consistency from development to production.
+> **Possible Follow-Up Questions:**
+> - How do you decide between `useState` and `useReducer`?
+> - What pitfalls should you watch for when using `useEffect` dependencies?
+> - How does `useMemo` help with performance, and when might it hurt it?
 
-### 🔧 How It Solved the Problem:
-Cut deployment time and reduced bugs during release.
-
-### ❓ Possible Interview Questions:
-- What's the difference between Docker and a VM?
-- How does Jenkins trigger builds?
-
-### 🤓 Analogy:
-Docker = shipping container for your app. Jenkins = the crane that builds and ships it automatically.

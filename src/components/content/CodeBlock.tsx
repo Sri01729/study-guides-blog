@@ -1,9 +1,8 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import { Highlight } from 'prism-react-renderer'
-import { ClipboardIcon, CheckIcon } from '@heroicons/react/24/outline'
 
 interface Props {
-  children: string | React.ReactNode
+  children: string
   language: string
   filename?: string
 }
@@ -11,21 +10,8 @@ interface Props {
 export default function CodeBlock({ children, language, filename }: Props) {
   const [copied, setCopied] = useState(false)
 
-  // Convert children to string, handling different types
-  const getCodeString = (children: string | React.ReactNode): string => {
-    if (typeof children === 'string') {
-      return children
-    }
-    if (React.isValidElement(children) && children.props.children) {
-      return children.props.children
-    }
-    return ''
-  }
-
-  const codeString = getCodeString(children)
-
   const copyToClipboard = () => {
-    navigator.clipboard.writeText(codeString)
+    navigator.clipboard.writeText(children)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
   }
@@ -40,28 +26,21 @@ export default function CodeBlock({ children, language, filename }: Props) {
       <div className="relative">
         <button
           onClick={copyToClipboard}
-          className="absolute right-4 top-4 rounded-lg border border-zinc-700 bg-zinc-800 p-2 text-zinc-400 transition-all hover:bg-zinc-700 hover:text-zinc-200 dark:border-zinc-600 dark:bg-zinc-900 dark:hover:bg-zinc-800"
-          title="Copy code"
+          className="absolute right-2 top-2 rounded bg-zinc-700 px-2 py-1 text-xs text-zinc-100 opacity-0 transition-opacity hover:bg-zinc-600 group-hover:opacity-100"
         >
-          {copied ? (
-            <CheckIcon className="h-5 w-5 text-green-500" />
-          ) : (
-            <ClipboardIcon className="h-5 w-5" />
-          )}
+          {copied ? 'Copied!' : 'Copy'}
         </button>
-        <Highlight code={codeString.trim()} language={language}>
+        <Highlight code={children.trim()} language={language}>
           {({ className, style, tokens, getLineProps, getTokenProps }) => (
             <pre className={`${className} overflow-x-auto p-4`} style={style}>
               {tokens.map((line, i) => (
-                <div key={i} {...getLineProps({ line })} className="table-row">
-                  <span className="table-cell pr-4 text-right text-sm text-zinc-500 select-none">
+                <div key={i} {...getLineProps({ line })}>
+                  <span className="mr-4 inline-block w-4 text-right text-zinc-600">
                     {i + 1}
                   </span>
-                  <span className="table-cell">
-                    {line.map((token, key) => (
-                      <span key={key} {...getTokenProps({ token })} />
-                    ))}
-                  </span>
+                  {line.map((token, key) => (
+                    <span key={key} {...getTokenProps({ token })} />
+                  ))}
                 </div>
               ))}
             </pre>

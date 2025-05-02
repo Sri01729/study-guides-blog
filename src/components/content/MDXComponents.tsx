@@ -1,8 +1,7 @@
-import React from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import CodeBlock from './CodeBlock'
 import { ReactNode } from 'react'
+import PracticeSection from './PracticeSection'
 
 interface Props {
   children?: ReactNode
@@ -12,8 +11,6 @@ interface Props {
   width?: number
   height?: number
   id?: string
-  className?: string
-  language?: string
 }
 
 const CustomLink = ({ href, children }: Props) => {
@@ -41,36 +38,19 @@ const CustomLink = ({ href, children }: Props) => {
 
 const CustomImage = ({ src, alt, width, height }: Props) => {
   return (
-    <Image
-      src={src || ''}
-      alt={alt || ''}
-      width={width || 1200}
-      height={height || 630}
-      className="rounded-lg"
-    />
+    <div className="relative my-8 h-64 w-full overflow-hidden rounded-lg sm:h-96">
+      <Image
+        src={src || ''}
+        alt={alt || ''}
+        width={width || 800}
+        height={height || 400}
+        className="object-cover"
+      />
+    </div>
   )
 }
 
-const CustomPre = ({ children, className }: Props) => {
-  // Extract language from className (format: "language-{lang}")
-  const language = className?.replace(/^language-/, '') || 'text'
-
-  // If children is a string
-  if (typeof children === 'string') {
-    return <CodeBlock language={language}>{children}</CodeBlock>
-  }
-
-  // If children is a React element (likely a <code> element)
-  const childrenArray = React.Children.toArray(children)
-  const codeElement = childrenArray[0] as React.ReactElement
-
-  if (codeElement?.type === 'code') {
-    const codeClassName = codeElement.props.className || className
-    const codeLang = codeClassName?.replace(/^language-/, '') || language
-    return <CodeBlock language={codeLang}>{codeElement.props.children}</CodeBlock>
-  }
-
-  // Fallback to basic pre
+const CustomPre = ({ children }: Props) => {
   return (
     <pre className="relative my-8 overflow-x-auto rounded-lg bg-zinc-800 p-4 dark:bg-zinc-900">
       {children}
@@ -150,6 +130,7 @@ const MDXComponents = {
   ol: CustomOl,
   li: CustomLi,
   blockquote: CustomBlockquote,
+  PracticeSection: PracticeSection,
 }
 
 export default MDXComponents

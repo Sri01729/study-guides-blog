@@ -1,0 +1,91 @@
+**Moneris Mock Interview Q&A - Sai Srinivas Alahari**
+
+---
+
+### **Q1: Tell me about your recent microservices project**
+
+**A:**
+"Sure Brian. In my last role, we migrated a monolithic energy monitoring application to a full Spring Boot microservices architecture.
+
+We split the system into multiple services like:
+- **Energy Ingestion Service** – received real-time energy data from IoT devices over REST APIs
+- **Analytics Service** – processed the data and performed business logic
+- **User Service** – managed user roles and dashboards
+
+For **async communication**, we used **Apache Kafka** for real-time processing and also **AWS SNS/SQS** to ensure guaranteed delivery of notifications and data routing between services.
+
+We deployed all services on **AWS EC2 instances**, containerized with Docker. Each service was monitored via Prometheus, and metrics were visualized in Grafana.
+
+To maintain configurations, we used **Spring Cloud Config Server** backed by Git, so each environment had its own YAML profile and could be managed centrally.
+
+For API testing, we used both **Postman** for REST and **SOAP UI** to validate legacy SOAP endpoints that were still part of our ecosystem."
+
+---
+
+### **Q2: How did you ensure observability in your services?**
+
+**A:**
+"All services exposed metrics via **Spring Boot Actuator** at `/actuator/prometheus`. These were scraped by **Prometheus**, and we used **Grafana** dashboards for real-time visualization.
+
+For distributed tracing, we plugged in **Spring Cloud Sleuth** and **Grafana Tempo** to track cross-service latency, especially between the ingestion and analytics services."
+
+---
+
+### **Q3: How did you implement reliable communication in the system?**
+
+**A:**
+"We used **Kafka** where high-throughput and streaming was needed, such as with IoT sensor data.
+
+But for internal system-to-system communication, especially events like ‘New User Registered’ or ‘Data Threshold Crossed’, we used **AWS SNS/SQS**. This allowed us to decouple producers and consumers, add retries, and easily fan out messages to multiple services."
+
+---
+
+### **Q4: Where did you host and manage deployments?**
+
+**A:**
+"We hosted services on **EC2 instances** using Docker containers. Initially, we used **Docker Compose** for local testing and later orchestrated deployments via EC2-based bash scripts. In future, I’d love to explore ECS or EKS for better scalability.
+
+Our team also worked closely with DevOps to automate deployments, but I was hands-on with containerizing, updating environment configs, and monitoring service health post-deploy."
+
+---
+
+### **Q5: How did you manage configuration across environments?**
+
+**A:**
+"Managing configuration across all the microservices was simplified using **Spring Cloud Config Server**. We had a centralized Git repository where each service’s environment-specific configuration (like dev, QA, prod) was stored as a YAML file.
+
+Spring Boot applications would fetch their config using their `spring.application.name`. This setup avoided hardcoding secrets and enabled easier updates across environments."
+
+---
+
+### **Q6: How did you test your APIs during development?**
+
+**A:**
+"We used **Postman** to test our REST APIs extensively during development and regression. For legacy SOAP APIs that still had to be supported, I used **SOAP UI** to create test cases and validate integration responses.
+
+This ensured backward compatibility and minimized bugs during new deployments."
+
+---
+
+### **Q7: How did you ensure reliability in Kafka consumers?**
+
+**A:**
+"To make Kafka consumers reliable, we used Spring Boot’s `@KafkaListener` along with **acknowledgment modes** and **retry logic**. We also implemented **dead-letter queues (DLQ)** using Kafka to capture failed messages for later inspection.
+
+This helped maintain data integrity across services and avoided message loss."
+
+---
+
+### **TL;DR: Technologies Highlighted**
+
+| Stack / Tool          | Usage Description                              |
+|-----------------------|--------------------------------------------------|
+| Spring Boot           | Core framework for all microservices           |
+| Kafka                 | Asynchronous data streaming between services   |
+| AWS SNS/SQS           | Event-driven internal communication            |
+| EC2 + Docker          | Service hosting and containerization           |
+| Spring Cloud Config   | Centralized configuration via Git              |
+| Prometheus + Grafana  | Observability stack for metrics                |
+| Spring Boot Actuator  | Exposed application metrics                    |
+| Postman / SOAP UI     | REST and SOAP API testing                      |
+
