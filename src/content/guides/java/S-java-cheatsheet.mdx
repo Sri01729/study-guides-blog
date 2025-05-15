@@ -1,0 +1,2414 @@
+---
+title: Java Cheatsheet
+description: A Detailed cheatsheet covering java concepts
+date: '2025-05-14'
+---
+
+# Comprehensive Java Reference Guide
+
+## 1. Basic Variable Types, Declarations, and Scope
+
+### Primitive Data Types
+| Type | Size | Range | Default | Example |
+|------|------|-------|---------|---------|
+| `byte` | 8 bits | -128 to 127 | 0 | `byte b = 100;` |
+| `short` | 16 bits | -32,768 to 32,767 | 0 | `short s = 10000;` |
+| `int` | 32 bits | -2^31 to 2^31-1 | 0 | `int i = 100000;` |
+| `long` | 64 bits | -2^63 to 2^63-1 | 0L | `long l = 100000L;` |
+| `float` | 32 bits | varies | 0.0f | `float f = 234.5f;` |
+| `double` | 64 bits | varies | 0.0d | `double d = 123.4;` |
+| `boolean` | - | true/false | false | `boolean b = true;` |
+| `char` | 16 bits | 0 to 65,535 | '\u0000' | `char c = 'A';` |
+
+### Reference Types
+```java
+String str = "Hello";
+Integer num = 42;
+Object obj = new Object();
+int[] numbers = {1, 2, 3, 4, 5};
+```
+
+### Variable Declaration
+```java
+// Declaration
+int number;
+
+// Declaration and initialization
+int count = 0;
+
+// Multiple variables of same type
+int x = 10, y = 20, z = 30;
+
+// Constants
+final double PI = 3.14159;
+```
+
+### Variable Scope
+- **Instance Variables**: Declared in a class, outside methods
+- **Class Variables**: Declared with static keyword
+- **Local Variables**: Declared inside methods
+- **Block Variables**: Declared inside a block with limited scope
+
+```java
+public class ScopeExample {
+    // Instance variable - accessible by all non-static methods
+    int instanceVar = 1;
+
+    // Class/static variable - shared across all instances
+    static int classVar = 2;
+
+    public void method() {
+        // Local variable - only accessible in this method
+        int localVar = 3;
+
+        {
+            // Block variable - only accessible in this block
+            int blockVar = 4;
+        }
+        // blockVar is not accessible here
+    }
+}
+```
+
+## 2. Control Flow Statements
+
+### if-else Statement
+```java
+if (condition) {
+    // code executed if condition is true
+} else if (anotherCondition) {
+    // code executed if the first condition is false and anotherCondition is true
+} else {
+    // code executed if all conditions are false
+}
+```
+
+### Switch Statement
+```java
+// Traditional switch
+switch (variable) {
+    case value1:
+        // code
+        break;
+    case value2:
+        // code
+        break;
+    default:
+        // default code
+}
+
+// Enhanced switch (Java 14+)
+switch (variable) {
+    case value1 -> // code;
+    case value2 -> // code;
+    default -> // default code;
+}
+```
+
+### Loops
+
+#### For Loop
+```java
+for (int i = 0; i < 10; i++) {
+    // code to be repeated
+}
+```
+
+#### Enhanced For Loop (For-each)
+```java
+for (String item : collection) {
+    // code to process each item
+}
+```
+
+#### While Loop
+```java
+while (condition) {
+    // code executed while condition is true
+}
+```
+
+#### Do-While Loop
+```java
+do {
+    // code executed at least once
+} while (condition);
+```
+
+### Jump Statements
+```java
+break;      // Exit the loop or switch
+continue;   // Skip to the next iteration
+return;     // Exit the method (with optional value)
+```
+
+## 3. Object-Oriented Programming Concepts
+
+### Classes and Objects
+```java
+// Class definition
+public class Person {
+    // Instance variables (fields)
+    private String name;
+    private int age;
+
+    // Constructor
+    public Person(String name, int age) {
+        this.name = name;
+        this.age = age;
+    }
+
+    // Methods
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public int getAge() {
+        return age;
+    }
+
+    public void setAge(int age) {
+        this.age = age;
+    }
+}
+
+// Object creation
+Person person = new Person("John", 30);
+```
+
+### Inheritance
+```java
+// Parent class
+public class Animal {
+    protected String species;
+
+    public void makeSound() {
+        System.out.println("Some generic sound");
+    }
+}
+
+// Child class
+public class Dog extends Animal {
+    public Dog() {
+        this.species = "Canine";
+    }
+
+    @Override
+    public void makeSound() {
+        System.out.println("Woof!");
+    }
+}
+```
+
+### Polymorphism
+```java
+Animal myPet = new Dog(); // Reference type is parent, object type is child
+myPet.makeSound();        // Calls Dog's implementation: "Woof!"
+
+// Method overloading (compile-time polymorphism)
+public int add(int a, int b) { return a + b; }
+public double add(double a, double b) { return a + b; }
+```
+
+### Abstraction
+```java
+// Abstract class
+public abstract class Shape {
+    protected String color;
+
+    // Abstract method (no implementation)
+    public abstract double calculateArea();
+
+    // Concrete method
+    public void setColor(String color) {
+        this.color = color;
+    }
+}
+
+// Implementation
+public class Circle extends Shape {
+    private double radius;
+
+    public Circle(double radius) {
+        this.radius = radius;
+    }
+
+    @Override
+    public double calculateArea() {
+        return Math.PI * radius * radius;
+    }
+}
+```
+
+### Interfaces
+```java
+public interface Playable {
+    void play();
+    void stop();
+
+    // Default method (Java 8+)
+    default void pause() {
+        System.out.println("Generic pause implementation");
+    }
+
+    // Static method (Java 8+)
+    static boolean isPlayable(Object obj) {
+        return obj instanceof Playable;
+    }
+}
+
+public class VideoPlayer implements Playable {
+    @Override
+    public void play() {
+        System.out.println("Playing video");
+    }
+
+    @Override
+    public void stop() {
+        System.out.println("Stopping video");
+    }
+}
+```
+
+### Encapsulation
+```java
+public class BankAccount {
+    // Private fields
+    private String accountNumber;
+    private double balance;
+
+    // Public methods for controlled access
+    public double getBalance() {
+        return balance;
+    }
+
+    public void deposit(double amount) {
+        if (amount > 0) {
+            balance += amount;
+        }
+    }
+
+    public void withdraw(double amount) {
+        if (amount > 0 && amount <= balance) {
+            balance -= amount;
+        }
+    }
+}
+```
+
+## 4. Methods, Parameters, and Return Types
+
+### Method Declaration
+```java
+[access_modifier] [static] [final] return_type method_name([parameters]) [throws exceptions] {
+    // method body
+    return value; // if return type is not void
+}
+```
+
+### Method Types
+```java
+// No parameters, no return
+public void sayHello() {
+    System.out.println("Hello!");
+}
+
+// With parameters
+public void greet(String name) {
+    System.out.println("Hello, " + name);
+}
+
+// With return value
+public int add(int a, int b) {
+    return a + b;
+}
+
+// Static method
+public static double calculateCircleArea(double radius) {
+    return Math.PI * radius * radius;
+}
+```
+
+### Parameter Passing
+```java
+// Pass by value (primitives)
+public void incrementValue(int x) {
+    x++; // Doesn't affect the original variable
+}
+
+// Pass by reference (actually passing object references by value)
+public void modifyObject(StringBuilder sb) {
+    sb.append(" World"); // Affects the original object
+}
+```
+
+### Variable Arguments (Varargs)
+```java
+public int sum(int... numbers) {
+    int total = 0;
+    for (int num : numbers) {
+        total += num;
+    }
+    return total;
+}
+
+// Usage
+int result = sum(1, 2, 3, 4, 5);
+```
+
+### Method Overloading
+```java
+public void print(String message) {
+    System.out.println(message);
+}
+
+public void print(int number) {
+    System.out.println(number);
+}
+
+public void print(String message, int repeat) {
+    for (int i = 0; i < repeat; i++) {
+        System.out.println(message);
+    }
+}
+```
+
+## 5. Collections Framework
+
+### List
+```java
+// ArrayList - Dynamic resizing array
+List<String> arrayList = new ArrayList<>();
+arrayList.add("Apple");               // Add to the end
+arrayList.add(0, "Banana");           // Add at index
+arrayList.set(1, "Cherry");           // Replace element
+String item = arrayList.get(0);       // Access by index
+arrayList.remove("Banana");           // Remove by object
+arrayList.remove(0);                  // Remove by index
+boolean contains = arrayList.contains("Apple"); // Check existence
+int size = arrayList.size();          // Get size
+arrayList.clear();                    // Remove all elements
+
+// LinkedList - Doubly-linked list
+LinkedList<String> linkedList = new LinkedList<>();
+linkedList.add("Apple");              // Add to end
+linkedList.addFirst("Banana");        // Add to beginning
+linkedList.addLast("Cherry");         // Add to end
+String first = linkedList.getFirst(); // Get first element
+String last = linkedList.getLast();   // Get last element
+linkedList.removeFirst();             // Remove first
+linkedList.removeLast();              // Remove last
+
+// Common List operations
+for (String s : arrayList) {}         // Iteration
+arrayList.forEach(s -> {});           // forEach with lambda
+List<String> subList = list.subList(1, 3); // View of portion
+Collections.sort(list);               // Sort
+Collections.reverse(list);            // Reverse
+```
+
+### Set
+```java
+// HashSet - Uses HashMap, no order guarantee
+Set<String> hashSet = new HashSet<>();
+hashSet.add("Apple");                 // Add element
+hashSet.remove("Apple");              // Remove element
+boolean exists = hashSet.contains("Banana"); // Check existence
+int size = hashSet.size();            // Get size
+hashSet.clear();                      // Remove all
+
+// TreeSet - Sorted set based on natural ordering or comparator
+TreeSet<String> treeSet = new TreeSet<>();
+treeSet.add("Banana");
+treeSet.add("Apple");                 // Will be stored in order
+String first = treeSet.first();       // Get first element ("Apple")
+String last = treeSet.last();         // Get last element
+// Navigation methods
+String higher = treeSet.higher("Apple"); // Next higher element
+String lower = treeSet.lower("Banana"); // Next lower element
+
+// LinkedHashSet - Maintains insertion order
+LinkedHashSet<String> linkedHashSet = new LinkedHashSet<>();
+```
+
+### Map
+```java
+// HashMap - No ordering guarantees
+Map<String, Integer> hashMap = new HashMap<>();
+hashMap.put("Apple", 10);             // Add or update key-value
+hashMap.putIfAbsent("Banana", 5);     // Only if key not present
+Integer value = hashMap.get("Apple"); // Get value by key
+value = hashMap.getOrDefault("Cherry", 0); // Get with default
+boolean containsKey = hashMap.containsKey("Apple");
+boolean containsValue = hashMap.containsValue(10);
+hashMap.remove("Apple");              // Remove by key
+int size = hashMap.size();            // Get size
+hashMap.clear();                      // Remove all
+
+// TreeMap - Sorted by keys
+TreeMap<String, Integer> treeMap = new TreeMap<>();
+treeMap.put("Banana", 5);
+treeMap.put("Apple", 10);             // Stored in sorted order
+Map.Entry<String, Integer> firstEntry = treeMap.firstEntry();
+String firstKey = treeMap.firstKey();
+Map<String, Integer> subMap = treeMap.subMap("A", "C");
+
+// LinkedHashMap - Maintains insertion order
+LinkedHashMap<String, Integer> linkedHashMap = new LinkedHashMap<>();
+
+// Iteration over maps
+for (Map.Entry<String, Integer> entry : hashMap.entrySet()) {
+    String key = entry.getKey();
+    Integer val = entry.getValue();
+}
+hashMap.forEach((key, val) -> {});    // forEach with lambda
+for (String key : hashMap.keySet()) {}
+for (Integer val : hashMap.values()) {}
+```
+
+### Queue and Deque
+```java
+// Queue - FIFO structure
+Queue<String> queue = new LinkedList<>();
+queue.offer("Apple");                // Add to end
+queue.add("Banana");                 // Add to end (throws exception if no space)
+String head = queue.peek();          // View head without removing (null if empty)
+head = queue.element();              // View head (throws exception if empty)
+head = queue.poll();                 // Remove and return head (null if empty)
+head = queue.remove();               // Remove and return head (throws exception if empty)
+
+// Priority Queue - Ordered by natural ordering or comparator
+PriorityQueue<Integer> priorityQueue = new PriorityQueue<>();
+priorityQueue.offer(30);
+priorityQueue.offer(10);              // Will be ordered: 10, 30
+// Custom ordering
+PriorityQueue<String> customQueue = new PriorityQueue<>(Comparator.comparing(String::length));
+
+// Deque - Double-ended queue
+Deque<String> deque = new ArrayDeque<>();
+deque.addFirst("Apple");             // Add to front
+deque.addLast("Banana");             // Add to end
+deque.offerFirst("Cherry");          // Add to front (returns false if no space)
+deque.offerLast("Date");             // Add to end (returns false if no space)
+String first = deque.getFirst();     // Get first (throws exception if empty)
+String last = deque.getLast();       // Get last (throws exception if empty)
+first = deque.peekFirst();           // Get first (null if empty)
+last = deque.peekLast();             // Get last (null if empty)
+first = deque.removeFirst();         // Remove and return first (throws exception if empty)
+last = deque.removeLast();           // Remove and return last (throws exception if empty)
+first = deque.pollFirst();           // Remove and return first (null if empty)
+last = deque.pollLast();             // Remove and return last (null if empty)
+```
+
+### Common Collection Methods
+```java
+// All collection types
+boolean isEmpty = collection.isEmpty();
+collection.clear();
+Object[] array = collection.toArray();
+String[] strArray = collection.toArray(new String[0]);
+collection.stream();                  // Get a stream from the collection
+
+// Operations on multiple elements
+collection.addAll(otherCollection);   // Add all from another collection
+collection.removeAll(otherCollection); // Remove all that exist in other collection
+collection.retainAll(otherCollection); // Keep only elements that exist in other collection
+collection.containsAll(otherCollection); // Check if all elements are present
+```
+
+## 6. Exception Handling
+
+### Types of Exceptions
+- **Checked Exceptions**: Must be either caught or declared (e.g., IOException)
+- **Unchecked Exceptions**: Runtime exceptions, not required to be caught (e.g., NullPointerException)
+- **Error**: Serious problem, not typically caught (e.g., OutOfMemoryError)
+
+### Try-Catch-Finally
+```java
+try {
+    // Code that might throw an exception
+    FileReader file = new FileReader("file.txt");
+    int data = file.read();
+} catch (FileNotFoundException e) {
+    // Handle file not found
+    System.err.println("File not found: " + e.getMessage());
+} catch (IOException e) {
+    // Handle IO error
+    System.err.println("Error reading file: " + e.getMessage());
+} finally {
+    // Always executed, whether exception occurred or not
+    System.out.println("Cleanup code here");
+}
+```
+
+### Try-with-Resources (Java 7+)
+```java
+try (
+    FileInputStream input = new FileInputStream("file.txt");
+    BufferedReader reader = new BufferedReader(new InputStreamReader(input))
+) {
+    String line = reader.readLine();
+    // Process line
+} catch (IOException e) {
+    // Handle exception
+}
+// Resources automatically closed
+```
+
+### Throwing Exceptions
+```java
+public void validateAge(int age) throws IllegalArgumentException {
+    if (age < 0) {
+        throw new IllegalArgumentException("Age cannot be negative");
+    }
+}
+```
+
+### Custom Exceptions
+```java
+public class InsufficientFundsException extends Exception {
+    private double amount;
+
+    public InsufficientFundsException(double amount) {
+        super("Insufficient funds: shortage of $" + amount);
+        this.amount = amount;
+    }
+
+    public double getAmount() {
+        return amount;
+    }
+}
+
+// Usage
+public void withdraw(double amount) throws InsufficientFundsException {
+    if (balance < amount) {
+        throw new InsufficientFundsException(amount - balance);
+    }
+    balance -= amount;
+}
+```
+
+### Multi-catch (Java 7+)
+```java
+try {
+    // Code that might throw exceptions
+} catch (IOException | SQLException e) {
+    // Handle either exception type
+    e.printStackTrace();
+}
+```
+
+## 7. File I/O Operations
+
+### File Handling
+```java
+// File object represents a file or directory path
+File file = new File("data.txt");
+boolean exists = file.exists();
+boolean isFile = file.isFile();
+boolean isDirectory = file.isDirectory();
+long length = file.length();
+boolean created = file.createNewFile();
+boolean deleted = file.delete();
+String[] fileList = directory.list();
+File[] fileObjects = directory.listFiles();
+```
+
+### Reading from Files
+
+#### BufferedReader (Character-based)
+```java
+try (BufferedReader reader = new BufferedReader(new FileReader("file.txt"))) {
+    String line;
+    while ((line = reader.readLine()) != null) {
+        // Process line
+    }
+}
+```
+
+#### Files class (Java 7+)
+```java
+// Read all lines
+List<String> lines = Files.readAllLines(Paths.get("file.txt"));
+
+// Read all bytes
+byte[] bytes = Files.readAllBytes(Paths.get("file.bin"));
+
+// Stream lines
+try (Stream<String> stream = Files.lines(Paths.get("file.txt"))) {
+    stream.forEach(System.out::println);
+}
+```
+
+### Writing to Files
+
+#### BufferedWriter (Character-based)
+```java
+try (BufferedWriter writer = new BufferedWriter(new FileWriter("output.txt"))) {
+    writer.write("Hello, World!");
+    writer.newLine();
+    writer.write("Another line");
+}
+```
+
+#### Files class (Java 7+)
+```java
+// Write lines
+List<String> lines = Arrays.asList("Line 1", "Line 2");
+Files.write(Paths.get("output.txt"), lines);
+
+// Write all bytes
+byte[] bytes = "Hello".getBytes();
+Files.write(Paths.get("output.bin"), bytes);
+```
+
+### Binary I/O (InputStream/OutputStream)
+```java
+// Reading binary data
+try (FileInputStream in = new FileInputStream("input.bin");
+     BufferedInputStream buffIn = new BufferedInputStream(in)) {
+
+    byte[] buffer = new byte[1024];
+    int bytesRead;
+    while ((bytesRead = buffIn.read(buffer)) != -1) {
+        // Process bytes in buffer
+    }
+}
+
+// Writing binary data
+try (FileOutputStream out = new FileOutputStream("output.bin");
+     BufferedOutputStream buffOut = new BufferedOutputStream(out)) {
+
+    byte[] data = {65, 66, 67}; // ABC in ASCII
+    buffOut.write(data);
+}
+```
+
+### RandomAccessFile
+```java
+try (RandomAccessFile raf = new RandomAccessFile("data.bin", "rw")) {
+    // Move to position
+    raf.seek(10);
+
+    // Read/write at current position
+    int value = raf.readInt();
+    raf.writeDouble(3.14);
+
+    // Get current position
+    long pos = raf.getFilePointer();
+}
+```
+
+### NIO (New I/O) (Java 7+)
+```java
+// Path object
+Path path = Paths.get("file.txt");
+Path absolute = path.toAbsolutePath();
+Path parent = path.getParent();
+Path fileName = path.getFileName();
+
+// File operations
+Files.createFile(path);
+Files.createDirectory(path);
+Files.delete(path);
+Files.copy(sourcePath, targetPath, StandardCopyOption.REPLACE_EXISTING);
+Files.move(sourcePath, targetPath, StandardCopyOption.ATOMIC_MOVE);
+
+// File attributes
+BasicFileAttributes attrs = Files.readAttributes(path, BasicFileAttributes.class);
+long size = attrs.size();
+FileTime creationTime = attrs.creationTime();
+boolean isDirectory = attrs.isDirectory();
+```
+
+## 8. Multi-threading Basics
+
+### Creating Threads
+
+#### Extending Thread
+```java
+class MyThread extends Thread {
+    @Override
+    public void run() {
+        System.out.println("Thread running: " + Thread.currentThread().getName());
+    }
+}
+
+// Usage
+MyThread thread = new MyThread();
+thread.start();
+```
+
+#### Implementing Runnable
+```java
+class MyRunnable implements Runnable {
+    @Override
+    public void run() {
+        System.out.println("Thread running: " + Thread.currentThread().getName());
+    }
+}
+
+// Usage
+Thread thread = new Thread(new MyRunnable());
+thread.start();
+
+// Using lambda (Java 8+)
+Thread thread = new Thread(() -> {
+    System.out.println("Thread running: " + Thread.currentThread().getName());
+});
+thread.start();
+```
+
+### Thread Lifecycle and Control
+```java
+// Thread states: NEW, RUNNABLE, BLOCKED, WAITING, TIMED_WAITING, TERMINATED
+
+// Thread operations
+thread.start();                        // Start thread execution
+thread.join();                         // Wait for thread to die
+thread.join(1000);                     // Wait up to 1000ms
+thread.sleep(1000);                   // Static method - pause current thread
+Thread.yield();                        // Hint to scheduler to yield
+thread.setPriority(Thread.MAX_PRIORITY); // Set priority (1-10)
+thread.setDaemon(true);                // Set as daemon thread
+boolean alive = thread.isAlive();      // Check if thread is alive
+Thread.State state = thread.getState(); // Get thread state
+thread.interrupt();                    // Interrupt thread
+boolean interrupted = Thread.interrupted(); // Check if current thread interrupted
+```
+
+### Synchronization
+```java
+// Method-level synchronization
+public synchronized void synchronizedMethod() {
+    // Only one thread can execute this at a time for each instance
+}
+
+// Block-level synchronization
+public void method() {
+    // Non-synchronized code
+
+    synchronized(this) {
+        // Synchronized block - using this object as monitor
+    }
+
+    // Using another object as lock
+    Object lock = new Object();
+    synchronized(lock) {
+        // Only one thread can be in this block for this lock object
+    }
+}
+```
+
+### Wait and Notify
+```java
+// Must be called from synchronized context
+synchronized(lock) {
+    // Wait for notification
+    lock.wait();
+
+    // Wait with timeout
+    lock.wait(1000);
+
+    // Notify one waiting thread
+    lock.notify();
+
+    // Notify all waiting threads
+    lock.notifyAll();
+}
+```
+
+### Concurrent Utilities (java.util.concurrent)
+
+#### Executor Framework
+```java
+// Single thread executor
+ExecutorService executor = Executors.newSingleThreadExecutor();
+
+// Fixed thread pool
+ExecutorService fixedPool = Executors.newFixedThreadPool(4);
+
+// Cached thread pool
+ExecutorService cachedPool = Executors.newCachedThreadPool();
+
+// Scheduled thread pool
+ScheduledExecutorService scheduledPool = Executors.newScheduledThreadPool(2);
+
+// Submit tasks
+executor.execute(() -> System.out.println("Task executed"));
+Future<String> future = executor.submit(() -> "Task result");
+
+// Get result from Future
+try {
+    String result = future.get();          // Blocks until complete
+    result = future.get(1, TimeUnit.SECONDS); // With timeout
+} catch (ExecutionException | InterruptedException | TimeoutException e) {
+    // Handle exceptions
+}
+
+// Shutdown
+executor.shutdown();                    // Orderly shutdown
+boolean terminated = executor.awaitTermination(5, TimeUnit.SECONDS);
+executor.shutdownNow();                 // Forceful shutdown
+```
+
+#### Scheduled Tasks
+```java
+ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+
+// Run once after delay
+ScheduledFuture<?> future = scheduler.schedule(
+    () -> System.out.println("Delayed task"),
+    2, TimeUnit.SECONDS
+);
+
+// Run periodically with fixed delay (waits for previous task to complete)
+scheduler.scheduleWithFixedDelay(
+    () -> System.out.println("Repeated task"),
+    1, 5, TimeUnit.SECONDS  // Initial delay, period
+);
+
+// Run periodically at fixed rate (tries to maintain frequency)
+scheduler.scheduleAtFixedRate(
+    () -> System.out.println("Repeated task"),
+    1, 5, TimeUnit.SECONDS  // Initial delay, period
+);
+```
+
+#### Thread-safe Collections
+```java
+// Concurrent collections
+ConcurrentHashMap<String, Integer> concurrentMap = new ConcurrentHashMap<>();
+ConcurrentLinkedQueue<String> concurrentQueue = new ConcurrentLinkedQueue<>();
+CopyOnWriteArrayList<String> copyOnWriteList = new CopyOnWriteArrayList<>();
+BlockingQueue<String> blockingQueue = new LinkedBlockingQueue<>();
+
+// Operations
+blockingQueue.put("element");        // Blocks if queue full
+String element = blockingQueue.take(); // Blocks if queue empty
+boolean added = blockingQueue.offer("element", 1, TimeUnit.SECONDS); // With timeout
+element = blockingQueue.poll(1, TimeUnit.SECONDS); // With timeout
+```
+
+#### Atomic Variables
+```java
+AtomicInteger counter = new AtomicInteger(0);
+int value = counter.get();              // Get current value
+counter.set(10);                         // Set value
+int oldValue = counter.getAndSet(5);     // Set and get old value
+int newValue = counter.incrementAndGet(); // Increment and get
+oldValue = counter.getAndIncrement();    // Get and increment
+boolean updated = counter.compareAndSet(5, 10); // Update if current value matches
+```
+
+#### Locks
+```java
+// ReentrantLock
+Lock lock = new ReentrantLock();
+lock.lock();
+try {
+    // Critical section
+} finally {
+    lock.unlock();  // Always unlock in finally block
+}
+
+// TryLock
+if (lock.tryLock()) {
+    try {
+        // Critical section
+    } finally {
+        lock.unlock();
+    }
+}
+
+// TryLock with timeout
+if (lock.tryLock(1, TimeUnit.SECONDS)) {
+    try {
+        // Critical section
+    } finally {
+        lock.unlock();
+    }
+}
+
+// ReadWriteLock
+ReadWriteLock rwLock = new ReentrantReadWriteLock();
+rwLock.readLock().lock();   // Multiple readers allowed
+rwLock.writeLock().lock();  // Exclusive access
+
+// Condition variables
+Lock lock = new ReentrantLock();
+Condition condition = lock.newCondition();
+// In one thread
+lock.lock();
+try {
+    condition.await();  // Wait for signal
+} finally {
+    lock.unlock();
+}
+// In another thread
+lock.lock();
+try {
+    condition.signal();  // Wake up one waiter
+    condition.signalAll(); // Wake up all waiters
+} finally {
+    lock.unlock();
+}
+```
+
+#### CountDownLatch and CyclicBarrier
+```java
+// CountDownLatch - one-time barrier
+CountDownLatch latch = new CountDownLatch(3);  // Initialize with count
+
+// In worker threads
+latch.countDown();  // Decrement count
+
+// In coordinating thread
+latch.await();      // Block until count reaches zero
+latch.await(1, TimeUnit.SECONDS);  // With timeout
+
+// CyclicBarrier - reusable barrier
+CyclicBarrier barrier = new CyclicBarrier(3);  // 3 threads must arrive
+barrier = new CyclicBarrier(3, () -> System.out.println("All arrived")); // With action
+
+// In each thread
+barrier.await();  // Block until all threads arrive
+```
+
+#### Semaphore
+```java
+Semaphore semaphore = new Semaphore(3);  // 3 permits available
+
+semaphore.acquire();        // Acquire 1 permit (blocking)
+semaphore.release();        // Release 1 permit
+
+semaphore.acquire(2);       // Acquire multiple permits
+semaphore.release(2);       // Release multiple permits
+
+boolean acquired = semaphore.tryAcquire(); // Non-blocking attempt
+acquired = semaphore.tryAcquire(1, TimeUnit.SECONDS); // With timeout
+
+int available = semaphore.availablePermits(); // Check available permits
+```
+
+#### CompletableFuture (Java 8+)
+```java
+// Create and complete manually
+CompletableFuture<String> future = new CompletableFuture<>();
+future.complete("Result");  // Complete normally
+future.completeExceptionally(new RuntimeException()); // Complete with exception
+
+// Run async computation
+CompletableFuture<String> cf = CompletableFuture.supplyAsync(() -> "Result");
+
+// Chain operations
+cf.thenApply(s -> s + " processed")      // Transform result
+  .thenAccept(System.out::println)       // Consume result
+  .thenRun(() -> System.out.println("Done")); // Run after completion
+
+// Handle exceptions
+cf.exceptionally(ex -> "Error: " + ex.getMessage());
+cf.handle((result, ex) -> ex != null ? "Error" : result);
+
+// Combine futures
+CompletableFuture<String> cf1 = CompletableFuture.supplyAsync(() -> "Hello");
+CompletableFuture<String> cf2 = CompletableFuture.supplyAsync(() -> "World");
+
+cf1.thenCombine(cf2, (s1, s2) -> s1 + " " + s2);  // Combine results
+cf1.thenAcceptBoth(cf2, (s1, s2) -> System.out.println(s1 + " " + s2)); // Consume both
+CompletableFuture.allOf(cf1, cf2).thenRun(() -> System.out.println("All done")); // Wait for all
+CompletableFuture.anyOf(cf1, cf2).thenAccept(System.out::println); // Wait for any
+```
+
+## 9. Lambda Expressions and Functional Interfaces
+
+### Functional Interfaces
+A functional interface has exactly one abstract method.
+
+```java
+// Built-in functional interfaces (java.util.function)
+
+// Function: takes one argument, produces a result
+Function<String, Integer> strLength = s -> s.length();
+Integer length = strLength.apply("Hello");
+
+// BiFunction: takes two arguments, produces a result
+BiFunction<Integer, Integer, Integer> add = (a, b) -> a + b;
+Integer sum = add.apply(5, 3);
+
+// Predicate: takes one argument, returns boolean
+Predicate<String> isEmpty = s -> s.isEmpty();
+boolean empty = isEmpty.test("Hello");
+
+// BiPredicate: takes two arguments, returns boolean
+BiPredicate<String, String> areEqual = (s1, s2) -> s1.equals(s2);
+boolean equal = areEqual.test("Hello", "Hello");
+
+// Consumer: takes one argument, returns no result
+Consumer<String> printer = s -> System.out.println(s);
+printer.accept("Hello");
+
+// BiConsumer: takes two arguments, returns no result
+BiConsumer<String, Integer> repeater = (s, n) -> {
+    for (int i = 0; i < n; i++) {
+        System.out.println(s);
+    }
+};
+repeater.accept("Hello", 3);
+
+// Supplier: takes no arguments, returns a result
+Supplier<Double> random = () -> Math.random();
+Double value = random.get();
+
+// UnaryOperator: takes and returns same type
+UnaryOperator<Integer> square = n -> n * n;
+Integer squared = square.apply(5);
+
+// BinaryOperator: takes two arguments and returns same type
+BinaryOperator<Integer> multiply = (a, b) -> a * b;
+Integer product = multiply.apply(5, 3);
+```
+
+### Custom Functional Interfaces
+```java
+@FunctionalInterface  // Optional but recommended annotation
+public interface Calculator {
+    int calculate(int a, int b);
+
+    // Default methods don't affect functional interface status
+    default void printInfo() {
+        System.out.println("Calculator interface");
+    }
+
+    // Static methods don't affect functional interface status
+    static Calculator multiply() {
+        return (a, b) -> a * b;
+    }
+}
+
+// Usage
+Calculator adder = (a, b) -> a + b;
+int result = adder.calculate(5, 3);
+```
+
+### Lambda Expression Syntax
+```java
+// No parameters
+Runnable r1 = () -> System.out.println("Hello");
+
+// One parameter (parentheses optional)
+Consumer<String> c1 = s -> System.out.println(s);
+Consumer<String> c2 = (String s) -> System.out.println(s);
+
+// Multiple parameters
+BiFunction<Integer, Integer, Integer> f1 = (a, b) -> a + b;
+BiFunction<Integer, Integer, Integer> f2 = (Integer a, Integer b) -> a + b;
+
+// Multiple statements
+Comparator<String> c3 = (s1, s2) -> {
+    int result = s1.length() - s2.length();
+    return result != 0 ? result : s1.compareTo(s2);
+};
+```
+
+### Method References
+```java
+// Static method reference
+Function<String, Integer> parser = Integer::parseInt;
+
+// Instance method reference on specific object
+String prefix = "Hello, ";
+Function<String, String> greeter = prefix::concat;
+
+// Instance method reference on arbitrary object of a type
+Function<String, Integer> lengthFunc = String::length;
+BiPredicate<String, String> equalsPred = String::equals;
+
+// Constructor reference
+Supplier<List<String>> listSupplier = ArrayList::new;
+Function<Integer, int[]> arrayCreator = int[]::new;
+```
+
+### Functional Composition
+```java
+// Function composition
+Function<String, Integer> strLength = String::length;
+Function<Integer, Boolean> isEven = n -> n % 2 == 0;
+Function<String, Boolean> isEvenLength = isEven.compose(strLength);
+boolean result = isEvenLength.apply("Hello");  // false
+
+// Predicate composition
+Predicate<String> isEmpty = String::isEmpty;
+Predicate<String> isNotEmpty = isEmpty.negate();
+Predicate<String> isLong = s -> s.length() > 10;
+Predicate<String> isLongAndNotEmpty = isNotEmpty.and(isLong);
+Predicate<String> isEmptyOrLong = isEmpty.or(isLong);
+
+// Consumer chaining
+Consumer<String> print = System.out::println;
+Consumer<String> log = s -> System.out.println("Log: " + s);
+Consumer<String> printAndLog = print.andThen(log);
+```
+
+## 10. Stream API
+
+### Creating Streams
+```java
+// From collection
+List<String> list = Arrays.asList("a", "b", "c");
+Stream<String> stream = list.stream();
+Stream<String> parallelStream = list.parallelStream();
+
+// From array
+String[] array = {"a", "b", "c"};
+Stream<String> streamFromArray = Arrays.stream(array);
+
+// From static factory methods
+Stream<String> streamOfStrings = Stream.of("a", "b", "c");
+Stream<Integer> streamOfInts = Stream.of(1, 2, 3);
+Stream<Double> infiniteRandoms = Stream.generate(Math::random);
+Stream<Integer> infiniteSequence = Stream.iterate(0, n -> n + 1);
+Stream<Integer> finiteSequence = Stream.iterate(0, n -> n < 10, n -> n + 1); // Java 9+
+
+// From files
+Stream<String> lines = Files.lines(Paths.get("file.txt"));
+```
+
+### Intermediate Operations
+```java
+// filter - keep elements that match predicate
+Stream<String> filtered = stream.filter(s -> s.startsWith("a"));
+
+// map - transform elements
+Stream<Integer> lengths = stream.map(String::length);
+
+// flatMap - flatten nested streams
+Stream<String> flatMapped = stream.flatMap(s -> Arrays.stream(s.split("")));
+
+// distinct - remove duplicates
+Stream<String> distinct = stream.distinct();
+
+// sorted - sort elements
+Stream<String> sorted = stream.sorted();
+Stream<String> customSorted = stream.sorted(Comparator.comparing(String::length));
+
+// peek - perform action on each element without changing stream
+Stream<String> peeked = stream.peek(System.out::println);
+
+// limit - truncate stream to specified size
+Stream<String> limited = stream.limit(5);
+
+// skip - discard first n elements
+Stream<String> skipped = stream.skip(2);
+
+// takeWhile - take elements while predicate is true (Java 9+)
+Stream<String> taken = stream.takeWhile(s -> s.length() < 5);
+
+// dropWhile - drop elements while predicate is true (Java 9+)
+Stream<String> dropped = stream.dropWhile(s -> s.length() < 5);
+```
+
+### Terminal Operations
+```java
+// forEach - perform action on each element
+stream.forEach(System.out::println);
+
+// forEachOrdered - like forEach but respects encounter order
+stream.forEachOrdered(System.out::println);
+
+// collect - gather elements into a collection
+List<String> collected = stream.collect(Collectors.toList());
+Set<String> collectedSet = stream.collect(Collectors.toSet());
+Map<Integer, String> collectedMap = stream.collect(Collectors.toMap(
+    String::length,   // Key mapper
+    Function.identity() // Value mapper
+));
+
+// reduce - reduce stream to single value
+Optional<String> reduced = stream.reduce((a, b) -> a + b);
+String reducedWithIdentity = stream.reduce("", (a, b) -> a + b);
+int sum = stream.mapToInt(String::length).reduce(0, Integer::sum);
+
+// min/max - find minimum/maximum element
+Optional<String> min = stream.min(Comparator.naturalOrder());
+Optional<String> max = stream.max(Comparator.comparing(String::length));
+
+// count - count elements
+long count = stream.count();
+
+// anyMatch/allMatch/noneMatch - test elements against predicate
+boolean anyStartWithA = stream.anyMatch(s -> s.startsWith("a"));
+boolean allStartWithA = stream.allMatch(s -> s.startsWith("a"));
+boolean noneStartWithZ = stream.noneMatch(s -> s.startsWith("z"));
+
+// findFirst/findAny - find an element
+Optional<String> first = stream.findFirst();
+Optional<String> any = stream.findAny();
+
+// toArray - convert to array
+String[] array = stream.toArray(String[]::new);
+```
+
+### Collectors
+```java
+// Basic collectors
+List<String> list = stream.collect(Collectors.toList());
+Set<String> set = stream.collect(Collectors.toSet());
+LinkedList<String> linkedList = stream.collect(Collectors.toCollection(LinkedList::new));
+
+// Joining strings
+String joined = stream.collect(Collectors.joining());
+String joinedWithDelimiter = stream.collect(Collectors.joining(", "));
+String joinedWithDelimiterAndPrefixSuffix = stream.collect(
+    Collectors.joining(", ", "prefix: ", " :suffix")
+);
+
+// Summarizing statistics
+IntSummaryStatistics stats = stream.collect(Collectors.summarizingInt(String::length));
+int min = stats.getMin();
+int max = stats.getMax();
+double average = stats.getAverage();
+long sum = stats.getSum();
+long count = stats.getCount();
+
+// Grouping
+Map<Integer, List<String>> groupedByLength = stream.collect(
+    Collectors.groupingBy(String::length)
+);
+Map<Integer, Set<String>> groupedByLengthToSet = stream.collect(
+    Collectors.groupingBy(String::length, Collectors.toSet())
+);
+Map<Integer, Long> countByLength = stream.collect(
+    Collectors.groupingBy(String::length, Collectors.counting())
+);
+
+// Partitioning (special case of grouping with boolean predicate)
+Map<Boolean, List<String>> partitioned = stream.collect(
+    Collectors.partitioningBy(s -> s.length() > 3)
+);
+
+// Reducing
+Optional<String> longest = stream.collect(
+    Collectors.reducing((s1, s2) -> s1.length() > s2.length() ? s1 : s2)
+);
+```
+
+### Primitive Streams
+```java
+// IntStream
+IntStream intStream = IntStream.range(1, 5);        // 1, 2, 3, 4
+IntStream closedRange = IntStream.rangeClosed(1, 5); // 1, 2, 3, 4, 5
+IntStream mapped = stream.mapToInt(String::length);
+
+// LongStream
+LongStream longStream = LongStream.range(1L, 5L);
+LongStream mapped = stream.mapToLong(s -> Long.parseLong(s));
+
+// DoubleStream
+DoubleStream doubleStream = DoubleStream.of(1.0, 2.0, 3.0);
+DoubleStream mapped = stream.mapToDouble(s -> Double.parseDouble(s));
+
+// Boxing/unboxing streams
+Stream<Integer> boxed = intStream.boxed();
+IntStream unboxed = Stream.of(1, 2, 3).mapToInt(Integer::intValue);
+
+// Special operations
+OptionalDouble average = intStream.average();
+OptionalInt max = intStream.max();
+int sum = intStream.sum();
+IntSummaryStatistics stats = intStream.summaryStatistics();
+```
+
+### Parallel Streams
+```java
+// Create parallel stream
+Stream<String> parallel = list.parallelStream();
+Stream<String> parallel2 = stream.parallel();
+
+// Check if parallel
+boolean isParallel = stream.isParallel();
+
+// Make sequential
+Stream<String> sequential = parallel.sequential();
+
+// For parallel processing to be effective:
+// 1. The data source split should be efficient (ArrayList good, LinkedList bad)
+// 2. The operation should be stateless and non-interfering
+// 3. The merge operation should be efficient
+
+// For ordered streams, use forEachOrdered() to maintain order
+parallel.forEachOrdered(System.out::println);
+```
+
+## 11. Java Version Features
+
+### Java 8 (March 2014)
+- **Lambda expressions**: `() -> {}`, `x -> x * 2`
+- **Functional interfaces**: Single abstract method interfaces
+- **Method references**: `Class::method`
+- **Stream API**: `collection.stream().filter().map()`
+- **Optional**: `Optional<T>` container to avoid null pointer exceptions
+- **Default methods**: Allow interface methods with implementation
+- **New Date/Time API**: `java.time` package
+- **Nashorn JavaScript engine**: Run JavaScript on JVM
+- **Repeating annotations**: Apply same annotation multiple times
+- **Type annotations**: Annotations on any type use
+- **CompletableFuture**: Asynchronous task handling
+
+### Java 9 (September 2017)
+- **Module system (Project Jigsaw)**: `module-info.java`
+- **JShell**: Interactive Java REPL
+- **Private interface methods**: Private methods in interfaces
+- **Collection factory methods**: `List.of()`, `Set.of()`, `Map.of()`
+- **Stream API improvements**: `takeWhile()`, `dropWhile()`, `ofNullable()`
+- **Enhanced try-with-resources**: Effectively final variables
+- **Diamond operator with anonymous classes**: `new MyClass<>()`
+- **HTTP/2 client**: New HTTP client API
+- **Multi-release JAR files**: Different class files per Java version
+- **Reactive Streams API**: Flow API for asynchronous stream processing
+
+### Java 10 (March 2018)
+- **Local variable type inference**: `var` keyword
+- **Garbage collector interface**: Better gc separation
+- **Parallel full GC for G1**: Improved G1 garbage collector
+- **Application class-data sharing**: Improve startup and footprint
+- **Thread-local handshakes**: Stop individual threads
+- **Root certificates**: Added trusted CA certificates
+
+### Java 11 (September 2018) - LTS
+- **HTTP client API standardized**: Moved from incubator
+- **String methods**: `strip()`, `isBlank()`, `lines()`, `repeat()`
+- **Files.readString()** and **Files.writeString()**
+- **Lambda parameter type inference**: Local variable syntax in lambda
+- **Running Java files directly**: `java HelloWorld.java`
+- **Flight Recorder**: Production-ready profiling tool
+- **Epsilon GC**: No-Op garbage collector
+- **ZGC**: Low-latency garbage collector (experimental)
+
+### Java 12 (March 2019)
+- **Switch expressions**: Preview feature
+- **Compact number formatting**: `NumberFormat.getCompactNumberInstance()`
+- **String methods**: `indent()`, `transform()`
+- **Teeing collectors**: Combine results from two collectors
+- **Abortable mixed collections**: G1 GC improvement
+- **Micro-benchmark suite**: JMH in JDK source
+
+### Java 13 (September 2019)
+- **Text blocks**: Multi-line string literals (preview)
+- **Switch expressions**: Second preview
+- **Socket API**: New implementation for better performance
+- **Dynamic CDS Archives**: Improved class-data sharing
+- **ZGC**: Return unused memory to OS
+
+### Java 14 (March 2020)
+- **Switch expressions**: Standardized
+- **Pattern matching for instanceof**: Preview
+- **Records**: Compact data classes (preview)
+- **Text blocks**: Second preview
+- **Helpful NullPointerExceptions**: More descriptive messages
+- **Packaging tool**: Bundling Java apps
+- **NUMA-aware memory allocation**: G1 improvement
+
+### Java 15 (September 2020)
+- **Sealed classes**: Restrict class extension (preview)
+- **Records**: Second preview
+- **Pattern matching for instanceof**: Second preview
+- **Text blocks**: Standardized
+- **Hidden classes**: Non-discoverable classes
+- **ZGC**: Production ready
+- **Shenandoah GC**: Production ready
+- **Foreign-memory access API**: Incubator
+
+### Java 16 (March 2021)
+- **Records**: Standardized
+- **Pattern matching for instanceof**: Standardized
+- **Sealed classes**: Second preview
+- **Unix-domain socket channels**: IPC improvement
+- **Foreign linker API**: Incubator
+- **Vector API**: Incubator for SIMD operations
+- **JVM C++ interface**: Improve JNI performance
+- **Elastic metaspace**: Better memory management
+
+### Java 17 (September 2021) - LTS
+- **Sealed classes**: Standardized
+- **Pattern matching for switch**: Preview
+- **Foreign Function & Memory API**: Incubator
+- **Vector API**: Second incubator
+- **Strongly encapsulated JDK internals**: Finalized
+- **Enhanced pseudo-random number generators**
+- **macOS/AArch64 port**: Apple Silicon support
+- **Deprecate the Security Manager**: For removal
+- **Context-specific deserialization filters**
+
+### Java 18 (March 2022)
+- **UTF-8 by default**: Standard encoding
+- **Simple web server**: Command-line HTTP server
+- **Code snippets in Javadoc**: `@snippet` tag
+- **Pattern matching for switch**: Second preview
+- **Foreign Function & Memory API**: Second incubator
+- **Vector API**: Third incubator
+- **Internet-address resolution SPI**: Customizable DNS
+- **Foreign-memory access API**: Standardized final APIs
+
+### Java 19 (September 2022)
+- **Virtual threads**: Preview feature
+- **Structured concurrency**: Incubator
+- **Pattern matching for switch**: Third preview
+- **Foreign Function & Memory API**: Preview
+- **Vector API**: Fourth incubator
+- **Record patterns**: Preview feature
+- **Linux/RISC-V port**: Support for RISC-V architecture
+
+### Java 20 (March 2023)
+- **Record patterns**: Second preview
+- **Pattern matching for switch**: Fourth preview
+- **Scoped values**: Incubator
+- **Virtual threads**: Second preview
+- **Structured concurrency**: Second incubator
+- **Foreign Function & Memory API**: Second preview
+- **Vector API**: Fifth incubator
+
+### Java 21 (September 2023) - LTS
+- **Virtual threads**: Standardized
+- **Sequenced collections**: New collection interfaces
+- **Record patterns**: Standardized
+- **Pattern matching for switch**: Standardized
+- **String templates**: Preview feature
+- **Scoped values**: Preview feature
+- **Structured concurrency**: Preview feature
+- **Foreign Function & Memory API**: Standardized
+- **Vector API**: Sixth incubator
+- **Unnamed patterns and variables**: Preview feature
+- **Generational ZGC**: Improved garbage collection
+- **Key encapsulation mechanism API**: For encryption
+
+### Java 22 (March 2024)
+- **Foreign Function & Memory API**: Standardized
+- **String templates**: Second preview
+- **Scoped values**: Second preview
+- **Unnamed patterns and variables**: Second preview
+- **Structured concurrency**: Second preview
+- **Region pinning for G1**: Memory management improvement
+- **Vector API**: Standardized
+- **Launch multi-file source-code programs**: Enhanced launch protocol
+- **Class-file API**: Preview feature
+- **Stream gatherers**: Preview feature
+- **Implicitly declared classes and instance main methods**: Preview feature
+
+
+# 12. Comprehensive Java Reference Guide
+
+## Table of Contents
+- [String Manipulation Methods](#string-manipulation-methods)
+- [Date/Time API Methods](#datetime-api-methods)
+- [Mathematical Operations](#mathematical-operations)
+- [Collections Framework Methods](#collections-framework-methods)
+- [Stream API Methods](#stream-api-methods)
+- [Best Practices and Code Conventions](#best-practices-and-code-conventions)
+
+## String Manipulation Methods
+
+### String Class Methods
+
+| Method | Description | Example |
+|--------|-------------|---------|
+| `length()` | Returns string length | `str.length()` |
+| `charAt(int index)` | Returns char at specified index | `str.charAt(0)` |
+| `substring(int beginIndex)` | Returns substring from beginIndex | `str.substring(5)` |
+| `substring(int beginIndex, int endIndex)` | Returns substring from beginIndex to endIndex-1 | `str.substring(0, 5)` |
+| `concat(String str)` | Concatenates specified string | `str1.concat(str2)` |
+| `indexOf(String str)` | Returns index of first occurrence | `str.indexOf("Java")` |
+| `indexOf(String str, int fromIndex)` | Returns index from specified position | `str.indexOf("Java", 5)` |
+| `lastIndexOf(String str)` | Returns last occurrence index | `str.lastIndexOf("Java")` |
+| `equals(Object obj)` | Compares strings for equality | `str1.equals(str2)` |
+| `equalsIgnoreCase(String str)` | Compares strings ignoring case | `str1.equalsIgnoreCase(str2)` |
+| `compareTo(String str)` | Compares two strings lexicographically | `str1.compareTo(str2)` |
+| `compareToIgnoreCase(String str)` | Compares ignoring case | `str1.compareToIgnoreCase(str2)` |
+| `startsWith(String prefix)` | Checks if string starts with specified prefix | `str.startsWith("Java")` |
+| `endsWith(String suffix)` | Checks if string ends with specified suffix | `str.endsWith(".java")` |
+| `toLowerCase()` | Converts to lowercase | `str.toLowerCase()` |
+| `toUpperCase()` | Converts to uppercase | `str.toUpperCase()` |
+| `trim()` | Removes whitespace from both ends | `str.trim()` |
+| `strip()` | Like trim() but Unicode-aware (Java 11+) | `str.strip()` |
+| `stripLeading()` | Removes leading whitespace (Java 11+) | `str.stripLeading()` |
+| `stripTrailing()` | Removes trailing whitespace (Java 11+) | `str.stripTrailing()` |
+| `replace(char old, char new)` | Replaces all occurrences of a char | `str.replace('a', 'b')` |
+| `replace(CharSequence old, CharSequence new)` | Replaces all occurrences of a CharSequence | `str.replace("Java", "Kotlin")` |
+| `replaceAll(String regex, String replacement)` | Replaces all matches of regex | `str.replaceAll("\\d+", "NUM")` |
+| `replaceFirst(String regex, String replacement)` | Replaces first match of regex | `str.replaceFirst("\\d+", "NUM")` |
+| `contains(CharSequence s)` | Checks if string contains specified sequence | `str.contains("Java")` |
+| `split(String regex)` | Splits string by regex | `str.split(",")` |
+| `split(String regex, int limit)` | Splits with limit on result size | `str.split(",", 3)` |
+| `join(CharSequence delimiter, CharSequence... elements)` | Joins elements with delimiter | `String.join(",", "a", "b", "c")` |
+| `join(CharSequence delimiter, Iterable<? extends CharSequence>)` | Joins iterable with delimiter | `String.join(",", list)` |
+| `matches(String regex)` | Checks if string matches regex | `str.matches("\\d+")` |
+| `isEmpty()` | Checks if string is empty | `str.isEmpty()` |
+| `isBlank()` | Checks if string is empty or whitespace (Java 11+) | `str.isBlank()` |
+| `repeat(int count)` | Repeats string n times (Java 11+) | `str.repeat(3)` |
+| `toCharArray()` | Converts string to char array | `str.toCharArray()` |
+| `format(String format, Object... args)` | Returns formatted string | `String.format("Name: %s", name)` |
+| `valueOf(primitive or Object)` | Converts to string representation | `String.valueOf(123)` |
+| `lines()` | Stream of lines (Java 11+) | `str.lines().count()` |
+| `indent(int n)` | Adjusts indentation (Java 12+) | `str.indent(4)` |
+| `transform(Function<String, R> f)` | Applies function to string (Java 12+) | `str.transform(s -> s.toUpperCase())` |
+
+### StringBuilder Methods
+
+| Method | Description | Example |
+|--------|-------------|---------|
+| `StringBuilder()` | Constructs empty builder with capacity 16 | `new StringBuilder()` |
+| `StringBuilder(int capacity)` | Constructs with specified capacity | `new StringBuilder(32)` |
+| `StringBuilder(String str)` | Constructs initialized to string | `new StringBuilder("Java")` |
+| `append(various types)` | Appends representation of arg | `sb.append("text")` |
+| `insert(int offset, various types)` | Inserts arg at position | `sb.insert(0, "Start: ")` |
+| `delete(int start, int end)` | Removes chars from start to end-1 | `sb.delete(0, 5)` |
+| `deleteCharAt(int index)` | Removes char at position | `sb.deleteCharAt(0)` |
+| `replace(int start, int end, String str)` | Replaces substring with string | `sb.replace(0, 5, "Java")` |
+| `substring(int start)` | Returns substring from start | `sb.substring(5)` |
+| `substring(int start, int end)` | Returns substring from start to end-1 | `sb.substring(0, 5)` |
+| `reverse()` | Reverses characters | `sb.reverse()` |
+| `setCharAt(int index, char ch)` | Sets char at specified index | `sb.setCharAt(0, 'J')` |
+| `setLength(int newLength)` | Sets length (truncates or pads with nulls) | `sb.setLength(10)` |
+| `charAt(int index)` | Returns char at specified index | `sb.charAt(0)` |
+| `length()` | Returns length | `sb.length()` |
+| `capacity()` | Returns current capacity | `sb.capacity()` |
+| `ensureCapacity(int minimumCapacity)` | Ensures capacity at least equal to specified | `sb.ensureCapacity(100)` |
+| `toString()` | Returns string representation | `sb.toString()` |
+| `trimToSize()` | Attempts to reduce storage | `sb.trimToSize()` |
+
+### StringBuffer Methods
+Similar to StringBuilder but thread-safe (synchronized methods)
+
+### Pattern and Matcher Classes (java.util.regex)
+
+| Method | Description | Example |
+|--------|-------------|---------|
+| `Pattern.compile(String regex)` | Compiles regex into Pattern | `Pattern.compile("\\d+")` |
+| `Pattern.matcher(CharSequence input)` | Creates Matcher for input | `pattern.matcher(input)` |
+| `Matcher.matches()` | Attempts to match entire input | `matcher.matches()` |
+| `Matcher.find()` | Finds next match | `matcher.find()` |
+| `Matcher.group()` | Returns matched string | `matcher.group()` |
+| `Matcher.group(int group)` | Returns specific capturing group | `matcher.group(1)` |
+| `Matcher.start()` | Returns start index of match | `matcher.start()` |
+| `Matcher.end()` | Returns end index of match + 1 | `matcher.end()` |
+| `Matcher.replaceAll(String replacement)` | Replaces all matches | `matcher.replaceAll("NUM")` |
+| `Matcher.replaceFirst(String replacement)` | Replaces first match | `matcher.replaceFirst("NUM")` |
+| `Pattern.matches(String regex, CharSequence input)` | Static convenience method | `Pattern.matches("\\d+", input)` |
+
+## Date/Time API Methods
+
+### LocalDate Methods
+
+| Method | Description | Example |
+|--------|-------------|---------|
+| `now()` | Current date | `LocalDate.now()` |
+| `of(int year, int month, int day)` | Creates date from components | `LocalDate.of(2023, 1, 1)` |
+| `of(int year, Month month, int day)` | Creates with Month enum | `LocalDate.of(2023, Month.JANUARY, 1)` |
+| `parse(CharSequence text)` | Parses text to date | `LocalDate.parse("2023-01-01")` |
+| `parse(CharSequence text, DateTimeFormatter formatter)` | Parses with formatter | `LocalDate.parse("01/01/2023", formatter)` |
+| `getYear()` | Gets year | `date.getYear()` |
+| `getMonth()` | Gets month as enum | `date.getMonth()` |
+| `getMonthValue()` | Gets month as int (1-12) | `date.getMonthValue()` |
+| `getDayOfMonth()` | Gets day of month | `date.getDayOfMonth()` |
+| `getDayOfWeek()` | Gets day of week as enum | `date.getDayOfWeek()` |
+| `getDayOfYear()` | Gets day of year (1-366) | `date.getDayOfYear()` |
+| `isLeapYear()` | Checks if leap year | `date.isLeapYear()` |
+| `lengthOfMonth()` | Gets length of month | `date.lengthOfMonth()` |
+| `lengthOfYear()` | Gets length of year | `date.lengthOfYear()` |
+| `plusDays(long days)` | Adds days | `date.plusDays(7)` |
+| `plusWeeks(long weeks)` | Adds weeks | `date.plusWeeks(1)` |
+| `plusMonths(long months)` | Adds months | `date.plusMonths(3)` |
+| `plusYears(long years)` | Adds years | `date.plusYears(1)` |
+| `minusDays(long days)` | Subtracts days | `date.minusDays(7)` |
+| `minusWeeks(long weeks)` | Subtracts weeks | `date.minusWeeks(1)` |
+| `minusMonths(long months)` | Subtracts months | `date.minusMonths(3)` |
+| `minusYears(long years)` | Subtracts years | `date.minusYears(1)` |
+| `withDayOfMonth(int dayOfMonth)` | Returns copy with day of month | `date.withDayOfMonth(15)` |
+| `withDayOfYear(int dayOfYear)` | Returns copy with day of year | `date.withDayOfYear(100)` |
+| `withMonth(int month)` | Returns copy with month | `date.withMonth(6)` |
+| `withYear(int year)` | Returns copy with year | `date.withYear(2024)` |
+| `isBefore(ChronoLocalDate other)` | Checks if before other | `date1.isBefore(date2)` |
+| `isAfter(ChronoLocalDate other)` | Checks if after other | `date1.isAfter(date2)` |
+| `isEqual(ChronoLocalDate other)` | Checks if equal to other | `date1.isEqual(date2)` |
+| `until(ChronoLocalDate endDate, ChronoUnit unit)` | Calculates period until | `date1.until(date2, ChronoUnit.DAYS)` |
+| `format(DateTimeFormatter formatter)` | Formats date | `date.format(formatter)` |
+| `atTime(LocalTime time)` | Combines with time | `date.atTime(time)` |
+| `atTime(int hour, int minute)` | Combines with time | `date.atTime(12, 0)` |
+
+### LocalTime Methods
+
+| Method | Description | Example |
+|--------|-------------|---------|
+| `now()` | Current time | `LocalTime.now()` |
+| `of(int hour, int minute)` | Creates time | `LocalTime.of(12, 30)` |
+| `of(int hour, int minute, int second)` | Creates with seconds | `LocalTime.of(12, 30, 45)` |
+| `of(int hour, int minute, int second, int nano)` | Creates with nanos | `LocalTime.of(12, 30, 45, 500000000)` |
+| `parse(CharSequence text)` | Parses text to time | `LocalTime.parse("12:30")` |
+| `parse(CharSequence text, DateTimeFormatter formatter)` | Parses with formatter | `LocalTime.parse("12:30 PM", formatter)` |
+| `getHour()` | Gets hour | `time.getHour()` |
+| `getMinute()` | Gets minute | `time.getMinute()` |
+| `getSecond()` | Gets second | `time.getSecond()` |
+| `getNano()` | Gets nanosecond | `time.getNano()` |
+| `plusHours(long hours)` | Adds hours | `time.plusHours(2)` |
+| `plusMinutes(long minutes)` | Adds minutes | `time.plusMinutes(15)` |
+| `plusSeconds(long seconds)` | Adds seconds | `time.plusSeconds(30)` |
+| `plusNanos(long nanos)` | Adds nanoseconds | `time.plusNanos(1000000)` |
+| `minusHours(long hours)` | Subtracts hours | `time.minusHours(2)` |
+| `minusMinutes(long minutes)` | Subtracts minutes | `time.minusMinutes(15)` |
+| `minusSeconds(long seconds)` | Subtracts seconds | `time.minusSeconds(30)` |
+| `minusNanos(long nanos)` | Subtracts nanoseconds | `time.minusNanos(1000000)` |
+| `withHour(int hour)` | Returns copy with hour | `time.withHour(14)` |
+| `withMinute(int minute)` | Returns copy with minute | `time.withMinute(45)` |
+| `withSecond(int second)` | Returns copy with second | `time.withSecond(0)` |
+| `withNano(int nano)` | Returns copy with nanosecond | `time.withNano(0)` |
+| `isBefore(LocalTime other)` | Checks if before other | `time1.isBefore(time2)` |
+| `isAfter(LocalTime other)` | Checks if after other | `time1.isAfter(time2)` |
+| `format(DateTimeFormatter formatter)` | Formats time | `time.format(formatter)` |
+| `atDate(LocalDate date)` | Combines with date | `time.atDate(date)` |
+
+### LocalDateTime Methods
+
+| Method | Description | Example |
+|--------|-------------|---------|
+| `now()` | Current date-time | `LocalDateTime.now()` |
+| `of(int year, int month, int day, int hour, int minute)` | Creates from components | `LocalDateTime.of(2023, 1, 1, 12, 0)` |
+| `of(LocalDate date, LocalTime time)` | Creates from date and time | `LocalDateTime.of(date, time)` |
+| `parse(CharSequence text)` | Parses text | `LocalDateTime.parse("2023-01-01T12:00")` |
+| `parse(CharSequence text, DateTimeFormatter formatter)` | Parses with formatter | `LocalDateTime.parse("01/01/2023 12:00", formatter)` |
+| `toLocalDate()` | Extracts date part | `dateTime.toLocalDate()` |
+| `toLocalTime()` | Extracts time part | `dateTime.toLocalTime()` |
+| `plusDays(long days)` | Adds days | `dateTime.plusDays(7)` |
+| `plusWeeks(long weeks)` | Adds weeks | `dateTime.plusWeeks(1)` |
+| `plusMonths(long months)` | Adds months | `dateTime.plusMonths(3)` |
+| `plusYears(long years)` | Adds years | `dateTime.plusYears(1)` |
+| `plusHours(long hours)` | Adds hours | `dateTime.plusHours(2)` |
+| `plusMinutes(long minutes)` | Adds minutes | `dateTime.plusMinutes(15)` |
+| `plusSeconds(long seconds)` | Adds seconds | `dateTime.plusSeconds(30)` |
+| `plusNanos(long nanos)` | Adds nanoseconds | `dateTime.plusNanos(1000000)` |
+
+### ZonedDateTime Methods
+
+| Method | Description | Example |
+|--------|-------------|---------|
+| `now()` | Current date-time with system zone | `ZonedDateTime.now()` |
+| `now(ZoneId zone)` | Current date-time with zone | `ZonedDateTime.now(ZoneId.of("America/New_York"))` |
+| `of(LocalDateTime dateTime, ZoneId zone)` | Creates from local date-time and zone | `ZonedDateTime.of(dateTime, ZoneId.of("UTC"))` |
+| `parse(CharSequence text)` | Parses text | `ZonedDateTime.parse("2023-01-01T12:00:00+01:00")` |
+| `getZone()` | Gets time zone | `zonedDateTime.getZone()` |
+| `withZoneSameInstant(ZoneId zone)` | Changes zone keeping instant | `zonedDateTime.withZoneSameInstant(ZoneId.of("UTC"))` |
+| `withZoneSameLocal(ZoneId zone)` | Changes zone keeping local time | `zonedDateTime.withZoneSameLocal(ZoneId.of("UTC"))` |
+| `toLocalDateTime()` | Converts to local date-time | `zonedDateTime.toLocalDateTime()` |
+| `toInstant()` | Converts to instant | `zonedDateTime.toInstant()` |
+| `toOffsetDateTime()` | Converts to offset date-time | `zonedDateTime.toOffsetDateTime()` |
+
+### DateTimeFormatter Methods
+
+| Method | Description | Example |
+|--------|-------------|---------|
+| `ofPattern(String pattern)` | Creates formatter with pattern | `DateTimeFormatter.ofPattern("yyyy-MM-dd")` |
+| `ofLocalizedDate(FormatStyle style)` | Creates formatter for dates | `DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM)` |
+| `ofLocalizedTime(FormatStyle style)` | Creates formatter for times | `DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT)` |
+| `ofLocalizedDateTime(FormatStyle style)` | Creates formatter for date-times | `DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM)` |
+| `format(TemporalAccessor temporal)` | Formats temporal object | `formatter.format(localDate)` |
+| `parse(CharSequence text)` | Parses text | `formatter.parse("2023-01-01")` |
+| `withLocale(Locale locale)` | Returns copy with locale | `formatter.withLocale(Locale.FRANCE)` |
+
+### Duration Methods
+
+| Method | Description | Example |
+|--------|-------------|---------|
+| `between(Temporal startInclusive, Temporal endExclusive)` | Creates duration between temporals | `Duration.between(time1, time2)` |
+| `of(long amount, TemporalUnit unit)` | Creates duration of amount in unit | `Duration.of(2, ChronoUnit.HOURS)` |
+| `ofDays(long days)` | Creates duration in days | `Duration.ofDays(7)` |
+| `ofHours(long hours)` | Creates duration in hours | `Duration.ofHours(24)` |
+| `ofMinutes(long minutes)` | Creates duration in minutes | `Duration.ofMinutes(60)` |
+| `ofSeconds(long seconds)` | Creates duration in seconds | `Duration.ofSeconds(3600)` |
+| `ofMillis(long millis)` | Creates duration in milliseconds | `Duration.ofMillis(1000)` |
+| `ofNanos(long nanos)` | Creates duration in nanoseconds | `Duration.ofNanos(1000000)` |
+| `toDays()` | Converts to days | `duration.toDays()` |
+| `toHours()` | Converts to hours | `duration.toHours()` |
+| `toMinutes()` | Converts to minutes | `duration.toMinutes()` |
+| `toSeconds()` | Converts to seconds | `duration.toSeconds()` |
+| `toMillis()` | Converts to milliseconds | `duration.toMillis()` |
+| `toNanos()` | Converts to nanoseconds | `duration.toNanos()` |
+| `plus(Duration duration)` | Adds duration | `duration1.plus(duration2)` |
+| `minus(Duration duration)` | Subtracts duration | `duration1.minus(duration2)` |
+| `multipliedBy(long multiplicand)` | Multiplies duration | `duration.multipliedBy(2)` |
+| `dividedBy(long divisor)` | Divides duration | `duration.dividedBy(2)` |
+| `negated()` | Negates duration | `duration.negated()` |
+| `abs()` | Returns absolute value | `duration.abs()` |
+
+### Period Methods
+
+| Method | Description | Example |
+|--------|-------------|---------|
+| `between(LocalDate startDate, LocalDate endDate)` | Creates period between dates | `Period.between(date1, date2)` |
+| `of(int years, int months, int days)` | Creates period | `Period.of(1, 2, 3)` |
+| `ofYears(int years)` | Creates period in years | `Period.ofYears(1)` |
+| `ofMonths(int months)` | Creates period in months | `Period.ofMonths(6)` |
+| `ofWeeks(int weeks)` | Creates period in weeks | `Period.ofWeeks(2)` |
+| `ofDays(int days)` | Creates period in days | `Period.ofDays(7)` |
+| `getYears()` | Gets years component | `period.getYears()` |
+| `getMonths()` | Gets months component | `period.getMonths()` |
+| `getDays()` | Gets days component | `period.getDays()` |
+| `plus(Period period)` | Adds period | `period1.plus(period2)` |
+| `minus(Period period)` | Subtracts period | `period1.minus(period2)` |
+| `multipliedBy(int scalar)` | Multiplies all components | `period.multipliedBy(2)` |
+| `negated()` | Negates period | `period.negated()` |
+| `normalized()` | Normalizes months (no effect on days) | `period.normalized()` |
+| `toTotalMonths()` | Converts years and months to total months | `period.toTotalMonths()` |
+
+## Mathematical Operations
+
+### Math Class Methods
+
+| Method | Description | Example |
+|--------|-------------|---------|
+| `abs(int/long/float/double a)` | Absolute value | `Math.abs(-10)` |
+| `max(int/long/float/double a, b)` | Maximum of two values | `Math.max(5, 10)` |
+| `min(int/long/float/double a, b)` | Minimum of two values | `Math.min(5, 10)` |
+| `sqrt(double a)` | Square root | `Math.sqrt(25)` |
+| `cbrt(double a)` | Cube root | `Math.cbrt(27)` |
+| `pow(double a, double b)` | a raised to power b | `Math.pow(2, 3)` |
+| `exp(double a)` | e raised to power a | `Math.exp(1)` |
+| `log(double a)` | Natural logarithm | `Math.log(10)` |
+| `log10(double a)` | Base 10 logarithm | `Math.log10(100)` |
+| `sin(double a)` | Sine in radians | `Math.sin(Math.PI / 2)` |
+| `cos(double a)` | Cosine in radians | `Math.cos(0)` |
+| `tan(double a)` | Tangent in radians | `Math.tan(Math.PI / 4)` |
+| `asin(double a)` | Arc sine in radians | `Math.asin(1)` |
+| `acos(double a)` | Arc cosine in radians | `Math.acos(1)` |
+| `atan(double a)` | Arc tangent in radians | `Math.atan(1)` |
+| `atan2(double y, double x)` | Arc tangent of y/x | `Math.atan2(y, x)` |
+| `toDegrees(double angrad)` | Converts radians to degrees | `Math.toDegrees(Math.PI)` |
+| `toRadians(double angdeg)` | Converts degrees to radians | `Math.toRadians(180)` |
+| `random()` | Random value between 0.0 and 1.0 | `Math.random()` |
+| `round(float/double a)` | Rounds to nearest integer | `Math.round(2.5)` |
+| `floor(double a)` | Rounds down | `Math.floor(2.7)` |
+| `ceil(double a)` | Rounds up | `Math.ceil(2.1)` |
+| `hypot(double x, double y)` | Hypotenuse: sqrt(x^2 + y^2) | `Math.hypot(3, 4)` |
+| `signum(float/double d)` | Sign function | `Math.signum(-2.5)` |
+| `copySign(float/double magnitude, float/double sign)` | Returns magnitude with sign | `Math.copySign(3.0, -2.0)` |
+| `scalb(float/double d, int scaleFactor)` | d * 2^scaleFactor | `Math.scalb(1.0, 3)` |
+| `nextAfter(double start, double direction)` | Next representable value | `Math.nextAfter(1.0, 2.0)` |
+| `nextUp(double d)` | Next representable value | `Math.nextUp(1.0)` |
+| `nextDown(double d)` | Next smaller representable value | `Math.nextDown(1.0)` |
+| `ulp(double d)` | Unit in last place | `Math.ulp(1.0)` |
+| `IEEEremainder(double f1, double f2)` | IEEE 754 remainder | `Math.IEEEremainder(5.0, 2.0)` |
+| `addExact(int/long x, int/long y)` | Sum with exception on overflow | `Math.addExact(Integer.MAX_VALUE, 1)` |
+| `subtractExact(int/long x, int/long y)` | Subtraction with exception on overflow | `Math.subtractExact(Integer.MIN_VALUE, 1)` |
+| `multiplyExact(int/long x, int/long y)` | Multiplication with exception on overflow | `Math.multiplyExact(Integer.MAX_VALUE, 2)` |
+| `incrementExact(int/long a)` | Increment with exception on overflow | `Math.incrementExact(Integer.MAX_VALUE)` |
+| `decrementExact(int/long a)` | Decrement with exception on overflow | `Math.decrementExact(Integer.MIN_VALUE)` |
+| `negateExact(int/long a)` | Negation with exception on overflow | `Math.negateExact(Integer.MIN_VALUE)` |
+| `floorDiv(int/long x, int/long y)` | Integer division rounded down | `Math.floorDiv(-5, 2)` |
+| `floorMod(int/long x, int/long y)` | Modulus related to floorDiv | `Math.floorMod(-5, 2)` |
+| `fma(double a, double b, double c)` | Fused multiply add: (a * b) + c | `Math.fma(2.0, 3.0, 1.0)` |
+
+### BigDecimal Methods
+
+| Method | Description | Example |
+|--------|-------------|---------|
+| `BigDecimal(String val)` | Creates from string | `new BigDecimal("10.5")` |
+| `valueOf(long val)` | Creates from long | `BigDecimal.valueOf(10)` |
+| `valueOf(double val)` | Creates from double | `BigDecimal.valueOf(10.5)` |
+| `add(BigDecimal augend)` | Addition | `bd1.add(bd2)` |
+| `subtract(BigDecimal subtrahend)` | Subtraction | `bd1.subtract(bd2)` |
+| `multiply(BigDecimal multiplicand)` | Multiplication | `bd1.multiply(bd2)` |
+| `divide(BigDecimal divisor)` | Division (may throw ArithmeticException) | `bd1.divide(bd2)` |
+| `divide(BigDecimal divisor, int scale, RoundingMode roundingMode)` | Division with rounding | `bd1.divide(bd2, 2, RoundingMode.HALF_UP)` |
+| `divideAndRemainder(BigDecimal divisor)` | Division returning quotient and remainder | `bd1.divideAndRemainder(bd2)` |
+| `pow(int n)` | Power | `bd.pow(2)` |
+| `negate()` | Negation | `bd.negate()` |
+| `abs()` | Absolute value | `bd.abs()` |
+| `signum()` | Sign (-1, 0, or 1) | `bd.signum()` |
+| `scale()` | Scale (digits right of decimal point) | `bd.scale()` |
+| `precision()` | Precision (total digits) | `bd.precision()` |
+| `unscaledValue()` | Unscaled value as BigInteger | `bd.unscaledValue()` |
+| `setScale(int newScale, RoundingMode roundingMode)` | Sets scale with rounding | `bd.setScale(2, RoundingMode.HALF_UP)` |
+| `movePointLeft(int n)` | Moves decimal point left | `bd.movePointLeft(2)` |
+| `movePointRight(int n)` | Moves decimal point right | `bd.movePointRight(2)` |
+| `stripTrailingZeros()` | Removes trailing zeros | `bd.stripTrailingZeros()` |
+| `compareTo(BigDecimal val)` | Compares numerically | `bd1.compareTo(bd2)` |
+| `equals(Object obj)` | Compares equality (includes scale) | `bd1.equals(bd2)` |
+| `min(BigDecimal val)` | Returns minimum | `bd1.min(bd2)` |
+| `max(BigDecimal val)` | Returns maximum | `bd1.max(bd2)` |
+| `toString()` | Returns string representation | `bd.toString()` |
+| `toPlainString()` | Returns string without exponent | `bd.toPlainString()` |
+| `toEngineeringString()` | Returns engineering notation | `bd.toEngineeringString()` |
+
+### BigInteger Methods
+
+| Method | Description | Example |
+|--------|-------------|---------|
+| `BigInteger(String val)` | Creates from string | `new BigInteger("1234")` |
+| `valueOf(long val)` | Creates from long | `BigInteger.valueOf(123)` |
+| `add(BigInteger val)` | Addition | `bi1.add(bi2)` |
+| `subtract(BigInteger val)` | Subtraction | `bi1.subtract(bi2)` |
+| `multiply(BigInteger val)` | Multiplication | `bi1.multiply(bi2)` |
+| `divide(BigInteger val)` | Division | `bi1.divide(bi2)` |
+| `remainder(BigInteger val)` | Remainder | `bi1.remainder(bi2)` |
+| `divideAndRemainder(BigInteger val)` | Division with remainder | `bi1.divideAndRemainder(bi2)` |
+| `pow(int exponent)` | Power | `bi.pow(2)` |
+| `gcd(BigInteger val)` | Greatest common divisor | `bi1.gcd(bi2)` |
+| `abs()` | Absolute value | `bi.abs()` |
+| `negate()` | Negation | `bi.negate()` |
+| `signum()` | Sign (-1, 0, or 1) | `bi.signum()` |
+| `mod(BigInteger m)` | Modulus (always positive) | `bi.mod(m)` |
+| `modPow(BigInteger exponent, BigInteger m)` | Power with modulus | `bi.modPow(exp, m)` |
+| `modInverse(BigInteger m)` | Multiplicative inverse | `bi.modInverse(m)` |
+| `shiftLeft(int n)` | Left shift | `bi.shiftLeft(2)` |
+| `shiftRight(int n)` | Right shift | `bi.shiftRight(2)` |
+| `and(BigInteger val)` | Bitwise AND | `bi1.and(bi2)` |
+| `or(BigInteger val)` | Bitwise OR | `bi1.or(bi2)` |
+| `xor(BigInteger val)` | Bitwise XOR | `bi1.xor(bi2)` |
+| `not()` | Bitwise NOT | `bi.not()` |
+| `andNot(BigInteger val)` | Bitwise AND NOT | `bi1.andNot(bi2)` |
+| `testBit(int n)` | Tests bit at position | `bi.testBit(0)` |
+| `setBit(int n)` | Sets bit at position | `bi.setBit(0)` |
+| `clearBit(int n)` | Clears bit at position | `bi.clearBit(0)` |
+| `flipBit(int n)` | Flips bit at position | `bi.flipBit(0)` |
+| `bitLength()` | Returns bit length | `bi.bitLength()` |
+| `bitCount()` | Returns set bit count | `bi.bitCount()` |
+| `isProbablePrime(int certainty)` | Primality test | `bi.isProbablePrime(100)` |
+| `nextProbablePrime()` | Next probable prime | `bi.nextProbablePrime()` |
+| `toString()` | Returns string representation | `bi.toString()` |
+| `toString(int radix)` | Returns string in radix | `bi.toString(16)` |
+
+### Random Class Methods
+
+| Method | Description | Example |
+|--------|-------------|---------|
+| `Random()` | Creates random number generator | `new Random()` |
+| `Random(long seed)` | Creates with seed | `new Random(123)` |
+| `nextInt()` | Returns random int | `random.nextInt()` |
+| `nextInt(int bound)` | Returns int in range [0, bound) | `random.nextInt(100)` |
+| `nextLong()` | Returns random long | `random.nextLong()` |
+| `nextFloat()` | Returns float in [0.0, 1.0) | `random.nextFloat()` |
+| `nextDouble()` | Returns double in [0.0, 1.0) | `random.nextDouble()` |
+| `nextBoolean()` | Returns random boolean | `random.nextBoolean()` |
+| `nextGaussian()` | Returns gaussian ("normal") distribution | `random.nextGaussian()` |
+| `nextBytes(byte[] bytes)` | Fills byte array with random bytes | `random.nextBytes(bytes)` |
+| `ints()` | Returns stream of random ints | `random.ints().limit(5).toArray()` |
+| `ints(long streamSize)` | Stream of specified size | `random.ints(5).toArray()` |
+| `ints(int origin, int bound)` | Stream with range | `random.ints(0, 100).limit(5).toArray()` |
+| `longs()`, `doubles()` | Similar streams for longs, doubles | `random.longs().limit(5).toArray()` |
+
+## Collections Framework Methods
+
+### List Interface Methods
+
+| Method | Description | Example |
+|--------|-------------|---------|
+| `add(E element)` | Adds element to end | `list.add("element")` |
+| `add(int index, E element)` | Adds at index | `list.add(0, "element")` |
+| `addAll(Collection<? extends E> c)` | Adds all elements | `list.addAll(collection)` |
+| `addAll(int index, Collection<? extends E> c)` | Adds all at index | `list.addAll(0, collection)` |
+| `get(int index)` | Returns element at index | `list.get(0)` |
+| `set(int index, E element)` | Replaces element at index | `list.set(0, "element")` |
+| `remove(int index)` | Removes element at index | `list.remove(0)` |
+| `remove(Object o)` | Removes first occurrence | `list.remove("element")` |
+| `indexOf(Object o)` | First index of element | `list.indexOf("element")` |
+| `lastIndexOf(Object o)` | Last index of element | `list.lastIndexOf("element")` |
+| `listIterator()` | Returns list iterator | `list.listIterator()` |
+| `listIterator(int index)` | List iterator at position | `list.listIterator(0)` |
+| `subList(int fromIndex, int toIndex)` | Returns view of portion | `list.subList(0, 5)` |
+| `sort(Comparator<? super E> c)` | Sorts list with comparator | `list.sort(Comparator.naturalOrder())` |
+| `replaceAll(UnaryOperator<E> operator)` | Replaces all elements | `list.replaceAll(s -> s.toUpperCase())` |
+
+### ArrayList Methods
+Implements all List methods plus:
+
+| Method | Description | Example |
+|--------|-------------|---------|
+| `ArrayList()` | Creates empty list | `new ArrayList<>()` |
+| `ArrayList(Collection<? extends E> c)` | Creates from collection | `new ArrayList<>(collection)` |
+| `ArrayList(int initialCapacity)` | Creates with capacity | `new ArrayList<>(10)` |
+| `ensureCapacity(int minCapacity)` | Increases capacity | `list.ensureCapacity(100)` |
+| `trimToSize()` | Trims to current size | `list.trimToSize()` |
+| `clone()` | Creates shallow copy | `list.clone()` |
+
+### LinkedList Methods
+Implements List and Deque methods plus:
+
+| Method | Description | Example |
+|--------|-------------|---------|
+| `LinkedList()` | Creates empty list | `new LinkedList<>()` |
+| `LinkedList(Collection<? extends E> c)` | Creates from collection | `new LinkedList<>(collection)` |
+| `getFirst()` | Returns first element | `list.getFirst()` |
+| `getLast()` | Returns last element | `list.getLast()` |
+| `addFirst(E e)` | Inserts at beginning | `list.addFirst("first")` |
+| `addLast(E e)` | Inserts at end | `list.addLast("last")` |
+| `removeFirst()` | Removes first element | `list.removeFirst()` |
+| `removeLast()` | Removes last element | `list.removeLast()` |
+| `offer(E e)` | Adds to end | `list.offer("element")` |
+| `offerFirst(E e)` | Adds to front | `list.offerFirst("element")` |
+| `offerLast(E e)` | Adds to end | `list.offerLast("element")` |
+| `poll()` | Retrieves and removes head | `list.poll()` |
+| `pollFirst()` | Retrieves and removes first | `list.pollFirst()` |
+| `pollLast()` | Retrieves and removes last | `list.pollLast()` |
+| `peek()` | Retrieves head | `list.peek()` |
+| `peekFirst()` | Retrieves first | `list.peekFirst()` |
+| `peekLast()` | Retrieves last | `list.peekLast()` |
+| `push(E e)` | Pushes element onto stack | `list.push("element")` |
+| `pop()` | Pops element from stack | `list.pop()` |
+
+### Set Interface Methods
+
+| Method | Description | Example |
+|--------|-------------|---------|
+| `add(E e)` | Adds element | `set.add("element")` |
+| `addAll(Collection<? extends E> c)` | Adds all elements | `set.addAll(collection)` |
+| `remove(Object o)` | Removes element | `set.remove("element")` |
+| `contains(Object o)` | Checks if contains | `set.contains("element")` |
+| `containsAll(Collection<?> c)` | Checks if contains all | `set.containsAll(collection)` |
+| `retainAll(Collection<?> c)` | Retains only in collection | `set.retainAll(collection)` |
+| `removeAll(Collection<?> c)` | Removes all in collection | `set.removeAll(collection)` |
+| `clear()` | Removes all elements | `set.clear()` |
+| `isEmpty()` | Checks if empty | `set.isEmpty()` |
+| `size()` | Returns size | `set.size()` |
+| `iterator()` | Returns iterator | `set.iterator()` |
+| `toArray()` | Converts to array | `set.toArray()` |
+| `toArray(T[] a)` | Converts to array of type | `set.toArray(new String[0])` |
+
+### HashSet Methods
+Implements all Set methods plus:
+
+| Method | Description | Example |
+|--------|-------------|---------|
+| `HashSet()` | Creates empty set | `new HashSet<>()` |
+| `HashSet(Collection<? extends E> c)` | Creates from collection | `new HashSet<>(collection)` |
+| `HashSet(int initialCapacity)` | Creates with capacity | `new HashSet<>(10)` |
+| `HashSet(int initialCapacity, float loadFactor)` | Creates with capacity and load factor | `new HashSet<>(10, 0.75f)` |
+| `clone()` | Creates shallow copy | `set.clone()` |
+
+### TreeSet Methods
+Implements SortedSet methods plus:
+
+| Method | Description | Example |
+|--------|-------------|---------|
+| `TreeSet()` | Creates empty set | `new TreeSet<>()` |
+| `TreeSet(Collection<? extends E> c)` | Creates from collection | `new TreeSet<>(collection)` |
+| `TreeSet(Comparator<? super E> comparator)` | Creates with comparator | `new TreeSet<>(comparator)` |
+| `TreeSet(SortedSet<E> s)` | Creates from sorted set | `new TreeSet<>(sortedSet)` |
+| `first()` | Returns first element | `set.first()` |
+| `last()` | Returns last element | `set.last()` |
+| `lower(E e)` | Returns greatest element < e | `set.lower("element")` |
+| `floor(E e)` | Returns greatest element less than or equal to e | `set.floor("element")` |
+| `ceiling(E e)` | Returns least element greater than or equal to e | `set.ceiling("element")` |
+| `higher(E e)` | Returns least element > e | `set.higher("element")` |
+| `pollFirst()` | Retrieves and removes first | `set.pollFirst()` |
+| `pollLast()` | Retrieves and removes last | `set.pollLast()` |
+| `subSet(E fromElement, E toElement)` | Returns view of range | `set.subSet("a", "z")` |
+| `subSet(E fromElement, boolean fromInclusive, E toElement, boolean toInclusive)` | View with inclusive flags | `set.subSet("a", true, "z", true)` |
+| `headSet(E toElement)` | View of elements < toElement | `set.headSet("m")` |
+| `headSet(E toElement, boolean inclusive)` | View with inclusive flag | `set.headSet("m", true)` |
+| `tailSet(E fromElement)` | View of elements greater than or equal to fromElement | `set.tailSet("m")` |
+| `tailSet(E fromElement, boolean inclusive)` | View with inclusive flag | `set.tailSet("m", false)` |
+| `comparator()` | Returns comparator | `set.comparator()` |
+| `descendingSet()` | Returns reverse order view | `set.descendingSet()` |
+| `descendingIterator()` | Returns descending iterator | `set.descendingIterator()` |
+
+### Map Interface Methods
+
+| Method | Description | Example |
+|--------|-------------|---------|
+| `put(K key, V value)` | Associates key with value | `map.put("key", "value")` |
+| `putAll(Map<? extends K, ? extends V> m)` | Copies all mappings | `map.putAll(otherMap)` |
+| `putIfAbsent(K key, V value)` | Puts if key is not present | `map.putIfAbsent("key", "value")` |
+| `get(Object key)` | Returns value for key | `map.get("key")` |
+| `getOrDefault(Object key, V defaultValue)` | Returns value or default | `map.getOrDefault("key", "default")` |
+| `containsKey(Object key)` | Checks if contains key | `map.containsKey("key")` |
+| `containsValue(Object value)` | Checks if contains value | `map.containsValue("value")` |
+| `remove(Object key)` | Removes mapping for key | `map.remove("key")` |
+| `remove(Object key, Object value)` | Removes if mapping to value | `map.remove("key", "value")` |
+| `replace(K key, V value)` | Replaces value for key | `map.replace("key", "newValue")` |
+| `replace(K key, V oldValue, V newValue)` | Replaces if mapping to oldValue | `map.replace("key", "oldValue", "newValue")` |
+| `replaceAll(BiFunction<? super K, ? super V, ? extends V> function)` | Replaces all values | `map.replaceAll((k, v) -> v.toUpperCase())` |
+| `compute(K key, BiFunction<? super K, ? super V, ? extends V> remappingFunction)` | Computes new value | `map.compute("key", (k, v) -> v == null ? "new" : v + "append")` |
+| `computeIfAbsent(K key, Function<? super K, ? extends V> mappingFunction)` | Computes if key absent | `map.computeIfAbsent("key", k -> "computed")` |
+| `computeIfPresent(K key, BiFunction<? super K, ? super V, ? extends V> remappingFunction)` | Computes if key present | `map.computeIfPresent("key", (k, v) -> v + "append")` |
+| `merge(K key, V value, BiFunction<? super V, ? super V, ? extends V> remappingFunction)` | Merges value if key present | `map.merge("key", "value", (old, new) -> old + new)` |
+| `forEach(BiConsumer<? super K, ? super V> action)` | Performs action on entries | `map.forEach((k, v) -> System.out.println(k + "=" + v))` |
+| `clear()` | Removes all mappings | `map.clear()` |
+| `isEmpty()` | Checks if empty | `map.isEmpty()` |
+| `size()` | Returns size | `map.size()` |
+| `keySet()` | Returns set of keys | `map.keySet()` |
+| `values()` | Returns collection of values | `map.values()` |
+| `entrySet()` | Returns set of entries | `map.entrySet()` |
+
+### HashMap Methods
+Implements all Map methods plus:
+
+| Method | Description | Example |
+|--------|-------------|---------|
+| `HashMap()` | Creates empty map | `new HashMap<>()` |
+| `HashMap(int initialCapacity)` | Creates with capacity | `new HashMap<>(10)` |
+| `HashMap(int initialCapacity, float loadFactor)` | Creates with capacity and load factor | `new HashMap<>(10, 0.75f)` |
+| `HashMap(Map<? extends K, ? extends V> m)` | Creates from map | `new HashMap<>(map)` |
+| `clone()` | Creates shallow copy | `map.clone()` |
+
+### TreeMap Methods
+Implements SortedMap methods plus:
+
+| Method | Description | Example |
+|--------|-------------|---------|
+| `TreeMap()` | Creates empty map | `new TreeMap<>()` |
+| `TreeMap(Comparator<? super K> comparator)` | Creates with comparator | `new TreeMap<>(comparator)` |
+| `TreeMap(Map<? extends K, ? extends V> m)` | Creates from map | `new TreeMap<>(map)` |
+| `TreeMap(SortedMap<K, ? extends V> m)` | Creates from sorted map | `new TreeMap<>(sortedMap)` |
+| `firstKey()` | Returns first key | `map.firstKey()` |
+| `lastKey()` | Returns last key | `map.lastKey()` |
+| `lowerKey(K key)` | Returns greatest key < key | `map.lowerKey("key")` |
+| `floorKey(K key)` | Returns greatest key less than or equal to key | `map.floorKey("key")` |
+| `ceilingKey(K key)` | Returns least key greater than or equal to key | `map.ceilingKey("key")` |
+| `higherKey(K key)` | Returns least key > key | `map.higherKey("key")` |
+| `firstEntry()` | Returns first entry | `map.firstEntry()` |
+| `lastEntry()` | Returns last entry | `map.lastEntry()` |
+| `lowerEntry(K key)` | Returns entry with greatest key < key | `map.lowerEntry("key")` |
+| `floorEntry(K key)` | Returns entry with greatest key less than or equal to key | `map.floorEntry("key")` |
+| `ceilingEntry(K key)` | Returns entry with least key greater than or equal to key | `map.ceilingEntry("key")` |
+| `higherEntry(K key)` | Returns entry with least key > key | `map.higherEntry("key")` |
+| `pollFirstEntry()` | Retrieves and removes first entry | `map.pollFirstEntry()` |
+| `pollLastEntry()` | Retrieves and removes last entry | `map.pollLastEntry()` |
+| `subMap(K fromKey, K toKey)` | Returns view of range | `map.subMap("a", "z")` |
+| `subMap(K fromKey, boolean fromInclusive, K toKey, boolean toInclusive)` | View with inclusive flags | `map.subMap("a", true, "z", true)` |
+| `headMap(K toKey)` | View of entries with keys < toKey | `map.headMap("m")` |
+| `headMap(K toKey, boolean inclusive)` | View with inclusive flag | `map.headMap("m", true)` |
+| `tailMap(K fromKey)` | View of entries with keys greater than or equal to fromKey | `map.tailMap("m")` |
+| `tailMap(K fromKey, boolean inclusive)` | View with inclusive flag | `map.tailMap("m", false)` |
+| `comparator()` | Returns comparator | `map.comparator()` |
+| `descendingMap()` | Returns reverse order view | `map.descendingMap()` |
+| `descendingKeySet()` | Returns reverse order key set | `map.descendingKeySet()` |
+| `navigableKeySet()` | Returns navigable key set | `map.navigableKeySet()` |
+
+## Stream API Methods
+
+### Stream Interface Methods
+
+| Method | Description | Example |
+|--------|-------------|---------|
+| `empty()` | Returns empty stream | `Stream.empty()` |
+| `of(T... values)` | Returns stream with elements | `Stream.of("a", "b", "c")` |
+| `iterate(T seed, UnaryOperator<T> f)` | Returns infinite stream | `Stream.iterate(1, n -> n + 1)` |
+| `iterate(T seed, Predicate<? super T> hasNext, UnaryOperator<T> next)` | Returns finite stream | `Stream.iterate(1, n -> n < 10, n -> n + 1)` |
+| `generate(Supplier<? extends T> s)` | Returns infinite stream | `Stream.generate(() -> "element")` |
+| `concat(Stream<? extends T> a, Stream<? extends T> b)` | Concatenates streams | `Stream.concat(stream1, stream2)` |
+| `filter(Predicate<? super T> predicate)` | Filters elements | `stream.filter(s -> s.length() > 3)` |
+| `map(Function<? super T, ? extends R> mapper)` | Transforms elements | `stream.map(String::toUpperCase)` |
+| `flatMap(Function<? super T, ? extends Stream<? extends R>> mapper)` | Maps each to stream and flattens | `stream.flatMap(s -> s.chars().mapToObj(c -> (char) c))` |
+| `distinct()` | Returns stream with distinct elements | `stream.distinct()` |
+| `sorted()` | Returns sorted stream | `stream.sorted()` |
+| `sorted(Comparator<? super T> comparator)` | Returns sorted stream with comparator | `stream.sorted(Comparator.reverseOrder())` |
+| `peek(Consumer<? super T> action)` | Performs action on elements | `stream.peek(System.out::println)` |
+| `limit(long maxSize)` | Returns stream with limited elements | `stream.limit(10)` |
+| `skip(long n)` | Returns stream skipping first n elements | `stream.skip(5)` |
+| `takeWhile(Predicate<? super T> predicate)` | Takes elements while predicate is true | `stream.takeWhile(s -> s.length() > 0)` |
+| `dropWhile(Predicate<? super T> predicate)` | Drops elements while predicate is true | `stream.dropWhile(s -> s.startsWith("a"))` |
+| `forEach(Consumer<? super T> action)` | Performs action on each element | `stream.forEach(System.out::println)` |
+| `forEachOrdered(Consumer<? super T> action)` | Performs action in encounter order | `stream.forEachOrdered(System.out::println)` |
+| `toArray()` | Returns array | `stream.toArray()` |
+| `toArray(IntFunction<A[]> generator)` | Returns array of type | `stream.toArray(String[]::new)` |
+| `reduce(T identity, BinaryOperator<T> accumulator)` | Reduces to single value | `stream.reduce("", (a, b) -> a + b)` |
+| `reduce(BinaryOperator<T> accumulator)` | Reduces to Optional value | `stream.reduce((a, b) -> a + b)` |
+| `reduce(U identity, BiFunction<U, ? super T, U> accumulator, BinaryOperator<U> combiner)` | Reduces with identity, accumulator, combiner | `stream.reduce(0, (sum, s) -> sum + s.length(), Integer::sum)` |
+| `collect(Collector<? super T, A, R> collector)` | Collects into result container | `stream.collect(Collectors.toList())` |
+| `collect(Supplier<R> supplier, BiConsumer<R, ? super T> accumulator, BiConsumer<R, R> combiner)` | Mutable reduction | `stream.collect(ArrayList::new, ArrayList::add, ArrayList::addAll)` |
+| `min(Comparator<? super T> comparator)` | Returns minimum element | `stream.min(Comparator.naturalOrder())` |
+| `max(Comparator<? super T> comparator)` | Returns maximum element | `stream.max(Comparator.naturalOrder())` |
+| `count()` | Returns count of elements | `stream.count()` |
+| `anyMatch(Predicate<? super T> predicate)` | Checks if any match | `stream.anyMatch(s -> s.contains("a"))` |
+| `allMatch(Predicate<? super T> predicate)` | Checks if all match | `stream.allMatch(s -> s.length() > 0)` |
+| `noneMatch(Predicate<? super T> predicate)` | Checks if none match | `stream.noneMatch(String::isEmpty)` |
+| `findFirst()` | Returns first element | `stream.findFirst()` |
+| `findAny()` | Returns any element | `stream.findAny()` |
+
+### Collectors Methods
+
+| Method | Description | Example |
+|--------|-------------|---------|
+| `toList()` | Collects to List | `stream.collect(Collectors.toList())` |
+| `toSet()` | Collects to Set | `stream.collect(Collectors.toSet())` |
+| `toCollection(Supplier<C> collectionFactory)` | Collects to specific collection | `stream.collect(Collectors.toCollection(LinkedList::new))` |
+| `toMap(Function<? super T, ? extends K> keyMapper, Function<? super T, ? extends U> valueMapper)` | Collects to Map | `stream.collect(Collectors.toMap(s -> s, String::length))` |
+| `toMap(Function<? super T, ? extends K> keyMapper, Function<? super T, ? extends U> valueMapper, BinaryOperator<U> mergeFunction)` | Collects to Map with merge function | `stream.collect(Collectors.toMap(s -> s.charAt(0), s -> s, (s1, s2) -> s1 + ", " + s2))` |
+| `toMap(Function<? super T, ? extends K> keyMapper, Function<? super T, ? extends U> valueMapper, BinaryOperator<U> mergeFunction, Supplier<M> mapFactory)` | Collects to specific Map | `stream.collect(Collectors.toMap(s -> s, String::length, (l1, l2) -> l1, LinkedHashMap::new))` |
+| `joining()` | Joins elements to String | `stream.collect(Collectors.joining())` |
+| `joining(CharSequence delimiter)` | Joins with delimiter | `stream.collect(Collectors.joining(", "))` |
+| `joining(CharSequence delimiter, CharSequence prefix, CharSequence suffix)` | Joins with delimiter, prefix, suffix | `stream.collect(Collectors.joining(", ", "[", "]"))` |
+| `counting()` | Counts elements | `stream.collect(Collectors.counting())` |
+| `summarizingInt(ToIntFunction<? super T> mapper)` | Summarizes int values | `stream.collect(Collectors.summarizingInt(String::length))` |
+| `summingInt(ToIntFunction<? super T> mapper)` | Sums int values | `stream.collect(Collectors.summingInt(String::length))` |
+| `averagingInt(ToIntFunction<? super T> mapper)` | Averages int values | `stream.collect(Collectors.averagingInt(String::length))` |
+| `minBy(Comparator<? super T> comparator)` | Returns minimum by comparator | `stream.collect(Collectors.minBy(Comparator.comparing(String::length)))` |
+| `maxBy(Comparator<? super T> comparator)` | Returns maximum by comparator | `stream.collect(Collectors.maxBy(Comparator.comparing(String::length)))` |
+| `groupingBy(Function<? super T, ? extends K> classifier)` | Groups by classifier | `stream.collect(Collectors.groupingBy(s -> s.charAt(0)))` |
+| `groupingBy(Function<? super T, ? extends K> classifier, Collector<? super T, A, D> downstream)` | Groups with downstream collector | `stream.collect(Collectors.groupingBy(s -> s.charAt(0), Collectors.counting()))` |
+| `groupingBy(Function<? super T, ? extends K> classifier, Supplier<M> mapFactory, Collector<? super T, A, D> downstream)` | Groups with map factory and downstream | `stream.collect(Collectors.groupingBy(s -> s.charAt(0), LinkedHashMap::new, Collectors.toList()))` |
+| `partitioningBy(Predicate<? super T> predicate)` | Partitions by predicate | `stream.collect(Collectors.partitioningBy(s -> s.length() > 3))` |
+| `partitioningBy(Predicate<? super T> predicate, Collector<? super T, A, D> downstream)` | Partitions with downstream | `stream.collect(Collectors.partitioningBy(s -> s.length() > 3, Collectors.counting()))` |
+| `mapping(Function<? super T, ? extends U> mapper, Collector<? super U, A, R> downstream)` | Maps elements and collects | `stream.collect(Collectors.mapping(String::toUpperCase, Collectors.toList()))` |
+| `reducing(T identity, BinaryOperator<T> op)` | Reduces with identity and operator | `stream.collect(Collectors.reducing("", (a, b) -> a + b))` |
+
+# Java Stream API Methods
+
+## Stream Creation Methods
+
+| Method | Description | Example |
+|--------|-------------|---------|
+| `stream()` | Creates a sequential stream from a collection | `list.stream()` |
+| `parallelStream()` | Creates a parallel stream from a collection | `list.parallelStream()` |
+| `Arrays.stream()` | Creates a stream from an array | `Arrays.stream(array)` |
+| `Stream.of()` | Creates a stream with specified elements | `Stream.of("a", "b", "c")` |
+| `Stream.empty()` | Creates an empty stream | `Stream.empty()` |
+| `Stream.iterate()` | Creates an infinite sequential stream | `Stream.iterate(0, n -> n + 2).limit(10)` |
+| `Stream.generate()` | Creates an infinite stream of generated elements | `Stream.generate(Math::random).limit(5)` |
+
+## Intermediate Operations
+
+| Method | Description | Example |
+|--------|-------------|---------|
+| `filter(Predicate)` | Filters elements matching the predicate | `stream.filter(s -> s.length() > 3)` |
+| `map(Function)` | Transforms each element using the function | `stream.map(String::toUpperCase)` |
+| `flatMap(Function)` | Maps each element to a stream and flattens results | `stream.flatMap(s -> Arrays.stream(s.split(",")))` |
+| `distinct()` | Removes duplicate elements (based on equals()) | `stream.distinct()` |
+| `sorted()` | Sorts elements in natural order | `stream.sorted()` |
+| `sorted(Comparator)` | Sorts elements using the comparator | `stream.sorted(Comparator.comparing(String::length))` |
+| `peek(Consumer)` | Performs action on each element (for debugging) | `stream.peek(System.out::println)` |
+| `limit(long)` | Truncates stream to specified size | `stream.limit(5)` |
+| `skip(long)` | Discards the first n elements | `stream.skip(3)` |
+| `mapToInt(ToIntFunction)` | Converts stream to IntStream | `stream.mapToInt(Integer::parseInt)` |
+| `mapToLong(ToLongFunction)` | Converts stream to LongStream | `stream.mapToLong(Long::parseLong)` |
+| `mapToDouble(ToDoubleFunction)` | Converts stream to DoubleStream | `stream.mapToDouble(Double::parseDouble)` |
+
+## Terminal Operations
+
+| Method | Description | Example |
+|--------|-------------|---------|
+| `forEach(Consumer)` | Performs action for each element | `stream.forEach(System.out::println)` |
+| `forEachOrdered(Consumer)` | Like forEach but respects encounter order | `stream.forEachOrdered(System.out::println)` |
+| `collect(Collector)` | Accumulates elements into a collection | `stream.collect(Collectors.toList())` |
+| `toArray()` | Collects elements into an array | `stream.toArray(String[]::new)` |
+| `reduce(BinaryOperator)` | Reduces elements to a single value | `stream.reduce((a, b) -> a + b)` |
+| `reduce(T, BinaryOperator)` | Reduces with identity value | `stream.reduce("", String::concat)` |
+| `count()` | Returns the count of elements | `stream.count()` |
+| `anyMatch(Predicate)` | Returns true if any element matches | `stream.anyMatch(s -> s.contains("a"))` |
+| `allMatch(Predicate)` | Returns true if all elements match | `stream.allMatch(s -> s.length() > 0)` |
+| `noneMatch(Predicate)` | Returns true if no elements match | `stream.noneMatch(String::isEmpty)` |
+| `findFirst()` | Returns first element as Optional | `stream.findFirst()` |
+| `findAny()` | Returns any element as Optional | `stream.findAny()` |
+| `min(Comparator)` | Returns minimum element as Optional | `stream.min(Comparator.naturalOrder())` |
+| `max(Comparator)` | Returns maximum element as Optional | `stream.max(Comparator.naturalOrder())` |
+
+## Common Collectors
+
+| Method | Description | Example |
+|--------|-------------|---------|
+| `Collectors.toList()` | Collects elements into a List | `stream.collect(Collectors.toList())` |
+| `Collectors.toSet()` | Collects elements into a Set | `stream.collect(Collectors.toSet())` |
+| `Collectors.toMap()` | Collects elements into a Map | `stream.collect(Collectors.toMap(k -> k, v -> v.length()))` |
+| `Collectors.joining()` | Concatenates elements to a string | `stream.collect(Collectors.joining(", "))` |
+| `Collectors.counting()` | Counts the number of elements | `stream.collect(Collectors.counting())` |
+| `Collectors.summarizingInt()` | Produces statistics on integer values | `stream.collect(Collectors.summarizingInt(String::length))` |
+| `Collectors.groupingBy()` | Groups elements by classifier function | `stream.collect(Collectors.groupingBy(String::length))` |
+| `Collectors.partitioningBy()` | Partitions elements by predicate | `stream.collect(Collectors.partitioningBy(s -> s.length() > 3))` |
+| `Collectors.mapping()` | Adapts collector to different type | `stream.collect(Collectors.mapping(String::length, Collectors.toList()))` |
+| `Collectors.reducing()` | Performs a reduction operation | `stream.collect(Collectors.reducing("", s -> s, (a, b) -> a + b))` |
+
+## Primitive Stream Operations
+
+| Method | Description | Example |
+|--------|-------------|---------|
+| `IntStream.range()` | Creates IntStream from start to end (exclusive) | `IntStream.range(1, 5)` |
+| `IntStream.rangeClosed()` | Creates IntStream from start to end (inclusive) | `IntStream.rangeClosed(1, 5)` |
+| `boxed()` | Converts primitive stream to object stream | `intStream.boxed()` |
+| `sum()` | Calculates sum of elements | `intStream.sum()` |
+| `average()` | Calculates average of elements | `intStream.average()` |
+| `summaryStatistics()` | Produces statistics on elements | `intStream.summaryStatistics()` |
+
+## Additional Stream Operations
+
+| Method | Description | Example |
+|--------|-------------|---------|
+| `parallel()` | Converts a sequential stream to parallel | `stream.parallel()` |
+| `sequential()` | Converts a parallel stream to sequential | `stream.sequential()` |
+| `unordered()` | Indicates stream has no defined encounter order | `stream.unordered()` |
+| `onClose()` | Sets handler for when stream is closed | `stream.onClose(() -> log.info("Stream closed"))` |
+| `close()` | Closes the stream | `stream.close()` |
+| `isParallel()` | Checks if stream is parallel | `stream.isParallel()` |
+
+# Java Best Practices and Code Conventions Cheat Sheet
+
+## Naming Conventions
+
+### General Rules
+- Use meaningful and descriptive names
+- Avoid abbreviations unless widely understood
+- Be consistent across your codebase
+
+### Case Conventions
+- **Classes/Interfaces**: PascalCase (e.g., `CustomerAccount`, `Printable`)
+- **Methods/Variables**: camelCase (e.g., `calculateTotal`, `customerName`)
+- **Constants**: SNAKE_CASE_CAPS (e.g., `MAX_RETRY_ATTEMPTS`, `DEFAULT_TIMEOUT`)
+- **Packages**: all lowercase, using reverse domain name (e.g., `com.company.project`)
+
+### Specific Recommendations
+- Boolean methods/variables should start with "is", "has", "can", etc. (e.g., `isValid`, `hasPermission`)
+- Interface names can have "able" suffix for behaviors (e.g., `Serializable`, `Comparable`)
+- Avoid single-letter names except for temporary variables (e.g., loop counters)
+
+## Code Structure
+
+### Classes
+- Keep classes focused on a single responsibility (Single Responsibility Principle)
+- Limit class size (typically < 500-1000 lines)
+- Order class members consistently:
+  1. Static fields
+  2. Instance fields
+  3. Constructors
+  4. Methods (public methods first)
+
+### Methods
+- Keep methods short and focused (typically < 30-50 lines)
+- Limit parameter count (≤ 3-4 parameters)
+- Maintain a consistent level of abstraction within a method
+- Follow the "Early Return" pattern for guard clauses
+
+### Comments and Documentation
+- Write self-documenting code instead of explaining obvious logic
+- Use JavaDoc for public APIs:
+  ```java
+  /**
+   * Description of method's purpose
+   * @param name Description of parameter
+   * @return Description of return value
+   * @throws ExceptionType When/why exception is thrown
+   */
+  ```
+- Add comments only for complex algorithms or business logic
+- Keep TODOs specific and actionable (include ticket number if possible)
+
+## Coding Best Practices
+
+### General
+- Minimize scope of variables (declare them closest to use)
+- Favor immutability when possible (`final` variables, immutable collections)
+- Use explicit type declarations (e.g., `List<String>` vs. `var`)
+- Always implement `equals()` and `hashCode()` together
+- Override `toString()` for meaningful debugging representation
+
+### Defensive Programming
+- Validate method parameters with preconditions
+- Use assertions for internal invariants
+- Return empty collections instead of null
+- Always close resources (use try-with-resources)
+- Handle exceptions at appropriate level (don't swallow exceptions)
+
+### Performance
+- Prefer StringBuilder over String concatenation in loops
+- Use appropriate collection types for your use case
+- Avoid premature optimization
+- Be cautious with object creation in performance-critical sections
+- Use primitive types over boxed types when possible
+
+### Resource Management
+- Always close resources in try-with-resources blocks:
+  ```java
+  try (FileReader reader = new FileReader(file)) {
+      // Use reader
+  } catch (IOException e) {
+      // Handle exception
+  }
+  ```
+- Release resources in the reverse order of acquisition
+- Handle exceptions properly during resource cleanup
+
+## Common Code Smells to Avoid
+
+- Deep nesting (more than 3 levels)
+- Long methods (> 50 lines)
+- Long parameter lists (> 4 parameters)
+- Large classes (> 1000 lines)
+- Duplicate code
+- Excessive comments explaining complex logic (refactor instead)
+- Magic numbers/strings (use named constants)
+- Primitive obsession (use appropriate objects)
+- Feature envy (method uses more features of another class than its own)
+
+## Testing Conventions
+
+- Test class name should end with "Test" (e.g., `UserServiceTest`)
+- Test method name should be descriptive of test scenario
+- Follow Arrange-Act-Assert pattern in tests
+- One assertion per test is ideal
+- Make tests independent and idempotent
+
+## Modern Java Idioms
+
+- Use Streams for collections processing
+- Prefer method references over lambdas when possible
+- Use Optional for nullable return values (not parameters)
+- Leverage factory methods for collection creation:
+  ```java
+  List<String> list = List.of("a", "b", "c");
+  Map<String, Integer> map = Map.of("a", 1, "b", 2);
+  ```
+- Use switch expressions for cleaner code (Java 12+):
+  ```java
+  String result = switch(day) {
+      case MONDAY, FRIDAY -> "Start/End of work week";
+      case SATURDAY, SUNDAY -> "Weekend";
+      default -> "Midweek";
+  };
+  ```
+
+## Code Formatting
+
+- Use 4 spaces for indentation (not tabs)
+- Line length should be less than 100-120 characters
+- Put braces on same line for control statements:
+  ```java
+  if (condition) {
+      // code
+  } else {
+      // code
+  }
+  ```
+- One statement per line
+- Add a blank line between methods and logical sections
+- Group related code together
+- Align variable declarations when it improves readability
+
+## Error Handling
+
+- Use exceptions for exceptional conditions, not control flow
+- Prefer specific exceptions over generic ones
+- Create custom exceptions for your domain when needed
+- Log exceptions with appropriate level and context
+- Don't catch exceptions you can't handle properly
+
+## Project Structure
+
+- Follow Maven/Gradle standard directory layout:
+  ```
+  src/main/java - Java source code
+  src/main/resources - Configuration files
+  src/test/java - Test code
+  src/test/resources - Test configuration
+  ```
+- Package by feature, not by layer
+- Keep related classes together
+- Maintain separation of concerns
+
+## Security Best Practices
+
+- Validate all user input
+- Prevent SQL injection with prepared statements
+- Avoid hardcoded credentials
+- Use strong encryption algorithms
+- Handle sensitive data carefully (don't log passwords)
+- Apply the principle of least privilege
