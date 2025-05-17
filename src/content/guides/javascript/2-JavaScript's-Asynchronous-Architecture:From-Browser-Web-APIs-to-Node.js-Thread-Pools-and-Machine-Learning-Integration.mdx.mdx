@@ -1,0 +1,469 @@
+# Web APIs and JavaScript Asynchronous Programming
+
+## 🔧 What Are Web APIs?
+
+Web APIs (also called Browser APIs) are features provided by the browser, not JavaScript itself.
+
+JavaScript is single-threaded and synchronous by nature, but the browser provides Web APIs to handle tasks that would otherwise block the main thread.
+
+### Common Tasks Handled by Web APIs
+
+| Feature | Purpose | Example |
+|---------|---------|---------|
+| `setTimeout` / `setInterval` | Schedules a function to run after a delay | `setTimeout(() => { ... }, 1000)` |
+| DOM Manipulation API | Allows access and updates to HTML/CSS content | `document.querySelector()` |
+| Event Listeners | Registers handlers for user actions | `button.addEventListener('click', ...)` |
+| AJAX / Fetch API | Sends/receives HTTP requests asynchronously | `fetch('url')` |
+| Geolocation API | Accesses user's location | `navigator.geolocation.getCurrentPosition()` |
+| Web Storage | Stores data in browser (key-value) | `localStorage.setItem('key', 'value')` |
+| Console API | Provides logging/output | `console.log()` |
+| Canvas / WebGL | Draws graphics, games | `canvas.getContext('2d')` |
+| Audio / Video | Plays or manipulates media content | `video.play()` |
+| Clipboard API | Copy/paste programmatically | `navigator.clipboard.writeText()` |
+
+## 🔄 JavaScript's Non-Blocking Nature
+
+### How setTimeout Works
+
+```javascript
+console.log("1: Start");
+
+setTimeout(function () {
+  console.log("2: Inside setTimeout");
+}, 1000);
+
+console.log("3: End");
+```
+
+#### What's Happening?
+- `console.log("1")` and `console.log("3")` are executed immediately — on the call stack.
+- `setTimeout` is sent to the Web API environment.
+- After 1000ms, the callback is moved to the callback queue.
+- Event loop pushes it back into the call stack when it's empty.
+
+### Browser Web APIs Make JavaScript Non-Blocking
+
+JavaScript itself is blocking, but thanks to browser Web APIs, it remains non-blocking and responsive:
+
+#### Example (Blocking):
+```javascript
+// Pretend this takes 3 seconds
+function blockThreeSeconds() {
+  var start = Date.now();
+  while (Date.now() - start < 3000) {}
+  console.log("Done waiting!");
+}
+
+console.log("Start");
+blockThreeSeconds();
+console.log("End");
+```
+
+Output:
+```
+Start
+(wait 3 seconds...)
+Done waiting!
+End
+```
+
+#### Example (Non-blocking with Web API):
+```javascript
+console.log("Start");
+
+setTimeout(function () {
+  console.log("This comes later (via Web API)");
+}, 1000);
+
+console.log("End");
+```
+
+Output:
+```
+Start
+End
+This comes later (via Web API)
+```
+
+### Summary
+
+| Without Web APIs | With Web APIs (Browser-provided) |
+|------------------|----------------------------------|
+| JavaScript is blocking | JavaScript becomes non-blocking |
+| Waits halt the program | Waits run in background |
+| No parallelism possible | Browser handles parallel-like behavior |
+| UI can freeze | UI stays responsive |
+
+## 📜 Why JavaScript Was Created
+
+JavaScript was created with one simple goal: **To make web pages interactive in the browser**.
+
+### A Little History
+- **Who?** Brendan Eich
+- **When?** 1995
+- **Where?** Netscape Navigator browser
+- **How long?** First version built in 10 days!
+
+### Why JavaScript Was Created
+Before JavaScript, websites were static: just HTML and CSS. If users needed to interact (like click a button and see a result), the page had to reload from the server.
+
+JavaScript changed that by enabling:
+- ✅ Buttons to work without page reload
+- ✅ Dynamic forms
+- ✅ Image sliders
+- ✅ Popups, alerts, and tooltips
+- ✅ Live validation (e.g., "Password too short")
+
+### What It Was Originally Meant For
+JavaScript was never designed to:
+- Handle server-side logic
+- Manage databases
+- Build massive apps
+
+It was just meant to "**Glue the UI together with a little interactivity**."
+
+### Why Is It Used So Widely Now?
+Over the years:
+- Browsers improved, adding Web APIs
+- JS engines (like V8) became super fast
+- Node.js came out (2009) → allowed JavaScript to run outside the browser
+- Frontend frameworks (React, Angular, Vue) made big apps possible
+
+JavaScript is now used:
+- On the frontend (browser apps)
+- On the backend (Node.js servers)
+- Even used in AI, IoT, mobile apps, and more
+
+## 🔧 Node.js and Non-Blocking I/O
+
+### How Node.js Stays Non-Blocking
+
+If JavaScript is non-blocking in the browser because of Web APIs, how does it stay non-blocking on the server (Node.js)?
+
+Because Node.js provides its own version of Web APIs via something called: **libuv**
+
+### What Is libuv?
+libuv is a C++ library that comes bundled with Node.js. It gives Node.js the power to:
+
+| Feature | Purpose |
+|---------|---------|
+| Thread pool | Run blocking tasks (like file I/O, DNS lookup) in background threads |
+| Event loop | Same concept as browser, to coordinate callbacks |
+| Async I/O | File system, network requests |
+| Timers | Like setTimeout, setInterval |
+
+### Browser vs Node.js
+
+| JS in Browser | JS in Node.js |
+|---------------|---------------|
+| Uses Browser Web APIs | Uses libuv system APIs |
+| Handles UI, DOM | Handles file system, servers |
+| APIs like fetch, alert | APIs like fs, http, net |
+| Async = via browser | Async = via libuv |
+
+### Example: Non-blocking in Node.js
+```javascript
+const fs = require('fs');
+
+console.log("Start");
+
+fs.readFile('somefile.txt', 'utf8', function(err, data) {
+  if (err) throw err;
+  console.log("File read complete!");
+});
+
+console.log("End");
+```
+
+Output:
+```
+Start
+End
+File read complete!
+```
+
+Even though reading a file can take time, Node.js offloads that to libuv, and continues execution.
+
+## 🔢 Thread Pool in Node.js
+
+The default thread pool size in libuv (and thus Node.js) is: **4 threads**
+
+### What This Means:
+Node.js uses these 4 threads (in the libuv thread pool) to run blocking operations off the main thread.
+
+Examples include:
+- fs.readFile()
+- DNS lookups (without dns.lookup)
+- Compression (e.g. zlib)
+- Crypto operations (e.g. crypto.pbkdf2)
+
+You can increase thread pool size with:
+```bash
+UV_THREADPOOL_SIZE=8 node app.js
+```
+Max recommended size: 128
+
+## ⚙️ Two Types of I/O in Node.js
+
+| Type | Handled By | Uses Thread Pool? | Example |
+|------|------------|-------------------|---------|
+| File I/O | libuv + Thread Pool | ✅ Yes | fs.readFile, fs.writeFile |
+| Network I/O | OS kernel | ❌ No | http.request, net.connect, fetch |
+
+### Why File I/O Uses Thread Pool
+Node.js can't do low-level disk access directly — it has to use libuv to talk to the OS asynchronously:
+
+```javascript
+const fs = require('fs');
+
+fs.readFile('bigfile.txt', 'utf8', function(err, data) {
+  console.log('File read complete');
+});
+```
+
+This goes to the thread pool, which handles the disk read without blocking your main thread.
+
+### Why Network I/O Does Not Use Thread Pool
+Network connections like HTTP, TCP, UDP — are non-blocking by nature in most OS kernels (thanks to epoll, kqueue, etc.).
+
+```javascript
+const http = require('http');
+
+http.get('http://example.com', (res) => {
+  res.on('data', (chunk) => console.log('Got data:', chunk));
+});
+```
+
+The HTTP connection is handled by the OS kernel, and Node.js gets notified when the socket is ready (via the event loop, not thread pool).
+
+### Async Flow Paths
+
+1. **File I/O, DNS, Crypto (goes through thread pool)**
+   - JS → libuv → thread pool → callback queue → event loop → call stack
+
+2. **Network I/O (HTTP, TCP, UDP) (bypasses thread pool)**
+   - JS → OS kernel → callback queue → event loop → call stack
+
+## 🧠 CPU-Heavy Tasks and Node.js
+
+### What Are CPU-Heavy Tasks?
+A CPU-heavy task (aka CPU-bound) is any operation that uses a lot of processor power (CPU time) instead of waiting for external resources (like disk or network).
+
+Examples:
+- 🔐 Hashing passwords (e.g. bcrypt, pbkdf2)
+- 🔢 Image processing
+- 🔄 Data compression (zlib)
+- 🔍 JSON parsing for huge data
+- 📊 Data analysis / number crunching
+- 🧮 Cryptography
+
+### Why This Is a Problem in Node.js
+Node.js runs on a single thread. If you block it with a CPU-heavy task, everything else stops:
+- No API responses
+- No incoming requests processed
+- No timers or events executed
+
+#### Example: Blocking the event loop
+```javascript
+// Simulate heavy computation
+function blockCPU(ms) {
+  const start = Date.now();
+  while (Date.now() - start < ms) {}
+}
+
+console.log("Start");
+blockCPU(3000); // blocks the entire process for 3 seconds
+console.log("End");
+```
+
+During blockCPU, Node can't serve other users!
+
+### CPU vs I/O Tasks
+
+| Type | Uses CPU? | Blocks Event Loop? | Scales Well? |
+|------|-----------|-------------------|--------------|
+| File read | ❌ | ❌ (Thread pool) | ✅ |
+| HTTP request | ❌ | ❌ (Handled by OS) | ✅ |
+| Password hash | ✅ | ✅ (unless in thread pool) | ❌ |
+
+### How to Handle CPU-heavy Work in Node.js
+
+| Solution | How it Helps |
+|----------|-------------|
+| Use worker_threads (Node 10+) | Runs CPU-heavy code in another thread |
+| Use child_process.fork() | Runs code in separate Node process |
+| Offload to a backend microservice | Delegate heavy work to another language (like Python, Go) |
+| Use C++ add-ons if needed (native) | Write efficient CPU logic with C++ |
+
+## 🚀 Worker Threads Example
+
+The following demonstrates how to offload a CPU-heavy task to a separate thread using Node.js's worker_threads module:
+
+```javascript
+const { Worker } = require('worker_threads');
+
+console.log("Start non-blocking worker task");
+
+const worker = new Worker('./worker-task.js');
+worker.on('message', (msg) => {
+  console.log("Worker says:", msg);
+});
+
+console.log("Main thread is still responsive!");
+```
+
+What's happening:
+1. We import the Worker class from the worker_threads module
+2. We spawn a new thread by executing worker-task.js
+3. We set up an event listener for messages from the worker
+4. The main thread continues execution without waiting
+
+## 🔌 GPU Computing and Node.js
+
+While Node.js doesn't natively run code on the GPU, it can leverage GPU acceleration by integrating with:
+
+| Library / Tool | What it does |
+|----------------|-------------|
+| gpu.js | Runs custom JavaScript functions on the GPU via WebGL |
+| tensorflow.js (with Node) | Uses GPU for ML models if CUDA and TensorFlow-GPU is installed |
+| onnxruntime-node | Runs ONNX ML models using GPU (if built with GPU support) |
+
+### Example: Use GPU in Node.js with gpu.js
+```javascript
+const { GPU } = require('gpu.js');
+const gpu = new GPU();
+
+const multiplyMatrix = gpu.createKernel(function(a, b) {
+  return a[this.thread.y][this.thread.x] * b[this.thread.y][this.thread.x];
+}).setOutput([3, 3]);
+
+const result = multiplyMatrix(
+  [[1, 2, 3], [4, 5, 6], [7, 8, 9]],
+  [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
+);
+
+console.log(result);
+```
+
+### Example: Use TensorFlow.js with GPU
+```bash
+npm install @tensorflow/tfjs-node-gpu
+```
+
+```javascript
+const tf = require('@tensorflow/tfjs-node-gpu');
+
+const a = tf.tensor1d([1, 2, 3]);
+const b = tf.tensor1d([4, 5, 6]);
+
+a.add(b).print(); // Should use GPU acceleration
+```
+
+## 🧪 Languages for GPU Computing
+
+| Language | Native GPU Support | Common Use Case |
+|----------|-------------------|-----------------|
+| C++ | ✅ Full (CUDA, OpenCL) | High-performance computing, simulations |
+| Python | ✅ (via TensorFlow, PyTorch, CUDA bindings) | Machine learning, data science |
+| Julia | ✅ (with CuArrays, CUDA.jl) | Scientific computing |
+| Rust | ✅ (via wgpu, cust) | GPU-accelerated systems, games |
+| Go | ⚠️ Partial (via CGO or bindings) | Less common, but possible |
+| Node.js | ❌ Not native — needs wrappers/bindings | Possible with gpu.js, tfjs-node-gpu, etc. |
+
+## 🧠 Machine Learning and Node.js
+
+### Why Machine Learning (ML) is not ideal in Node.js (but possible)
+❌ Not built for ML by default
+Node.js was designed for:
+- Web servers
+- Fast I/O
+- Real-time apps (chat, APIs, dashboards)
+
+It's single-threaded, with limited native support for math-heavy or GPU-heavy operations.
+
+### ML Architecture with Node.js
+
+The recommended architecture for ML applications with JavaScript involves:
+
+1. Train/deploy ML models in Python (leveraging TensorFlow, PyTorch, etc.)
+2. Expose the model via a REST API (Flask, FastAPI)
+3. Use Node.js for the web/app backend to consume this API
+4. Present results to users via a JavaScript frontend
+
+### Example: Serving an ML Model via API
+
+```python
+# model.py
+import joblib
+from sklearn.linear_model import LogisticRegression
+
+# Dummy training (just for demo)
+model = LogisticRegression()
+X = [[0, 0], [1, 1]]
+y = [0, 1]
+model.fit(X, y)
+
+# Save model
+joblib.dump(model, 'model.pkl')
+```
+
+```python
+# api.py
+from flask import Flask, request, jsonify
+import joblib
+
+app = Flask(__name__)
+model = joblib.load('model.pkl')
+
+@app.route('/predict', methods=['POST'])
+def predict():
+    data = request.get_json()
+    prediction = model.predict([data['features']])
+    return jsonify({'prediction': int(prediction[0])})
+
+if __name__ == '__main__':
+    app.run(debug=True)
+```
+
+```javascript
+// Node.js client
+const fetch = require('node-fetch');
+
+fetch('http://localhost:5000/predict', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ features: [1, 1] })
+})
+  .then(res => res.json())
+  .then(data => console.log("Prediction from Python model:", data));
+```
+
+## 🐍 Python vs C++ for Machine Learning
+
+### If You Want to Work on ML Projects (Models, Research, Applications):
+✅ Go with: Python
+
+Why?
+- 🧰 Rich ecosystem: TensorFlow, PyTorch, Scikit-learn, XGBoost, Hugging Face
+- 🧑‍💻 Widely used in industry and research
+- 💡 Super productive: 10 lines of Python = 100+ lines of C++
+- 💻 Jupyter Notebooks = quick experiments + visualization
+
+### If You Want to Build ML Engines or Optimize Models for Speed:
+🏎️ Go with: C++
+
+Why?
+- 🚀 Low-level control over memory, execution, performance
+- 🔧 Used to build the core of TensorFlow, PyTorch, ONNX, etc.
+- 🖥️ Required for GPU drivers (CUDA), custom kernels, and high-performance deployment
+
+### Summary Comparison
+
+| Goal | Recommended Language |
+|------|---------------------|
+| Train models, build ML apps | ✅ Python |
+| Build/extend ML frameworks (TF, PyTorch) | ✅ C++ |
+| GPU programming (CUDA kernels) | ✅ C++ |
+| ML + Web/App/AI API integration | ✅ Python |
+| Quick experiments, Kaggle competitions | ✅ Python |
+| Real-time ML in embedded systems | ✅ C++ |

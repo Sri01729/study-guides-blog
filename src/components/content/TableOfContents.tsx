@@ -13,14 +13,14 @@ export default function TableOfContents() {
   // Effect for getting headings - runs once on mount
   useEffect(() => {
     const getHeadings = () => {
-      const elements = Array.from(document.querySelectorAll('h2, h3, h4'))
+    const elements = Array.from(document.querySelectorAll('h2, h3, h4'))
         .filter(element => element.id)
-        .map((element) => ({
-          id: element.id,
-          text: element.textContent || '',
-          level: Number(element.tagName.charAt(1)),
-        }))
-      setHeadings(elements)
+      .map((element) => ({
+        id: element.id,
+        text: element.textContent || '',
+        level: Number(element.tagName.charAt(1)),
+      }))
+    setHeadings(elements)
     }
 
     getHeadings()
@@ -38,7 +38,7 @@ export default function TableOfContents() {
             current.intersectionRatio > prev.intersectionRatio ? current : prev
           )
           setActiveId(mostVisible.target.id)
-        }
+          }
       },
       {
         rootMargin: '-80px 0px -80% 0px',

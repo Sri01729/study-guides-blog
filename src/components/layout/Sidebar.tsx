@@ -133,8 +133,8 @@ export default function Sidebar() {
       >
         <div className={`transition-all duration-300 ${isCollapsed ? 'lg:opacity-0 lg:invisible' : 'opacity-100 visible'}`}>
           <nav className="space-y-6 px-4">
-            <NavItems items={navigation} />
-          </nav>
+          <NavItems items={navigation} />
+        </nav>
         </div>
 
         {/* Collapsed Menu Icons */}

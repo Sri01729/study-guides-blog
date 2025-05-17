@@ -1,0 +1,3818 @@
+# Advanced AWS Expertise: Comprehensive Learning Guide
+
+This guide provides in-depth technical knowledge on three critical AWS services: Amazon Cognito, Amazon EC2, and Amazon CloudFront. Each section includes conceptual overviews, architectural best practices, implementation details, security considerations, and hands-on exercises.
+
+## Table of Contents
+- [Amazon Cognito](#amazon-cognito)
+  - [User Pools vs. Identity Pools](#user-pools-vs-identity-pools)
+  - [OAuth 2.0 Implementation](#oauth-20-implementation)
+  - [Custom Authentication Flows](#custom-authentication-flows)
+  - [JSON Web Tokens (JWT)](#json-web-tokens-jwt)
+  - [Advanced Security Features](#advanced-security-features)
+  - [Hands-on Labs: Cognito](#hands-on-labs-cognito)
+- [Amazon EC2](#amazon-ec2)
+  - [Auto Scaling Strategies](#auto-scaling-strategies)
+  - [Load Balancing Architectures](#load-balancing-architectures)
+  - [Security Groups Deep Dive](#security-groups-deep-dive)
+  - [Instance Optimization](#instance-optimization)
+  - [Hands-on Labs: EC2](#hands-on-labs-ec2)
+- [Amazon CloudFront](#amazon-cloudfront)
+  - [Distribution Optimization Techniques](#distribution-optimization-techniques)
+  - [Caching Strategies](#caching-strategies)
+  - [CloudFront Functions and Lambda@Edge](#cloudfront-functions-and-lambdaedge)
+  - [SSL/TLS Implementation](#ssltls-implementation)
+  - [Security Best Practices](#security-best-practices)
+  - [Hands-on Labs: CloudFront](#hands-on-labs-cloudfront)
+- [Integration Patterns](#integration-patterns)
+- [Performance Optimization](#performance-optimization)
+- [Cost Optimization](#cost-optimization)
+- [References and Resources](#references-and-resources)
+
+## Amazon Cognito
+
+### User Pools vs. Identity Pools
+
+#### User Pools
+
+User pools are user directories that provide sign-up and sign-in options for your app users.
+
+**Key Features:**
+- User registration and sign-in with customizable UI
+- Multi-factor authentication (MFA)
+- User account recovery flows
+- User migration from existing directories
+- Pre and post-authentication Lambda triggers
+- Standard OAuth 2.0 and OpenID Connect (OIDC) protocols
+
+**Architecture Components:**
+```
+┌───────────────┐     ┌─────────────────┐     ┌──────────────┐
+│ Client        │ ←→  │ Amazon Cognito  │ ←→  │ Your Backend │
+│ Application   │     │ User Pool       │     │ Service      │
+└───────────────┘     └─────────────────┘     └──────────────┘
+```
+
+**Implementation Best Practices:**
+- Define appropriate password policies
+- Configure user attribute requirements based on application needs
+- Set up proper app client settings with appropriate OAuth scopes
+- Implement MFA for sensitive applications
+- Use custom message Lambda triggers for branding consistency
+
+#### Identity Pools
+
+Identity pools (federated identities) enable you to grant users temporary AWS credentials to access specific AWS services.
+
+**Key Features:**
+- Anonymous guest access to AWS resources
+- Identity federation with external providers (User Pools, social, SAML, etc.)
+- Fine-grained access control with IAM roles
+- Rule-based mapping for assigning roles based on claims
+
+**Architecture Components:**
+```
+┌───────────────┐     ┌─────────────────┐     ┌───────────┐
+│ Authenticated │     │ Amazon Cognito  │     │ AWS       │
+│ User          │ ←→  │ Identity Pool   │ ←→  │ Services  │
+└───────────────┘     └─────────────────┘     └───────────┘
+```
+
+**Implementation Best Practices:**
+- Create distinct IAM roles for authenticated and unauthenticated users
+- Use role-based access control to limit permissions
+- Implement role mapping based on user attributes or claims
+- Consider identity pool ID caching strategies for performance
+- Use conditions in IAM policies to further restrict access
+
+#### Integration Pattern
+
+The most powerful pattern is combining User Pools and Identity Pools:
+
+```
+┌───────────┐    ┌────────────┐    ┌────────────┐    ┌───────────┐
+│ User      │ -> │ User Pool  │ -> │ Identity   │ -> │ AWS       │
+│           │    │            │    │ Pool       │    │ Services  │
+└───────────┘    └────────────┘    └────────────┘    └───────────┘
+                      │                                    ↑
+                      v                                    │
+                ┌────────────┐                       ┌───────────┐
+                │ Your API/  │ --------------------→ │ Lambda    │
+                │ Backend    │                       │ Functions │
+                └────────────┘                       └───────────┘
+```
+
+In this pattern:
+1. Users authenticate with User Pool
+2. User Pool tokens are exchanged for temporary AWS credentials via Identity Pool
+3. Applications can access both your API (secured by User Pool tokens) and AWS services directly (using temporary credentials)
+
+### OAuth 2.0 Implementation
+
+#### OAuth 2.0 Grant Types Supported
+
+1. **Authorization Code Grant**
+   - Most secure flow for server-side applications
+   - Returns authorization code exchanged for tokens
+
+2. **Implicit Grant**
+   - Simplified flow for client-side applications
+   - Returns tokens directly to the client
+
+3. **Client Credentials**
+   - For machine-to-machine communication
+   - Application credentials used directly
+
+4. **Resource Owner Password Credentials**
+   - Direct username/password authentication
+   - Use only for legacy system migration
+
+#### Implementation Steps
+
+1. **Configure App Client Settings:**
+   - Define callback and logout URLs
+   - Select appropriate OAuth flows
+   - Configure required scopes
+
+2. **Set Up Domain:**
+   ```bash
+   aws cognito-idp create-user-pool-domain \
+     --user-pool-id us-east-1_EXAMPLE \
+     --domain myapp-domain
+   ```
+
+3. **Handle Authentication Flow:**
+
+   Authorization Code Example:
+   ```javascript
+   // Redirect to authorization endpoint
+   const authUrl = `https://${domain}.auth.${region}.amazoncognito.com/oauth2/authorize?` +
+     `client_id=${clientId}&` +
+     `response_type=code&` +
+     `scope=${scopes}&` +
+     `redirect_uri=${redirectUri}`;
+
+   // On callback, exchange code for tokens
+   const tokenEndpoint = `https://${domain}.auth.${region}.amazoncognito.com/oauth2/token`;
+   const params = new URLSearchParams();
+   params.append('grant_type', 'authorization_code');
+   params.append('client_id', clientId);
+   params.append('code', authorizationCode);
+   params.append('redirect_uri', redirectUri);
+
+   const response = await fetch(tokenEndpoint, {
+     method: 'POST',
+     headers: {
+       'Content-Type': 'application/x-www-form-urlencoded',
+       'Authorization': 'Basic ' + btoa(`${clientId}:${clientSecret}`)
+     },
+     body: params
+   });
+   ```
+
+4. **Token Handling:**
+   - Securely store tokens (access, ID, refresh)
+   - Implement token refresh logic
+   - Validate tokens on protected routes
+
+#### Best Practices
+
+- Use **PKCE (Proof Key for Code Exchange)** with public clients
+- Implement appropriate token lifetimes
+- Use TLS for all communications
+- Validate all tokens before granting access
+- Implement proper token storage methods:
+  - Browser: HttpOnly cookies with Secure and SameSite flags
+  - Mobile: Secure storage (Keychain/Keystore)
+
+### Custom Authentication Flows
+
+#### Custom Authentication Flow Overview
+
+Custom authentication allows you to implement unique authentication processes beyond standard username/password flows:
+
+1. **Define Auth Challenge Lambda**: Determines the next challenge in the authentication flow
+2. **Create Auth Challenge Lambda**: Creates the challenge sent to the user
+3. **Verify Auth Challenge Response Lambda**: Verifies the user's response to the challenge
+
+#### Implementation Patterns
+
+**Example: Step-up Authentication with Risk Assessment**
+
+```javascript
+// Define Auth Challenge Lambda
+exports.handler = async (event) => {
+  const request = event.request;
+
+  // New auth session
+  if (!request.session || request.session.length === 0) {
+    // Start with password verification
+    request.session = [];
+    request.session.push({
+      challengeName: 'PASSWORD_VERIFIER',
+      challengeResult: true,
+      challengeMetadata: 'INIT'
+    });
+
+    event.response.challengeName = 'CUSTOM_CHALLENGE';
+    event.response.issueTokens = false;
+    event.response.failAuthentication = false;
+
+    return event;
+  }
+
+  // Last session has challenge result
+  const lastSession = request.session[request.session.length - 1];
+
+  // Password verification passed
+  if (lastSession.challengeName === 'PASSWORD_VERIFIER' && lastSession.challengeResult) {
+    // Risk assessment based on user behavior
+    const riskScore = await assessRisk(event.request.userAttributes);
+
+    if (riskScore > 70) {
+      // High risk - require MFA
+      event.response.challengeName = 'CUSTOM_CHALLENGE';
+      event.response.issueTokens = false;
+      event.response.failAuthentication = false;
+      return event;
+    } else {
+      // Low risk - issue tokens
+      event.response.issueTokens = true;
+      event.response.failAuthentication = false;
+      return event;
+    }
+  }
+
+  // MFA verification passed
+  if (lastSession.challengeName === 'CUSTOM_CHALLENGE' && lastSession.challengeResult) {
+    event.response.issueTokens = true;
+    event.response.failAuthentication = false;
+    return event;
+  }
+
+  // Anything else is failure
+  event.response.issueTokens = false;
+  event.response.failAuthentication = true;
+  return event;
+};
+```
+
+**Example: Passwordless Email Authentication**
+
+```javascript
+// Create Auth Challenge Lambda
+exports.handler = async (event) => {
+  if (!event.request.session || event.request.session.length === 0) {
+    // Generate a 6-digit code
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+
+    // Store code in private challenge parameters
+    event.response.privateChallengeParameters = { code };
+
+    // Send code to user's email
+    await sendEmail(event.request.userAttributes.email, code);
+
+    // Public parameters sent to client
+    event.response.publicChallengeParameters = {
+      email: maskEmail(event.request.userAttributes.email)
+    };
+
+    event.response.challengeMetadata = 'EMAIL_CODE';
+    return event;
+  }
+
+  // Should not reach here
+  throw new Error('Unexpected lambda invocation');
+};
+```
+
+#### Advanced Custom Auth Scenarios
+
+1. **Biometric Authentication**:
+   - Integrate with FIDO2/WebAuthn standards
+   - Use Lambda triggers to validate biometric attestations
+
+2. **Risk-Based Authentication**:
+   - Calculate risk scores based on:
+     - Device fingerprinting
+     - IP reputation
+     - User behavior patterns
+     - Geolocation and velocity checks
+   - Dynamically adjust auth requirements based on risk
+
+3. **One-Time Password with Third-Party Services**:
+   - Integrate with TOTP systems
+   - Send verification via SMS, email, or authentication apps
+
+4. **Challenge-Response Patterns**:
+   - Knowledge-based authentication
+   - Out-of-band verification
+   - Progressive challenges based on security context
+
+#### Security Considerations
+
+- Implement rate limiting for all authentication attempts
+- Use appropriate time-limited challenges
+- Secure challenge verification with proper cryptographic techniques
+- Implement audit logging for all authentication flows
+- Design for graceful fallback methods
+
+### JSON Web Tokens (JWT)
+
+#### JWT Structure and Validation
+
+**JWT Components**:
+1. Header: Contains algorithm and token type
+2. Payload: Contains claims (user data)
+3. Signature: Ensures integrity
+
+**Cognito JWT Types**:
+- ID tokens: User identity information (OpenID Connect)
+- Access tokens: Access permissions (OAuth 2.0)
+- Refresh tokens: Used to get new tokens when others expire
+
+**Validation Process**:
+
+```javascript
+// Example using jose library
+const validateCognitoJwt = async (token, userPoolId, region) => {
+  try {
+    // Get JWKs from Cognito
+    const jwksUri = `https://cognito-idp.${region}.amazonaws.com/${userPoolId}/.well-known/jwks.json`;
+    const jwksResponse = await fetch(jwksUri);
+    const jwks = await jwksResponse.json();
+
+    // Create JWKS
+    const keystore = jose.createRemoteJWKSet(new URL(jwksUri));
+
+    // Verify token
+    const { payload } = await jose.jwtVerify(token, keystore, {
+      issuer: `https://cognito-idp.${region}.amazonaws.com/${userPoolId}`,
+      audience: clientId // For access tokens
+    });
+
+    // Check token use (id or access)
+    if (payload.token_use !== 'id' && payload.token_use !== 'access') {
+      throw new Error('Invalid token use');
+    }
+
+    return payload;
+  } catch (error) {
+    console.error('Token validation failed:', error);
+    throw error;
+  }
+};
+```
+
+#### Working with JWT Claims
+
+**ID Token Claims**:
+- `sub`: Unique identifier for the user
+- `email`: User's email address
+- `email_verified`: Email verification status
+- `cognito:groups`: User's group memberships
+- `custom:*`: Custom attributes
+
+**Access Token Claims**:
+- `scope`: OAuth scopes granted to the token
+- `client_id`: Application client ID
+- `username`: Username in the user pool
+- `exp`: Expiration time
+
+**Using Claims for Authorization**:
+
+```javascript
+const authorizeUser = (jwtPayload, requiredScope, requiredGroup) => {
+  // Check if token is expired
+  const currentTime = Math.floor(Date.now() / 1000);
+  if (jwtPayload.exp <= currentTime) {
+    return false;
+  }
+
+  // Check for required scope (access token)
+  if (requiredScope && jwtPayload.scope) {
+    const scopes = jwtPayload.scope.split(' ');
+    if (!scopes.includes(requiredScope)) {
+      return false;
+    }
+  }
+
+  // Check for group membership (ID token)
+  if (requiredGroup && jwtPayload['cognito:groups']) {
+    if (!jwtPayload['cognito:groups'].includes(requiredGroup)) {
+      return false;
+    }
+  }
+
+  return true;
+};
+```
+
+#### Advanced JWT Patterns
+
+**Centralized Token Validation Service**:
+
+```javascript
+// AWS Lambda function for token validation
+exports.handler = async (event) => {
+  try {
+    const token = event.headers.Authorization.replace('Bearer ', '');
+    const decodedToken = await validateCognitoJwt(token, process.env.USER_POOL_ID, process.env.REGION);
+
+    // Custom authorization logic
+    const isAuthorized = authorizeUser(
+      decodedToken,
+      event.requestContext.resourcePath,
+      event.requestContext.httpMethod
+    );
+
+    if (!isAuthorized) {
+      return {
+        statusCode: 403,
+        body: JSON.stringify({ message: 'Forbidden' })
+      };
+    }
+
+    // Add user context to request
+    return {
+      statusCode: 200,
+      body: JSON.stringify({
+        userId: decodedToken.sub,
+        groups: decodedToken['cognito:groups'] || [],
+        scopes: decodedToken.scope ? decodedToken.scope.split(' ') : []
+      })
+    };
+  } catch (error) {
+    return {
+      statusCode: 401,
+      body: JSON.stringify({ message: 'Unauthorized' })
+    };
+  }
+};
+```
+
+**Token Expansion for Microservices**:
+
+```javascript
+// Expand token with additional user data for microservices
+const expandToken = async (token) => {
+  const decodedToken = await validateCognitoJwt(token, process.env.USER_POOL_ID, process.env.REGION);
+
+  // Get additional user data from database
+  const userData = await getUserData(decodedToken.sub);
+
+  // Create expanded context
+  return {
+    user: {
+      id: decodedToken.sub,
+      email: decodedToken.email,
+      groups: decodedToken['cognito:groups'] || [],
+      permissions: userData.permissions,
+      tenantId: userData.tenantId,
+      features: userData.features
+    },
+    token: {
+      scopes: decodedToken.scope ? decodedToken.scope.split(' ') : [],
+      expiration: decodedToken.exp
+    }
+  };
+};
+```
+
+### Advanced Security Features
+
+#### Multi-Factor Authentication (MFA)
+
+**Implementation Options**:
+- SMS Text Message
+- Time-based One-time Password (TOTP)
+- Email codes
+- Custom challenge lambda triggers
+
+**TOTP Setup Process**:
+
+```javascript
+// 1. Associate TOTP with user
+const associateTOTP = async (username) => {
+  const { SecretCode, Session } = await cognitoIdentityProvider.associateSoftwareToken({
+    AccessToken: userAccessToken // or Session for unauthenticated flows
+  }).promise();
+
+  // Return secret code to user for setup in authenticator app
+  return { secretCode: SecretCode, session: Session };
+};
+
+// 2. Verify setup with first code
+const verifyTOTP = async (username, totpCode) => {
+  const result = await cognitoIdentityProvider.verifySoftwareToken({
+    AccessToken: userAccessToken, // or Session for unauthenticated flows
+    UserCode: totpCode,
+    FriendlyDeviceName: 'User's mobile device'
+  }).promise();
+
+  if (result.Status === 'SUCCESS') {
+    // Update user's MFA preferences
+    await cognitoIdentityProvider.setUserMFAPreference({
+      AccessToken: userAccessToken,
+      SoftwareTokenMfaSettings: {
+        Enabled: true,
+        PreferredMfa: true
+      }
+    }).promise();
+  }
+
+  return result.Status;
+};
+```
+
+**MFA Challenge Response**:
+
+```javascript
+// Responding to MFA challenge during authentication
+const respondToMFAChallenge = async (username, session, mfaCode) => {
+  const result = await cognitoIdentityProvider.respondToAuthChallenge({
+    ClientId: appClientId,
+    ChallengeName: 'SOFTWARE_TOKEN_MFA',
+    Session: session,
+    ChallengeResponses: {
+      USERNAME: username,
+      SOFTWARE_TOKEN_MFA_CODE: mfaCode
+    }
+  }).promise();
+
+  return result.AuthenticationResult; // Contains tokens
+};
+```
+
+#### Advanced Protection Features
+
+**Adaptive Authentication**:
+
+Configure risk-based authentication with Cognito's Advanced Security features:
+
+```javascript
+// Enable Advanced Security features
+const enableAdvancedSecurity = async (userPoolId) => {
+  await cognitoIdentityProvider.setUserPoolMfaConfig({
+    UserPoolId: userPoolId,
+    MfaConfiguration: 'ON',
+    SoftwareTokenMfaConfiguration: {
+      Enabled: true
+    }
+  }).promise();
+
+  await cognitoIdentityProvider.setRiskConfiguration({
+    UserPoolId: userPoolId,
+    RiskExceptionConfiguration: {
+      BlockedIPRangeList: ['192.168.100.0/24'], // Example IP range to block
+      SkippedIPRangeList: ['10.0.0.0/8']        // Example trusted IPs
+    },
+    CompromisedCredentialsRiskConfiguration: {
+      Actions: {
+        EventAction: 'BLOCK'
+      },
+      EventFilter: ['SIGN_IN', 'SIGN_UP']
+    },
+    AccountTakeoverRiskConfiguration: {
+      Actions: {
+        LowAction: {
+          EventAction: 'MFA_IF_CONFIGURED',
+          NotifyConfiguration: {
+            SourceArn: snsTopicArn,
+            BlockEmail: {
+              Subject: 'Security Alert',
+              HtmlBody: '<p>We detected a sign-in attempt from a new device or location.</p>',
+              TextBody: 'We detected a sign-in attempt from a new device or location.'
+            }
+          }
+        },
+        MediumAction: {
+          EventAction: 'MFA_REQUIRED',
+          NotifyConfiguration: {
+            SourceArn: snsTopicArn,
+            BlockEmail: {
+              Subject: 'Security Alert',
+              HtmlBody: '<p>We detected a suspicious sign-in attempt.</p>',
+              TextBody: 'We detected a suspicious sign-in attempt.'
+            }
+          }
+        },
+        HighAction: {
+          EventAction: 'BLOCK',
+          NotifyConfiguration: {
+            SourceArn: snsTopicArn,
+            BlockEmail: {
+              Subject: 'Security Alert',
+              HtmlBody: '<p>We blocked a suspicious sign-in attempt.</p>',
+              TextBody: 'We blocked a suspicious sign-in attempt.'
+            }
+          }
+        }
+      }
+    }
+  }).promise();
+};
+```
+
+**IP-Based Restrictions**:
+
+Implement IP-based restrictions using custom Lambda triggers:
+
+```javascript
+// Pre-authentication Lambda to restrict by IP
+exports.handler = async (event) => {
+  // Get client IP from request
+  const callerIp = event.request.userAttributes['custom:sourceIp'] ||
+                  event.callerContext.clientId;
+
+  // Check against allowlist and blocklist
+  const allowlist = ['10.0.0.0/8', '172.16.0.0/12'];
+  const blocklist = ['185.23.45.0/24'];
+
+  // Check if IP is blocked
+  if (isIpInRanges(callerIp, blocklist)) {
+    throw new Error('Access denied from your location');
+  }
+
+  // For highly restricted systems, require allowlist match
+  if (process.env.REQUIRE_ALLOWLIST === 'true' && !isIpInRanges(callerIp, allowlist)) {
+    throw new Error('Access restricted to approved networks only');
+  }
+
+  return event;
+};
+
+// Helper to check IP ranges
+function isIpInRanges(ip, ranges) {
+  // Implementation using CIDR matching library
+  return ranges.some(range => cidrMatch(ip, range));
+}
+```
+
+#### Brute Force Prevention
+
+**Custom Rate Limiting with DynamoDB**:
+
+```javascript
+// Pre-authentication Lambda for custom rate limiting
+exports.handler = async (event) => {
+  const username = event.request.userAttributes.username;
+  const sourceIp = event.callerContext.sourceIp;
+  const userAgent = event.request.userAttributes['custom:userAgent'] || 'unknown';
+  const currentTime = Date.now();
+  const windowMinutes = 5;
+
+  // Create composite keys for different rate limits
+  const ipKey = `ip:${sourceIp}`;
+  const usernameKey = `user:${username}`;
+  const ipUserAgentKey = `ip-ua:${sourceIp}:${userAgent}`;
+
+  // Check and update rate limits
+  try {
+    // Get current attempt counts
+    const counts = await getAttemptCounts([ipKey, usernameKey, ipUserAgentKey]);
+
+    // Define limits
+    const limits = {
+      [ipKey]: 30,          // 30 attempts per IP in 5 minutes
+      [usernameKey]: 10,    // 10 attempts per username in 5 minutes
+      [ipUserAgentKey]: 20  // 20 attempts per IP+UserAgent in 5 minutes
+    };
+
+    // Check if any limit is exceeded
+    for (const key of Object.keys(limits)) {
+      if (counts[key] >= limits[key]) {
+        console.log(`Rate limit exceeded for ${key}`);
+        throw new Error('Too many authentication attempts. Please try again later.');
+      }
+    }
+
+    // Increment attempt counters
+    await incrementAttemptCounts([ipKey, usernameKey, ipUserAgentKey], currentTime, windowMinutes);
+
+    return event;
+  } catch (error) {
+    console.error('Rate limiting error:', error);
+    throw new Error('Authentication attempt declined');
+  }
+};
+```
+
+### Hands-on Labs: Cognito
+
+#### Lab 1: Secure Single-Page Application with Cognito and API Gateway
+
+**Objective**: Implement a secure SPA using Cognito User Pools and API Gateway
+
+**Steps**:
+
+1. **Create a User Pool with Enhanced Security Features**:
+   ```bash
+   aws cognito-idp create-user-pool \
+     --pool-name "SecureSPAUserPool" \
+     --policies '{"PasswordPolicy":{"MinimumLength":12,"RequireUppercase":true,"RequireLowercase":true,"RequireNumbers":true,"RequireSymbols":true,"TemporaryPasswordValidityDays":7}}' \
+     --mfa-configuration "OPTIONAL" \
+     --user-pool-tags Purpose=Training \
+     --admin-create-user-config '{"AllowAdminCreateUserOnly":false}' \
+     --auto-verified-attributes email \
+     --schema '[{"Name":"email","Required":true}]'
+   ```
+
+2. **Create App Client for SPA**:
+   ```bash
+   aws cognito-idp create-user-pool-client \
+     --user-pool-id YOUR_USER_POOL_ID \
+     --client-name "SPAClient" \
+     --no-generate-secret \
+     --explicit-auth-flows "ALLOW_USER_SRP_AUTH" "ALLOW_REFRESH_TOKEN_AUTH" \
+     --supported-identity-providers "COGNITO" \
+     --callback-urls '["https://localhost:3000/callback"]' \
+     --logout-urls '["https://localhost:3000/logout"]' \
+     --allowed-o-auth-flows "code" \
+     --allowed-o-auth-scopes "openid" "email" "profile" \
+     --allowed-o-auth-flows-user-pool-client
+   ```
+
+3. **Configure User Pool Domain**:
+   ```bash
+   aws cognito-idp create-user-pool-domain \
+     --domain "spa-demo-domain" \
+     --user-pool-id YOUR_USER_POOL_ID
+   ```
+
+4. **Create REST API with API Gateway**:
+   ```bash
+   aws apigateway create-rest-api \
+     --name "SPA-Backend-API" \
+     --description "API for SPA demo" \
+     --endpoint-configuration '{"types":["REGIONAL"]}'
+   ```
+
+5. **Create Cognito Authorizer**:
+   ```bash
+   aws apigateway create-authorizer \
+     --rest-api-id YOUR_API_ID \
+     --name "CognitoUserPoolAuthorizer" \
+     --type COGNITO_USER_POOLS \
+     --provider-arns "arn:aws:cognito-idp:REGION:ACCOUNT_ID:userpool/YOUR_USER_POOL_ID" \
+     --identity-source "method.request.header.Authorization"
+   ```
+
+6. **Create Protected Resource and Method**:
+   ```bash
+   # Create resource
+   aws apigateway create-resource \
+     --rest-api-id YOUR_API_ID \
+     --parent-id YOUR_PARENT_RESOURCE_ID \
+     --path-part "protected"
+
+   # Create method with authorizer
+   aws apigateway put-method \
+     --rest-api-id YOUR_API_ID \
+     --resource-id YOUR_RESOURCE_ID \
+     --http-method GET \
+     --authorization-type COGNITO_USER_POOLS \
+     --authorizer-id YOUR_AUTHORIZER_ID
+   ```
+
+7. **SPA Authentication Implementation**:
+
+   ```javascript
+   // React component for authentication
+   import React, { useState, useEffect } from 'react';
+   import { Auth } from 'aws-amplify';
+
+   const Authentication = () => {
+     const [user, setUser] = useState(null);
+     const [loading, setLoading] = useState(true);
+
+     useEffect(() => {
+       checkAuthState();
+     }, []);
+
+     async function checkAuthState() {
+       try {
+         const session = await Auth.currentSession();
+         const userInfo = await Auth.currentUserInfo();
+         setUser(userInfo);
+       } catch (error) {
+         console.log('No active session');
+       }
+       setLoading(false);
+     }
+
+     async function signIn() {
+       try {
+         // Redirect to Cognito Hosted UI
+         const config = {
+           clientId: 'YOUR_APP_CLIENT_ID',
+           redirectUri: 'https://localhost:3000/callback',
+           responseType: 'code',
+           scope: ['email', 'openid', 'profile']
+         };
+
+         const federatedInfo = {
+           domain: 'spa-demo-domain.auth.us-east-1.amazoncognito.com'
+         };
+
+         await Auth.federatedSignIn(federatedInfo, config);
+       } catch (error) {
+         console.log('Error signing in:', error);
+       }
+     }
+
+     async function signOut() {
+       try {
+         await Auth.signOut();
+         setUser(null);
+       } catch (error) {
+         console.log('Error signing out:', error);
+       }
+     }
+
+     async function callProtectedApi() {
+       try {
+         const session = await Auth.currentSession();
+         const token = session.getIdToken().getJwtToken();
+
+         const response = await fetch('https://YOUR_API_ID.execute-api.us-east-1.amazonaws.com/dev/protected', {
+           headers: {
+             'Authorization': token
+           }
+         });
+
+         const data = await response.json();
+         console.log('API response:', data);
+       } catch (error) {
+         console.log('Error calling API:', error);
+       }
+     }
+
+     if (loading) return <div>Loading...</div>;
+
+     return (
+       <div>
+         {user ? (
+           <>
+             <h2>Welcome, {user.attributes.email}</h2>
+             <button onClick={callProtectedApi}>Call Protected API</button>
+             <button onClick={signOut}>Sign Out</button>
+           </>
+         ) : (
+           <button onClick={signIn}>Sign In</button>
+         )}
+       </div>
+     );
+   };
+
+   export default Authentication;
+   ```
+
+8. **Configure Amplify in your SPA**:
+   ```javascript
+   // index.js or App.js
+   import { Amplify } from 'aws-amplify';
+
+   Amplify.configure({
+     Auth: {
+       region: 'us-east-1',
+       userPoolId: 'YOUR_USER_POOL_ID',
+       userPoolWebClientId: 'YOUR_APP_CLIENT_ID',
+       oauth: {
+         domain: 'spa-demo-domain.auth.us-east-1.amazoncognito.com',
+         scope: ['email', 'openid', 'profile'],
+         redirectSignIn: 'https://localhost:3000/callback',
+         redirectSignOut: 'https://localhost:3000/logout',
+         responseType: 'code'
+       }
+     },
+     API: {
+       endpoints: [
+         {
+           name: 'SpaApi',
+           endpoint: 'https://YOUR_API_ID.execute-api.us-east-1.amazonaws.com/dev'
+         }
+       ]
+     }
+   });
+   ```
+
+9. **Test End-to-End Flow**:
+   - Start your SPA application locally
+   - Click "Sign In" and complete authentication flow
+   - Test protected API call once authenticated
+   - Verify token validation in CloudWatch logs
+
+#### Lab 2: Implementing Custom Authentication Flow
+
+**Objective**: Create a risk-based custom authentication flow using Cognito Lambda triggers
+
+**Steps**:
+
+1. **Create Lambda Functions**:
+
+   a. **Define Auth Challenge**:
+   ```javascript
+   // define-auth-challenge.js
+   exports.handler = async (event) => {
+     const request = event.request;
+     const session = request.session || [];
+
+     // Check if this is a new auth session
+     if (session.length === 0) {
+       // Start with password verification
+       event.response.challengeName = 'PASSWORD_VERIFIER';
+       event.response.issueTokens = false;
+       event.response.failAuthentication = false;
+       return event;
+     }
+
+     // Get the last challenge
+     const lastChallenge = session[session.length - 1];
+
+     // If password verification passed
+     if (lastChallenge.challengeName === 'PASSWORD_VERIFIER' && lastChallenge.challengeResult === true) {
+       // Check user risk factors
+       const riskLevel = await checkUserRisk(event.request.userAttributes);
+
+       if (riskLevel === 'HIGH') {
+         // High risk - require TOTP code
+         event.response.challengeName = 'CUSTOM_CHALLENGE';
+         event.response.issueTokens = false;
+         event.response.failAuthentication = false;
+       } else {
+         // Low risk - allow sign in
+         event.response.issueTokens = true;
+         event.response.failAuthentication = false;
+       }
+       return event;
+     }
+
+     // If TOTP verification passed
+     if (lastChallenge.challengeName === 'CUSTOM_CHALLENGE' && lastChallenge.challengeResult === true) {
+       event.response.issueTokens = true;
+       event.response.failAuthentication = false;
+       return event;
+     }
+
+     // If any challenge failed
+     if (lastChallenge.challengeResult === false) {
+       event.response.issueTokens = false;
+       event.response.failAuthentication = true;
+       return event;
+     }
+
+     // Default - fail authentication
+     event.response.issueTokens = false;
+     event.response.failAuthentication = true;
+     return event;
+   };
+
+   // Helper function to check user risk
+   async function checkUserRisk(userAttributes) {
+     // Implement risk analysis logic based on:
+     // - New device
+     // - Unusual location
+     // - Time of access
+     // - Previous patterns
+     return 'HIGH'; // For demo purposes
+   }
+   ```
+
+   b. **Create Auth Challenge**:
+   ```javascript
+   // create-auth-challenge.js
+   exports.handler = async (event) => {
+     const request = event.request;
+
+     if (request.challengeName === 'CUSTOM_CHALLENGE') {
+       // For TOTP challenge, nothing to do
+       // The code is generated by the authenticator app
+
+       // For demo purposes, add hint in public parameters
+       event.response.publicChallengeParameters = {
+         hint: 'Please enter the code from your authenticator app'
+       };
+
+       // No privateChallengeParameters needed for TOTP
+       event.response.privateChallengeParameters = {};
+       event.response.challengeMetadata = 'TOTP_AUTH';
+     }
+
+     return event;
+   };
+   ```
+
+   c. **Verify Auth Challenge Response**:
+   ```javascript
+   // verify-auth-challenge-response.js
+   const crypto = require('crypto');
+
+   exports.handler = async (event) => {
+     const request = event.request;
+
+     if (request.challengeName === 'CUSTOM_CHALLENGE' &&
+         request.privateChallengeParameters.challengeMetadata === 'TOTP_AUTH') {
+
+       const userCode = request.challengeAnswer;
+       const username = event.request.userAttributes.username;
+
+       // Verify TOTP code
+       const isValid = await verifyTOTP(username, userCode);
+
+       event.response.answerCorrect = isValid;
+     } else {
+       event.response.answerCorrect = false;
+     }
+
+     return event;
+   };
+
+   // Helper function to verify TOTP
+   async function verifyTOTP(username, code) {
+     // Implementation would use AWS SDK to verify TOTP
+     // For demo purposes
+     return code === '123456';
+   }
+   ```
+
+2. **Configure User Pool with Lambda Triggers**:
+   ```bash
+   aws cognito-idp update-user-pool \
+     --user-pool-id YOUR_USER_POOL_ID \
+     --lambda-config '{
+       "DefineAuthChallenge": "arn:aws:lambda:us-east-1:ACCOUNT_ID:function:define-auth-challenge",
+       "CreateAuthChallenge": "arn:aws:lambda:us-east-1:ACCOUNT_ID:function:create-auth-challenge",
+       "VerifyAuthChallengeResponse": "arn:aws:lambda:us-east-1:ACCOUNT_ID:function:verify-auth-challenge-response"
+     }'
+   ```
+
+3. **Update App Client for Custom Auth Flow**:
+   ```bash
+   aws cognito-idp update-user-pool-client \
+     --user-pool-id YOUR_USER_POOL_ID \
+     --client-id YOUR_CLIENT_ID \
+     --explicit-auth-flows "ALLOW_CUSTOM_AUTH" "ALLOW_USER_SRP_AUTH" "ALLOW_REFRESH_TOKEN_AUTH"
+   ```
+
+4. **Implement Client for Custom Authentication**:
+   ```javascript
+   import React, { useState } from 'react';
+   import { Auth } from 'aws-amplify';
+
+   const CustomAuthFlow = () => {
+     const [username, setUsername] = useState('');
+     const [password, setPassword] = useState('');
+     const [totpCode, setTotpCode] = useState('');
+     const [showTotpInput, setShowTotpInput] = useState(false);
+     const [message, setMessage] = useState('');
+
+     async function signIn() {
+       try {
+         setMessage('Signing in...');
+
+         // Initiate auth
+         const user = await Auth.signIn(username, password);
+
+         // Check if custom challenge is required
+         if (user.challengeName === 'CUSTOM_CHALLENGE') {
+           setShowTotpInput(true);
+           setMessage('Please enter your MFA code');
+         } else {
+           setMessage('Sign in successful');
+         }
+       } catch (error) {
+         setMessage(`Error: ${error.message}`);
+       }
+     }
+
+     async function verifyTOTP() {
+       try {
+         setMessage('Verifying code...');
+
+         // Send TOTP code as challenge response
+         const user = await Auth.sendCustomChallengeAnswer(username, totpCode);
+
+         if (user.signInUserSession) {
+           setMessage('Authentication successful');
+         } else {
+           setMessage('Additional verification required');
+         }
+       } catch (error) {
+         setMessage(`Error: ${error.message}`);
+       }
+     }
+
+     return (
+       <div>
+         <h2>Risk-Based Authentication</h2>
+
+         {!showTotpInput ? (
+           <>
+             <div>
+               <label>Username:</label>
+               <input
+                 type="text"
+                 value={username}
+                 onChange={e => setUsername(e.target.value)}
+               />
+             </div>
+             <div>
+               <label>Password:</label>
+               <input
+                 type="password"
+                 value={password}
+                 onChange={e => setPassword(e.target.value)}
+               />
+             </div>
+             <button onClick={signIn}>Sign In</button>
+           </>
+         ) : (
+           <>
+             <div>
+               <label>Enter code from your authenticator app:</label>
+               <input
+                 type="text"
+                 value={totpCode}
+                 onChange={e => setTotpCode(e.target.value)}
+               />
+             </div>
+             <button onClick={verifyTOTP}>Verify</button>
+           </>
+         )}
+
+         <p>{message}</p>
+       </div>
+     );
+   };
+
+   export default CustomAuthFlow;
+   ```
+
+## Amazon EC2
+
+### Auto Scaling Strategies
+
+#### Auto Scaling Components
+
+- **Auto Scaling Groups (ASG)**: Collection of EC2 instances treated as a logical unit
+- **Launch Templates/Configurations**: Template for instances in the ASG
+- **Scaling Policies**: Rules that determine when to scale in/out
+- **Scheduled Actions**: Pre-defined scaling events
+- **Lifecycle Hooks**: Custom actions during scale-in/out events
+
+#### Scaling Types
+
+1. **Dynamic Scaling**:
+   - Target Tracking: Maintain a specific metric value
+   - Step Scaling: Adjust capacity based on thresholds
+   - Simple Scaling: Basic threshold-based scaling
+
+2. **Predictive Scaling**:
+   - Uses machine learning to predict future load
+   - Pro-actively scales before demand spike
+
+3. **Scheduled Scaling**:
+   - Time-based scaling for predictable patterns
+
+#### Advanced Scaling Patterns
+
+**Mixed Instances Policy**:
+
+```json
+{
+  "LaunchTemplate": {
+    "LaunchTemplateSpecification": {
+      "LaunchTemplateId": "lt-0123456789abcdef",
+      "Version": "$Latest"
+    },
+    "Overrides": [
+      {
+        "InstanceType": "c5.large",
+        "WeightedCapacity": "2"
+      },
+      {
+        "InstanceType": "c5a.large",
+        "WeightedCapacity": "2"
+      },
+      {
+        "InstanceType": "m5.large",
+        "WeightedCapacity": "1"
+      },
+      {
+        "InstanceType": "r5.large",
+        "WeightedCapacity": "1"
+      }
+    ]
+  },
+  "InstancesDistribution": {
+    "OnDemandAllocationStrategy": "prioritized",
+    "OnDemandBaseCapacity": 2,
+    "OnDemandPercentageAboveBaseCapacity": 50,
+    "SpotAllocationStrategy": "capacity-optimized",
+    "SpotInstancePools": 2
+  }
+}
+```
+
+**Implementation**:
+
+```bash
+aws autoscaling create-auto-scaling-group \
+  --auto-scaling-group-name "MixedInstancesASG" \
+  --min-size 4 \
+  --max-size 20 \
+  --mixed-instances-policy file://mixed-instances-policy.json \
+  --vpc-zone-identifier "subnet-12345,subnet-67890,subnet-abcdef" \
+  --target-group-arns "arn:aws:elasticloadbalancing:us-east-1:123456789012:targetgroup/my-tg/12345678"
+```
+
+**Capacity Optimization with Capacity Rebalancing**:
+
+```bash
+aws autoscaling create-auto-scaling-group \
+  --auto-scaling-group-name "RebalancingASG" \
+  --min-size 4 \
+  --max-size 20 \
+  --launch-template "LaunchTemplateId=lt-0123456789abcdef,Version=$Latest" \
+  --vpc-zone-identifier "subnet-12345,subnet-67890,subnet-abcdef" \
+  --capacity-rebalance
+```
+
+#### Multi-metric Scaling Policies
+
+**Composite CloudWatch Metrics**:
+
+```bash
+# Create a composite metric using CloudWatch math expressions
+aws cloudwatch put-metric-alarm \
+  --alarm-name "CompositeMetricScaling" \
+  --alarm-description "Combined CPU and Memory utilization" \
+  --evaluation-periods 1 \
+  --threshold 100 \
+  --comparison-operator GreaterThanThreshold \
+  --metric-queries '[
+    {
+      "id": "cpu",
+      "metricStat": {
+        "metric": {
+          "namespace": "AWS/EC2",
+          "metricName": "CPUUtilization",
+          "dimensions": [
+            {
+              "name": "AutoScalingGroupName",
+              "value": "MyASG"
+            }
+          ]
+        },
+        "period": 60,
+        "stat": "Average"
+      },
+      "returnData": false
+    },
+    {
+      "id": "memory",
+      "metricStat": {
+        "metric": {
+          "namespace": "CWAgent",
+          "metricName": "mem_used_percent",
+          "dimensions": [
+            {
+              "name": "AutoScalingGroupName",
+              "value": "MyASG"
+            }
+          ]
+        },
+        "period": 60,
+        "stat": "Average"
+      },
+      "returnData": false
+    },
+    {
+      "id": "composite",
+      "expression": "(cpu * 0.6) + (memory * 0.4)",
+      "returnData": true
+    }
+  ]'
+```
+
+**Policy using Composite Metric**:
+
+```bash
+aws autoscaling put-scaling-policy \
+  --auto-scaling-group-name "MyASG" \
+  --policy-name "CompositeMetricPolicy" \
+  --policy-type "StepScaling" \
+  --adjustment-type "ChangeInCapacity" \
+  --metric-aggregation-type "Average" \
+  --step-adjustments "[{\"MetricIntervalLowerBound\":0,\"MetricIntervalUpperBound\":10,\"ScalingAdjustment\":1},{\"MetricIntervalLowerBound\":10,\"ScalingAdjustment\":2}]" \
+  --estimated-instance-warmup 300
+```
+
+#### Advanced Instance Refresh
+
+**Gradual instance refresh with minimum healthy percentage**:
+
+```bash
+aws autoscaling start-instance-refresh \
+  --auto-scaling-group-name MyASG \
+  --preferences '{
+    "MinHealthyPercentage": 90,
+    "InstanceWarmup": 300,
+    "CheckpointPercentages": [25, 50, 75],
+    "CheckpointDelay": 600,
+    "SkipMatching": false
+  }'
+```
+
+### Load Balancing Architectures
+
+#### Types of Load Balancers
+
+1. **Application Load Balancer (ALB)**:
+   - HTTP/HTTPS traffic at Layer 7
+   - Path-based routing, host-based routing, query string routing
+   - Support for WebSockets
+   - Authentication integration with Cognito/OIDC
+
+2. **Network Load Balancer (NLB)**:
+   - TCP/UDP traffic at Layer 4
+   - Ultra-low latency
+   - Static IP addresses
+   - Preserves source IP address
+
+3. **Gateway Load Balancer (GWLB)**:
+   - Layer 3 Gateway + Layer 4 Load Balancing
+   - For transparent network appliances (firewalls, IDS/IPS)
+   - Uses GENEVE protocol (port 6081)
+
+4. **Classic Load Balancer (CLB)**:
+   - Legacy load balancer (not recommended for new applications)
+
+#### Advanced ALB Features
+
+**Path-Based Routing**:
+
+```bash
+# Create target groups
+aws elbv2 create-target-group \
+  --name api-targets \
+  --protocol HTTP \
+  --port 80 \
+  --vpc-id vpc-12345 \
+  --target-type instance
+
+aws elbv2 create-target-group \
+  --name admin-targets \
+  --protocol HTTP \
+  --port 80 \
+  --vpc-id vpc-12345 \
+  --target-type instance
+
+aws elbv2 create-target-group \
+  --name static-targets \
+  --protocol HTTP \
+  --port 80 \
+  --vpc-id vpc-12345 \
+  --target-type instance
+
+# Create listener with default rule
+aws elbv2 create-listener \
+  --load-balancer-arn arn:aws:elasticloadbalancing:us-east-1:123456789012:loadbalancer/app/my-alb/1234567890123456 \
+  --protocol HTTP \
+  --port 80 \
+  --default-actions Type=forward,TargetGroupArn=arn:aws:elasticloadbalancing:us-east-1:123456789012:targetgroup/static-targets/1234567890123456
+
+# Add path-based rules
+aws elbv2 create-rule \
+  --listener-arn arn:aws:elasticloadbalancing:us-east-1:123456789012:listener/app/my-alb/1234567890123456/1234567890123456 \
+  --priority 10 \
+  --conditions Field=path-pattern,Values='/api/*' \
+  --actions Type=forward,TargetGroupArn=arn:aws:elasticloadbalancing:us-east-1:123456789012:targetgroup/api-targets/1234567890123456
+
+aws elbv2 create-rule \
+  --listener-arn arn:aws:elasticloadbalancing:us-east-1:123456789012:listener/app/my-alb/1234567890123456/1234567890123456 \
+  --priority 20 \
+  --conditions Field=path-pattern,Values='/admin/*' \
+  --actions Type=forward,TargetGroupArn=arn:aws:elasticloadbalancing:us-east-1:123456789012:targetgroup/admin-targets/1234567890123456
+```
+
+**Authentication with Cognito**:
+
+```bash
+aws elbv2 create-listener \
+  --load-balancer-arn arn:aws:elasticloadbalancing:us-east-1:123456789012:loadbalancer/app/my-alb/1234567890123456 \
+  --protocol HTTPS \
+  --port 443 \
+  --certificates CertificateArn=arn:aws:acm:us-east-1:123456789012:certificate/12345678-1234-1234-1234-123456789012 \
+  --default-actions '[
+    {
+      "Type": "authenticate-cognito",
+      "AuthenticateCognitoConfig": {
+        "UserPoolArn": "arn:aws:cognito-idp:us-east-1:123456789012:userpool/us-east-1_EXAMPLE",
+        "UserPoolClientId": "1example23456789",
+        "UserPoolDomain": "my-cognito-domain",
+        "SessionCookieName": "AWSELBAuthSessionCookie",
+        "SessionTimeout": 3600,
+        "Scope": "openid",
+        "OnUnauthenticatedRequest": "authenticate"
+      },
+      "Order": 1
+    },
+    {
+      "Type": "forward",
+      "TargetGroupArn": "arn:aws:elasticloadbalancing:us-east-1:123456789012:targetgroup/my-targets/1234567890123456",
+      "Order": 2
+    }
+  ]'
+```
+
+**Dynamic Host-Based Routing**:
+
+```bash
+# Create host-based routing rule
+aws elbv2 create-rule \
+  --listener-arn arn:aws:elasticloadbalancing:us-east-1:123456789012:listener/app/my-alb/1234567890123456/1234567890123456 \
+  --priority 5 \
+  --conditions Field=host-header,Values='api.example.com' \
+  --actions Type=forward,TargetGroupArn=arn:aws:elasticloadbalancing:us-east-1:123456789012:targetgroup/api-targets/1234567890123456
+```
+
+#### Advanced NLB Features
+
+**TLS Termination with Security Policy**:
+
+```bash
+aws elbv2 create-listener \
+  --load-balancer-arn arn:aws:elasticloadbalancing:us-east-1:123456789012:loadbalancer/net/my-nlb/1234567890123456 \
+  --protocol TLS \
+  --port 443 \
+  --certificates CertificateArn=arn:aws:acm:us-east-1:123456789012:certificate/12345678-1234-1234-1234-123456789012 \
+  --ssl-policy ELBSecurityPolicy-TLS13-1-2-2021-06 \
+  --default-actions Type=forward,TargetGroupArn=arn:aws:elasticloadbalancing:us-east-1:123456789012:targetgroup/my-targets/1234567890123456
+```
+
+**Client IP Preservation with Proxy Protocol v2**:
+
+```bash
+# Configure target group to use Proxy Protocol v2
+aws elbv2 modify-target-group-attributes \
+  --target-group-arn arn:aws:elasticloadbalancing:us-east-1:123456789012:targetgroup/my-targets/1234567890123456 \
+  --attributes Key=proxy_protocol_v2.enabled,Value=true
+```
+
+**UDP Load Balancing**:
+
+```bash
+# Create UDP target group
+aws elbv2 create-target-group \
+  --name udp-targets \
+  --protocol UDP \
+  --port 53 \
+  --vpc-id vpc-12345 \
+  --target-type instance
+
+# Create UDP listener
+aws elbv2 create-listener \
+  --load-balancer-arn arn:aws:elasticloadbalancing:us-east-1:123456789012:loadbalancer/net/my-nlb/1234567890123456 \
+  --protocol UDP \
+  --port 53 \
+  --default-actions Type=forward,TargetGroupArn=arn:aws:elasticloadbalancing:us-east-1:123456789012:targetgroup/udp-targets/1234567890123456
+```
+
+#### Advanced Architecture Patterns
+
+**Multi-Tier Load Balancing**:
+
+```
+                                  ┌───────────────────┐
+                                  │                   │
+                               ┌─►│ Private ALB Tier1 │──┐
+                               │  │                   │  │
+┌─────────────┐   ┌────────┐   │  └───────────────────┘  │   ┌───────────────┐
+│             │   │        │   │                         │   │               │
+│ Internet ──►│──►│ NLB ──►│───┤                         ├──►│ EC2 Instances │
+│             │   │        │   │                         │   │               │
+└─────────────┘   └────────┘   │  ┌───────────────────┐  │   └───────────────┘
+                               │  │                   │  │
+                               └─►│ Private ALB Tier2 │──┘
+                                  │                   │
+                                  └───────────────────┘
+```
+
+**Implementation**:
+
+```bash
+# Create NLB with Elastic IP
+aws elbv2 create-load-balancer \
+  --name edge-nlb \
+  --type network \
+  --subnets subnet-public1 subnet-public2 \
+  --scheme internet-facing
+
+# Create internal ALBs
+aws elbv2 create-load-balancer \
+  --name tier1-alb \
+  --type application \
+  --subnets subnet-private1a subnet-private1b \
+  --scheme internal \
+  --security-groups sg-alb1
+
+aws elbv2 create-load-balancer \
+  --name tier2-alb \
+  --type application \
+  --subnets subnet-private2a subnet-private2b \
+  --scheme internal \
+  --security-groups sg-alb2
+
+# Create target groups pointing to internal ALBs
+aws elbv2 create-target-group \
+  --name alb-tier1-targets \
+  --protocol TCP \
+  --port 80 \
+  --vpc-id vpc-12345 \
+  --target-type ip
+
+aws elbv2 create-target-group \
+  --name alb-tier2-targets \
+  --protocol TCP \
+  --port 80 \
+  --vpc-id vpc-12345 \
+  --target-type ip
+
+# Register internal ALBs with NLB target groups
+aws elbv2 register-targets \
+  --target-group-arn arn:aws:elasticloadbalancing:us-east-1:123456789012:targetgroup/alb-tier1-targets/1234567890123456 \
+  --targets Id=10.0.1.25,Port=80 Id=10.0.2.25,Port=80
+
+aws elbv2 register-targets \
+  --target-group-arn arn:aws:elasticloadbalancing:us-east-1:123456789012:targetgroup/alb-tier2-targets/1234567890123456 \
+  --targets Id=10.0.3.25,Port=80 Id=10.0.4.25,Port=80
+
+# Create NLB listeners for each backend
+aws elbv2 create-listener \
+  --load-balancer-arn arn:aws:elasticloadbalancing:us-east-1:123456789012:loadbalancer/net/edge-nlb/1234567890123456 \
+  --protocol TCP \
+  --port 80 \
+  --default-actions Type=forward,TargetGroupArn=arn:aws:elasticloadbalancing:us-east-1:123456789012:targetgroup/alb-tier1-targets/1234567890123456
+
+aws elbv2 create-listener \
+  --load-balancer-arn arn:aws:elasticloadbalancing:us-east-1:123456789012:loadbalancer/net/edge-nlb/1234567890123456 \
+  --protocol TCP \
+  --port 8080 \
+  --default-actions Type=forward,TargetGroupArn=arn:aws:elasticloadbalancing:us-east-1:123456789012:targetgroup/alb-tier2-targets/1234567890123456
+```
+
+**Canary Deployment Pattern**:
+
+```bash
+# Create two target groups for blue/green deployment
+aws elbv2 create-target-group \
+  --name blue-targets \
+  --protocol HTTP \
+  --port 80 \
+  --vpc-id vpc-12345 \
+  --target-type instance
+
+aws elbv2 create-target-group \
+  --name green-targets \
+  --protocol HTTP \
+  --port 80 \
+  --vpc-id vpc-12345 \
+  --target-type instance
+
+# Create weighted target group actions (90% blue, 10% green)
+aws elbv2 create-listener \
+  --load-balancer-arn arn:aws:elasticloadbalancing:us-east-1:123456789012:loadbalancer/app/my-alb/1234567890123456 \
+  --protocol HTTP \
+  --port 80 \
+  --default-actions '[
+    {
+      "Type": "forward",
+      "ForwardConfig": {
+        "TargetGroups": [
+          {
+            "TargetGroupArn": "arn:aws:elasticloadbalancing:us-east-1:123456789012:targetgroup/blue-targets/1234567890123456",
+            "Weight": 90
+          },
+          {
+            "TargetGroupArn": "arn:aws:elasticloadbalancing:us-east-1:123456789012:targetgroup/green-targets/1234567890123456",
+            "Weight": 10
+          }
+        ]
+      }
+    }
+  ]'
+```
+
+### Security Groups Deep Dive
+
+#### Security Group Best Practices
+
+1. **Principle of Least Privilege**:
+   - Allow only necessary traffic
+   - Define granular rules based on ports and protocols
+   - Use source/destination security groups instead of CIDR blocks
+
+2. **Layered Security**:
+   - Implement defense in depth with multiple security layers
+   - Combine security groups with Network ACLs
+   - Use different security groups for different tiers
+
+3. **Reference Architecture for Three-Tier Application**:
+
+```
+┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
+│                 │     │                 │     │                 │
+│  Web Tier       │     │  App Tier       │     │  Database Tier  │
+│  Security Group │────►│  Security Group │────►│  Security Group │
+│                 │     │                 │     │                 │
+└─────────────────┘     └─────────────────┘     └─────────────────┘
+     ▲                        ▲                        ▲
+     │                        │                        │
+     ▼                        ▼                        ▼
+┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
+│                 │     │                 │     │                 │
+│  ALB Security   │     │  ALB Security   │     │  RDS Security   │
+│  Group          │     │  Group          │     │  Group          │
+│                 │     │                 │     │                 │
+└─────────────────┘     └─────────────────┘     └─────────────────┘
+```
+
+#### Security Group Implementation
+
+**Web Tier**:
+
+```bash
+# Create web tier security group
+aws ec2 create-security-group \
+  --group-name web-tier-sg \
+  --description "Security group for web tier" \
+  --vpc-id vpc-12345
+
+# Allow incoming HTTP/HTTPS from ALB only
+aws ec2 authorize-security-group-ingress \
+  --group-id sg-webtier \
+  --protocol tcp \
+  --port 80 \
+  --source-group sg-alb
+
+aws ec2 authorize-security-group-ingress \
+  --group-id sg-webtier \
+  --protocol tcp \
+  --port 443 \
+  --source-group sg-alb
+
+# Allow SSH only from bastion host
+aws ec2 authorize-security-group-ingress \
+  --group-id sg-webtier \
+  --protocol tcp \
+  --port 22 \
+  --source-group sg-bastion
+```
+
+**App Tier**:
+
+```bash
+# Create app tier security group
+aws ec2 create-security-group \
+  --group-name app-tier-sg \
+  --description "Security group for application tier" \
+  --vpc-id vpc-12345
+
+# Allow traffic from web tier on application port
+aws ec2 authorize-security-group-ingress \
+  --group-id sg-apptier \
+  --protocol tcp \
+  --port 8080 \
+  --source-group sg-webtier
+
+# Allow SSH only from bastion host
+aws ec2 authorize-security-group-ingress \
+  --group-id sg-apptier \
+  --protocol tcp \
+  --port 22 \
+  --source-group sg-bastion
+```
+
+**Database Tier**:
+
+```bash
+# Create database tier security group
+aws ec2 create-security-group \
+  --group-name db-tier-sg \
+  --description "Security group for database tier" \
+  --vpc-id vpc-12345
+
+# Allow MySQL/Postgre
+```
+
+# Advanced AWS Expertise: Comprehensive Learning Guide (Continued)
+
+## Amazon EC2 (Continued)
+
+### Security Groups Deep Dive
+
+Security Groups are a fundamental component of AWS network security, acting as virtual firewalls for your EC2 instances. Unlike traditional firewalls, they operate at the instance level rather than the subnet level.
+
+#### Core Concepts
+
+1. **Stateful Filtering**: Security Groups maintain "connection state" and automatically allow return traffic regardless of outbound rules.
+   ```
+   Example: If your instance initiates an outbound connection to a web server on port 80,
+   the return traffic is allowed regardless of inbound rules.
+   ```
+
+2. **Default Deny**: Security Groups operate on a "deny-by-default" principle - all inbound traffic is blocked unless explicitly allowed.
+
+3. **No Explicit Deny Rules**: You cannot create "deny" rules in Security Groups; you can only specify allow rules.
+
+4. **Rule Evaluation**: When multiple rules apply, AWS evaluates all rules before deciding whether to allow traffic.
+
+#### Advanced Security Group Strategies
+
+1. **Security Group References**
+
+   Instead of using CIDR blocks, reference other security groups:
+
+   ```json
+   {
+     "IpProtocol": "tcp",
+     "FromPort": 3306,
+     "ToPort": 3306,
+     "SourceSecurityGroupId": "sg-12345678"
+   }
+   ```
+
+   Benefits:
+   - Automatic updates when instances are added/removed from referenced groups
+   - Reduced management overhead with dynamic infrastructure
+   - Improved security posture with fewer hardcoded IPs
+
+2. **Principle of Least Privilege Implementation**
+
+   * **Service-Specific Rules**: Define security groups based on service roles (web, app, database)
+   * **Port Specification**: Always specify exact port ranges needed, not broad ranges
+   * **Regular Auditing**: Use AWS Config rules to detect overly permissive security groups
+
+3. **Security Group Hierarchy and Layering**
+
+   Create a hierarchical approach to security groups:
+
+   * **Base Security Groups**: Common rules for all instances (e.g., allowing SSH from bastion hosts)
+   * **Function-Specific Groups**: Rules specific to application tiers
+   * **Instance-Specific Groups**: Custom rules for special-case instances
+
+4. **VPC Peering and Security Groups**
+
+   When implementing VPC peering:
+
+   * Security groups from one VPC cannot be directly referenced in another VPC
+   * You must use CIDR blocks for cross-VPC rules
+   * Consider using Transit Gateway for more complex networking scenarios with centralized security controls
+
+5. **Security Group Limits and Optimization**
+
+   * Default limit: 60 inbound + 60 outbound rules per security group
+   * Maximum of 5 security groups per network interface (soft limit, can be increased)
+   * Best practice: Use fewer security groups with more rules rather than many security groups with few rules
+
+#### Troubleshooting and Analysis
+
+1. **VPC Flow Logs Integration**
+
+   Enable VPC Flow Logs to diagnose security group issues:
+
+   ```bash
+   aws ec2 create-flow-logs \
+     --resource-type VPC \
+     --resource-id vpc-12345678 \
+     --traffic-type ALL \
+     --log-destination-type cloud-watch-logs \
+     --log-destination arn:aws:logs:region:account-id:log-group:name
+   ```
+
+2. **Security Group Usage Analysis**
+
+   Identify unused rules using AWS Network Manager:
+
+   ```bash
+   aws networkmanager get-network-insights-access-scope-analysis \
+     --network-insights-access-scope-analysis-id nis-12345678
+   ```
+
+3. **Common Issues and Solutions**
+
+   | Issue | Potential Solution |
+   |-------|-------------------|
+   | Application timeout | Check if security group allows outbound traffic to destination |
+   | Connection refused | Verify application is running and listening on expected port |
+   | Intermittent connectivity | Investigate potential IP conflicts or overlapping rules |
+
+#### Hands-on Exercise: Security Group Hardening
+
+1. Identify your existing security group setup:
+   ```bash
+   aws ec2 describe-security-groups --output json
+   ```
+
+2. Audit for overly permissive rules:
+   ```bash
+   aws ec2 describe-security-groups --query "SecurityGroups[].IpPermissions[?IpRanges[?CidrIp=='0.0.0.0/0']]"
+   ```
+
+3. Replace broad IP ranges with specific security group references:
+   ```bash
+   aws ec2 revoke-security-group-ingress --group-id sg-app --protocol tcp --port 3306 --cidr 10.0.0.0/16
+   aws ec2 authorize-security-group-ingress --group-id sg-app --protocol tcp --port 3306 --source-group sg-webservers
+   ```
+
+4. Implement dynamic security group updates with AWS Lambda automation
+
+### Instance Optimization
+
+Optimizing EC2 instances is crucial for both performance and cost efficiency. This section covers advanced techniques to ensure your instances deliver maximum value.
+
+#### Right-sizing Methodology
+
+1. **Performance Metrics Analysis**
+
+   Key metrics to collect and analyze:
+
+   | Metric | Description | Target Range |
+   |--------|-------------|--------------|
+   | CPU Utilization | Processing power usage | 40-80% |
+   | Memory Utilization | RAM consumption | 50-80% |
+   | I/O Performance | Disk and network throughput | Application-dependent |
+   | Network Packets | Data transfer volume | < 80% of interface capacity |
+
+2. **Data-Driven Instance Selection**
+
+   Use AWS CloudWatch and CloudWatch Agent to gather performance data:
+
+   ```bash
+   # Install CloudWatch Agent
+   wget https://s3.amazonaws.com/amazoncloudwatch-agent/amazon_linux/amd64/latest/amazon-cloudwatch-agent.rpm
+   sudo rpm -U amazon-cloudwatch-agent.rpm
+
+   # Configure with detailed metrics
+   sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-config-wizard
+   ```
+
+3. **Instance Type Selection Framework**
+
+   Decision matrix based on workload characteristics:
+
+   * **Compute-optimized (C-family)**: For CPU-intensive applications
+   * **Memory-optimized (R-family)**: For memory-intensive applications
+   * **Storage-optimized (I/D-family)**: For high I/O applications
+   * **General Purpose (T/M-family)**: For balanced workloads
+   * **GPU Instances (G/P-family)**: For graphics/ML workloads
+
+#### Advanced Instance Features
+
+1. **Enhanced Networking**
+
+   Enable enhanced networking for improved performance:
+
+   * **Elastic Network Adapter (ENA)**: Up to 100 Gbps
+   * **Intel 82599 VF**: Up to 10 Gbps (older instances)
+
+   Implementation:
+   ```bash
+   aws ec2 modify-instance-attribute --instance-id i-1234567890abcdef0 --ena-support
+   ```
+
+2. **Instance Store vs. EBS Optimization**
+
+   * **Instance Store**: Physically attached storage with higher I/O performance
+   * **EBS-Optimized Instances**: Dedicated bandwidth for EBS volumes
+
+   Activate EBS optimization:
+   ```bash
+   aws ec2 modify-instance-attribute --instance-id i-1234567890abcdef0 --ebs-optimized
+   ```
+
+3. **Placement Groups Strategies**
+
+   * **Cluster**: Low-latency, high-throughput (single AZ)
+   * **Partition**: Distributed across partitions (protection from hardware failures)
+   * **Spread**: Strictly placed on separate hardware
+
+   Example implementation:
+   ```bash
+   aws ec2 create-placement-group --group-name low-latency-cluster --strategy cluster
+   aws ec2 run-instances --placement "GroupName=low-latency-cluster" [other parameters]
+   ```
+
+4. **Capacity Reservations and Savings Plans**
+
+   * **On-Demand Capacity Reservations**: Reserve capacity in specific AZ
+   * **Savings Plans**: Commit to consistent compute usage for 1-3 years
+
+   Advanced strategy: Combine Reserved Instances with Spot Instances for baseline and variable loads.
+
+#### Hands-on Exercise: Performance Tuning
+
+1. **Benchmark Current Performance**:
+
+   ```bash
+   # CPU and Memory benchmark
+   sudo amazon-linux-extras install epel -y
+   sudo yum install sysbench -y
+   sysbench cpu --cpu-max-prime=20000 run
+   sysbench memory --memory-block-size=1M --memory-total-size=10G run
+
+   # Disk I/O benchmark
+   sudo yum install fio -y
+   fio --name=random-write --ioengine=posixaio --rw=randwrite --bs=4k --size=4g --numjobs=1 --iodepth=1 --runtime=60 --time_based --end_fsync=1
+   ```
+
+2. **Implement Custom CloudWatch Dashboard**:
+
+   ```bash
+   aws cloudwatch put-dashboard --dashboard-name EC2Optimization --dashboard-body file://ec2-dashboard.json
+   ```
+
+3. **Create Performance-Based Auto Scaling**:
+
+   ```bash
+   aws autoscaling put-scaling-policy \
+     --auto-scaling-group-name my-asg \
+     --policy-name cpu-tracking-policy \
+     --policy-type TargetTrackingScaling \
+     --target-tracking-configuration file://tracking-config.json
+   ```
+
+### Hands-on Labs: EC2
+
+#### Lab 1: Building a Resilient Multi-AZ Architecture
+
+**Objective**: Create a fault-tolerant architecture spanning multiple Availability Zones.
+
+**Steps**:
+
+1. **Network Setup**:
+   ```bash
+   # Create VPC with multiple subnets across AZs
+   aws ec2 create-vpc --cidr-block 10.0.0.0/16 --tag-specifications 'ResourceType=vpc,Tags=[{Key=Name,Value=resilient-vpc}]'
+   aws ec2 create-subnet --vpc-id vpc-xxxx --cidr-block 10.0.1.0/24 --availability-zone us-east-1a
+   aws ec2 create-subnet --vpc-id vpc-xxxx --cidr-block 10.0.2.0/24 --availability-zone us-east-1b
+   aws ec2 create-subnet --vpc-id vpc-xxxx --cidr-block 10.0.3.0/24 --availability-zone us-east-1c
+   ```
+
+2. **Load Balancer Configuration**:
+   ```bash
+   # Create application load balancer spanning all AZs
+   aws elbv2 create-load-balancer --name resilient-alb \
+     --subnets subnet-xxxx subnet-yyyy subnet-zzzz \
+     --security-groups sg-xxxx
+   ```
+
+3. **Auto Scaling Implementation**:
+   ```bash
+   # Create launch template
+   aws ec2 create-launch-template --launch-template-name resilient-template \
+     --version-description initial-version \
+     --launch-template-data file://launch-config.json
+
+   # Create Auto Scaling group
+   aws autoscaling create-auto-scaling-group \
+     --auto-scaling-group-name resilient-asg \
+     --launch-template LaunchTemplateName=resilient-template,Version='$Latest' \
+     --min-size 3 \
+     --max-size 9 \
+     --desired-capacity 3 \
+     --vpc-zone-identifier "subnet-xxxx,subnet-yyyy,subnet-zzzz" \
+     --target-group-arns arn:aws:elasticloadbalancing:region:account-id:targetgroup/resilient-targets/xxxx
+   ```
+
+4. **Implement Recovery Procedures**:
+   ```bash
+   # Set instance health check grace period
+   aws autoscaling update-auto-scaling-group \
+     --auto-scaling-group-name resilient-asg \
+     --health-check-type ELB \
+     --health-check-grace-period 300
+   ```
+
+5. **Testing Scenarios**:
+   * Simulate instance failure by terminating an instance
+   * Verify the ASG launches a replacement
+   * Simulate AZ failure by blocking subnet route tables
+   * Observe traffic redirection to healthy AZs
+
+#### Lab 2: Security Hardening for EC2 Workloads
+
+**Objective**: Implement defense-in-depth security measures for EC2 instances.
+
+**Steps**:
+
+1. **Create Bastion Host Architecture**:
+   ```bash
+   aws ec2 run-instances \
+     --image-id ami-xxxx \
+     --instance-type t3.micro \
+     --key-name secure-key \
+     --security-group-ids sg-bastion \
+     --subnet-id subnet-public \
+     --tag-specifications 'ResourceType=instance,Tags=[{Key=Name,Value=bastion-host}]'
+   ```
+
+2. **Implement Systems Manager Session Manager**:
+   ```bash
+   # Create IAM role for Session Manager
+   aws iam create-role --role-name SSMInstanceRole --assume-role-policy-document file://trust-policy.json
+   aws iam attach-role-policy --role-name SSMInstanceRole --policy-arn arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore
+
+   # Attach role to instances
+   aws ec2 associate-iam-instance-profile \
+     --instance-id i-xxxx \
+     --iam-instance-profile Name=SSMInstanceProfile
+   ```
+
+3. **Security Group Layering**:
+   ```bash
+   # Create security group structure
+   aws ec2 create-security-group --group-name base-sg --description "Base Security Controls" --vpc-id vpc-xxxx
+   aws ec2 create-security-group --group-name web-sg --description "Web Tier Security" --vpc-id vpc-xxxx
+   aws ec2 create-security-group --group-name app-sg --description "Application Tier Security" --vpc-id vpc-xxxx
+   aws ec2 create-security-group --group-name data-sg --description "Data Tier Security" --vpc-id vpc-xxxx
+
+   # Configure references between groups
+   aws ec2 authorize-security-group-ingress --group-id sg-app --protocol tcp --port 8080 --source-group sg-web
+   aws ec2 authorize-security-group-ingress --group-id sg-data --protocol tcp --port 5432 --source-group sg-app
+   ```
+
+4. **Implement IMDSv2 (Instance Metadata Service v2)**:
+   ```bash
+   # Enforce IMDSv2 on launch template
+   aws ec2 modify-instance-metadata-options \
+     --instance-id i-xxxx \
+     --http-tokens required \
+     --http-put-response-hop-limit 1
+   ```
+
+5. **Encryption Implementation**:
+   ```bash
+   # Create and attach encrypted volumes
+   aws kms create-key --description "EC2 Volume Encryption Key"
+   aws ec2 create-volume \
+     --availability-zone us-east-1a \
+     --size 100 \
+     --volume-type gp3 \
+     --encrypted \
+     --kms-key-id arn:aws:kms:region:account-id:key/key-id
+   ```
+
+## Amazon CloudFront
+
+### Distribution Optimization Techniques
+
+CloudFront distributions can be optimized for performance, cost efficiency, and security. This section covers advanced configurations to get the most from AWS's global content delivery network.
+
+#### Strategic Origin Selection
+
+1. **Multi-Origin Architecture**
+
+   Configure multiple origins for different content types:
+
+   ```json
+   {
+     "Origins": {
+       "Quantity": 3,
+       "Items": [
+         {
+           "Id": "static-origin",
+           "DomainName": "static-bucket.s3.amazonaws.com",
+           "S3OriginConfig": { "OriginAccessIdentity": "origin-access-identity/cloudfront/EXXXXX" }
+         },
+         {
+           "Id": "api-origin",
+           "DomainName": "api.example.com",
+           "CustomOriginConfig": {
+             "HTTPPort": 80,
+             "HTTPSPort": 443,
+             "OriginProtocolPolicy": "https-only"
+           }
+         },
+         {
+           "Id": "dynamic-origin",
+           "DomainName": "dynamic.example.com",
+           "CustomOriginConfig": {
+             "HTTPPort": 80,
+             "HTTPSPort": 443,
+             "OriginProtocolPolicy": "https-only",
+             "OriginReadTimeout": 60
+           }
+         }
+       ]
+     }
+   }
+   ```
+
+2. **Origin Groups for Failover**
+
+   Implement automatic failover between origins:
+
+   ```json
+   {
+     "OriginGroups": {
+       "Quantity": 1,
+       "Items": [
+         {
+           "Id": "failover-group-1",
+           "FailoverCriteria": {
+             "StatusCodes": {
+               "Quantity": 3,
+               "Items": [500, 502, 503]
+             }
+           },
+           "Members": {
+             "Quantity": 2,
+             "Items": [
+               {
+                 "OriginId": "primary-origin",
+                 "FailoverOrder": 1
+               },
+               {
+                 "OriginId": "backup-origin",
+                 "FailoverOrder": 2
+               }
+             ]
+           }
+         }
+       ]
+     }
+   }
+   ```
+
+3. **Origin Shield Implementation**
+
+   Reduce load on origins by adding an additional caching layer:
+
+   ```json
+   {
+     "Origins": {
+       "Items": [
+         {
+           "Id": "example-origin",
+           "DomainName": "www.example.com",
+           "OriginShield": {
+             "Enabled": true,
+             "OriginShieldRegion": "us-east-1"
+           }
+         }
+       ]
+     }
+   }
+   ```
+
+#### Cache Optimization Strategies
+
+1. **Cache Key Customization**
+
+   Define precisely what determines a cache hit:
+
+   ```json
+   {
+     "DefaultCacheBehavior": {
+       "CachePolicyId": "custom-policy-id"
+     },
+     "CachePolicies": {
+       "Items": [
+         {
+           "Id": "custom-policy-id",
+           "Name": "OptimizedCachePolicy",
+           "MinTTL": 0,
+           "MaxTTL": 86400,
+           "DefaultTTL": 3600,
+           "ParametersInCacheKeyAndForwardedToOrigin": {
+             "HeadersConfig": {
+               "HeaderBehavior": "whitelist",
+               "Headers": {
+                 "Quantity": 1,
+                 "Items": ["Accept-Language"]
+               }
+             },
+             "CookiesConfig": {
+               "CookieBehavior": "whitelist",
+               "Cookies": {
+                 "Quantity": 1,
+                 "Items": ["session-id"]
+               }
+             },
+             "QueryStringsConfig": {
+               "QueryStringBehavior": "whitelist",
+               "QueryStrings": {
+                 "Quantity": 2,
+                 "Items": ["color", "size"]
+               }
+             }
+           }
+         }
+       ]
+     }
+   }
+   ```
+
+2. **Path Pattern Optimization**
+
+   Configure different behaviors for different content paths:
+
+   ```json
+   {
+     "DefaultCacheBehavior": { /* default config */ },
+     "CacheBehaviors": {
+       "Quantity": 3,
+       "Items": [
+         {
+           "PathPattern": "/api/*",
+           "TargetOriginId": "api-origin",
+           "CachePolicyId": "api-cache-policy",
+           "ViewerProtocolPolicy": "https-only"
+         },
+         {
+           "PathPattern": "/images/*",
+           "TargetOriginId": "static-origin",
+           "CachePolicyId": "static-cache-policy",
+           "ViewerProtocolPolicy": "redirect-to-https"
+         },
+         {
+           "PathPattern": "/css/*.min.css",
+           "TargetOriginId": "static-origin",
+           "CachePolicyId": "longterm-cache-policy",
+           "ViewerProtocolPolicy": "redirect-to-https"
+         }
+       ]
+     }
+   }
+   ```
+
+3. **Compression Settings**
+
+   Optimize content delivery with automatic compression:
+
+   ```json
+   {
+     "DefaultCacheBehavior": {
+       "Compress": true,
+       "FunctionAssociations": {
+         "Quantity": 1,
+         "Items": [
+           {
+             "EventType": "viewer-response",
+             "FunctionARN": "arn:aws:cloudfront::function/optimize-content-encoding"
+           }
+         ]
+       }
+     }
+   }
+   ```
+
+#### Performance Enhancement Techniques
+
+1. **Geographic Routing**
+
+   Route users to region-specific origins using Lambda@Edge:
+
+   ```javascript
+   // Example Lambda@Edge function for geographic routing
+   exports.handler = async (event) => {
+     const request = event.Records[0].cf.request;
+     const headers = request.headers;
+
+     // Get viewer's country from CloudFront headers
+     const country = headers['cloudfront-viewer-country'][0].value;
+
+     // Route to appropriate origin based on country
+     if (country === 'DE' || country === 'FR') {
+       request.origin = {
+         custom: {
+           domainName: 'eu-west-origin.example.com',
+           port: 443,
+           protocol: 'https',
+           path: '',
+           sslProtocols: ['TLSv1.2'],
+           readTimeout: 5,
+           keepaliveTimeout: 5,
+           customHeaders: {}
+         }
+       };
+     }
+
+     return request;
+   };
+   ```
+
+2. **Connection Optimization**
+
+   Configure HTTP/2 and HTTP/3 support:
+
+   ```json
+   {
+     "DistributionConfig": {
+       "HttpVersion": "http2and3",
+       "DefaultCacheBehavior": {
+         "FieldLevelEncryptionId": "",
+         "SmoothStreaming": false
+       }
+     }
+   }
+   ```
+
+3. **Real User Monitoring Integration**
+
+   Implement real-user monitoring with CloudFront and CloudWatch RUM:
+
+   ```javascript
+   // Add to your viewer-response function
+   const response = event.Records[0].cf.response;
+   const headers = response.headers;
+
+   // Add RUM script
+   if (response.status === '200' && headers['content-type'][0].value.includes('text/html')) {
+     const body = response.body;
+     const rumScript = '<script>(function(n,i,v,r,s,c){...})();</script>';
+
+     // Inject right before closing body tag
+     response.body = body.replace('</body>', `${rumScript}</body>`);
+   }
+
+   return response;
+   ```
+
+### Caching Strategies
+
+Effective caching is essential for optimal CloudFront performance. This section explores advanced caching techniques to maximize hit rates and minimize origin load.
+
+#### Cache Policy Design
+
+1. **Tiered TTL Strategy**
+
+   Implement different TTLs based on content volatility:
+
+   | Content Type | Default TTL | Min TTL | Max TTL | Considerations |
+   |--------------|-------------|---------|---------|----------------|
+   | Static assets | 86400s (1 day) | 3600s | 604800s (1 week) | Versioned URLs for updates |
+   | API responses | 60s | 0s | 300s | Only for GET requests |
+   | Dynamic HTML | 0s | 0s | 0s | No caching by default |
+   | User-specific | 0s | 0s | 0s | Use cache key includes |
+
+2. **Cache Key Components**
+
+   Optimize what determines unique cached objects:
+
+   ```json
+   {
+     "CachePolicy": {
+       "ParametersInCacheKeyAndForwardedToOrigin": {
+         "EnableAcceptEncodingGzip": true,
+         "EnableAcceptEncodingBrotli": true,
+         "HeadersConfig": {
+           "HeaderBehavior": "whitelist",
+           "Headers": {
+             "Quantity": 2,
+             "Items": [
+               "Accept",
+               "X-API-Version"
+             ]
+           }
+         },
+         "CookiesConfig": {
+           "CookieBehavior": "none"
+         },
+         "QueryStringsConfig": {
+           "QueryStringBehavior": "whitelist",
+           "QueryStrings": {
+             "Quantity": 2,
+             "Items": [
+               "lang",
+               "theme"
+             ]
+           }
+         }
+       }
+     }
+   }
+   ```
+
+3. **Origin Request Policies**
+
+   Separate cache keys from origin requests:
+
+   ```json
+   {
+     "OriginRequestPolicy": {
+       "HeadersConfig": {
+         "HeaderBehavior": "whitelist",
+         "Headers": {
+           "Quantity": 4,
+           "Items": [
+             "User-Agent",
+             "Referer",
+             "Accept-Language",
+             "X-Forwarded-For"
+           ]
+         }
+       },
+       "CookiesConfig": {
+         "CookieBehavior": "whitelist",
+         "Cookies": {
+           "Quantity": 1,
+           "Items": [
+             "session-token"
+           ]
+         }
+       },
+       "QueryStringsConfig": {
+         "QueryStringBehavior": "all"
+       }
+     }
+   }
+   ```
+
+#### Invalidation Strategies
+
+1. **Targeted Invalidation**
+
+   Use specific paths instead of wildcard invalidations:
+
+   ```bash
+   # Better approach: specific paths
+   aws cloudfront create-invalidation \
+     --distribution-id EXXXXX \
+     --paths "/css/main.css" "/js/app.js" "/images/logo.png"
+
+   # Avoid: wildcard invalidations
+   # aws cloudfront create-invalidation --distribution-id EXXXXX --paths "/*"
+   ```
+
+2. **Versioned Asset Strategy**
+
+   Implement content versioning to avoid invalidations:
+
+   ```html
+   <!-- Instead of -->
+   <link rel="stylesheet" href="/css/styles.css">
+
+   <!-- Use content-addressed URLs -->
+   <link rel="stylesheet" href="/css/styles.v12345.css">
+   <!-- or query parameters -->
+   <link rel="stylesheet" href="/css/styles.css?v=12345">
+   ```
+
+3. **Programmatic Invalidation**
+
+   Automate invalidation as part of your deployment process:
+
+   ```javascript
+   // AWS Lambda function example
+   const AWS = require('aws-sdk');
+   const cloudfront = new AWS.CloudFront();
+
+   exports.handler = async (event) => {
+     // Extract updated paths from deployment event
+     const paths = event.changedFiles.map(file => '/' + file);
+
+     // Create invalidation
+     const params = {
+       DistributionId: process.env.DISTRIBUTION_ID,
+       InvalidationBatch: {
+         CallerReference: Date.now().toString(),
+         Paths: {
+           Quantity: paths.length,
+           Items: paths
+         }
+       }
+     };
+
+     try {
+       const result = await cloudfront.createInvalidation(params).promise();
+       return { statusCode: 200, body: JSON.stringify(result) };
+     } catch (error) {
+       return { statusCode: 500, body: JSON.stringify(error) };
+     }
+   };
+   ```
+
+#### Advanced Caching Techniques
+
+1. **Vary Header Management**
+
+   Control cache variations with the Vary header:
+
+   ```javascript
+   // Lambda@Edge origin-response example
+   exports.handler = async (event) => {
+     const response = event.Records[0].cf.request.response;
+     const headers = response.headers;
+
+     // Only vary cache by Accept-Encoding (compression)
+     // Remove other potential Vary headers that would fragment cache
+     if (headers['vary']) {
+       headers['vary'] = [{
+         key: 'Vary',
+         value: 'Accept-Encoding'
+       }];
+     }
+
+     return response;
+   };
+   ```
+
+2. **Stale-While-Revalidate Implementation**
+
+   Configure origin to use stale-while-revalidate for smoother content updates:
+
+   ```javascript
+   // Add to origin response headers
+   exports.handler = async (event) => {
+     const response = event.Records[0].cf.response;
+
+     // Add Cache-Control with stale-while-revalidate
+     response.headers['cache-control'] = [{
+       key: 'Cache-Control',
+       value: 'max-age=3600, stale-while-revalidate=86400'
+     }];
+
+     return response;
+   };
+   ```
+
+3. **Surrogate Keys for Cache Management**
+
+   Implement surrogate keys for group invalidation:
+
+   ```javascript
+   // Set surrogate keys in origin response
+   exports.handler = async (event) => {
+     const request = event.Records[0].cf.request;
+     const response = event.Records[0].cf.response;
+
+     // Add surrogate keys based on content type
+     if (request.uri.startsWith('/products/')) {
+       response.headers['surrogate-key'] = [{
+         key: 'Surrogate-Key',
+         value: 'product-detail product-catalog'
+       }];
+     }
+
+     return response;
+   };
+   ```
+
+   Then invalidate by key:
+
+   ```bash
+   # Custom script using CloudFront-Key-Purge-xxxx header for keypurge
+   curl -X POST \
+     -H "Authorization: AWS4-HMAC-SHA256 ..." \
+     -H "CloudFront-Key-Purge-xxxx: product-catalog" \
+     https://api.cloudfront.com/keypurge
+   ```
+
+### CloudFront Functions and Lambda@Edge
+
+CloudFront provides two serverless computing options for customizing content delivery: CloudFront Functions and Lambda@Edge. Understanding their differences and use cases is crucial for optimal implementation.
+
+#### CloudFront Functions vs. Lambda@Edge
+
+| Feature | CloudFront Functions | Lambda@Edge |
+|---------|---------------------|-------------|
+| Execution Events | Viewer Request, Viewer Response | Origin Request, Origin Response, Viewer Request, Viewer Response |
+| Runtime | JavaScript | Node.js, Python |
+| Max Execution Time | < 1ms | Up to 5s (viewer) or 30s (origin) |
+| Memory | 2MB | 128MB - 10GB |
+| Access to Request Body | No | Yes |
+| Network Access | No | Yes |
+| File System Access | No | Yes |
+| Price | Very low ($0.10 per 1M invocations) | Higher ($0.60 per 1M invocations + compute) |
+| Deployment Time | Near-instant | Minutes (replication to all edge locations) |
+
+#### CloudFront Functions Use Cases
+
+1. **URL Normalization and Rewrites**
+
+   ```javascript
+   function handler(event) {
+     var request = event.request;
+     var uri = request.uri;
+
+     // Normalize URLs: remove trailing slashes
+     if (uri.endsWith('/') && uri.length > 1) {
+       request.uri = uri.slice(0, -1);
+     }
+
+     // Enforce lowercase URLs
+     if (uri !== uri.toLowerCase()) {
+       request.uri = uri.toLowerCase();
+     }
+
+     // Add index.html to directory URLs
+     if (uri.endsWith('/')) {
+       request.uri = uri + 'index.html';
+     }
+
+     return request;
+   }
+   ```
+
+2. **Request Header Manipulation**
+
+   ```javascript
+   function handler(event) {
+     var request = event.request;
+     var headers = request.headers;
+
+     // Set custom header for A/B testing
+     var randomValue = Math.random();
+     headers['x-experiment-group'] = {value: randomValue < 0.5 ? 'A' : 'B'};
+
+     // Add normalized geo headers
+     if (headers['cloudfront-viewer-country']) {
+       headers['x-country'] = {value: headers['cloudfront-viewer-country'].value.toLowerCase()};
+     }
+
+     return request;
+   }
+
+   3. **Response Manipulation**
+
+   ```javascript
+   function handler(event) {
+     var response = event.response;
+     var headers = response.headers;
+
+     // Add security headers
+     headers['strict-transport-security'] = {value: 'max-age=63072000; includeSubdomains; preload'};
+     headers['x-content-type-options'] = {value: 'nosniff'};
+     headers['x-frame-options'] = {value: 'DENY'};
+     headers['content-security-policy'] = {value: "default-src 'self'; img-src 'self' data:; script-src 'self'"};
+
+     // Remove server identity headers
+     delete headers['server'];
+     delete headers['x-powered-by'];
+
+     return response;
+   }
+   ```
+
+4. **Simple Authentication**
+
+   ```javascript
+   function handler(event) {
+     var request = event.request;
+     var headers = request.headers;
+
+     // Check for basic auth header
+     if (!headers.authorization) {
+       return {
+         statusCode: 401,
+         statusDescription: 'Unauthorized',
+         headers: {
+           'www-authenticate': {value: 'Basic realm="Secure Area"'}
+         }
+       };
+     }
+
+     // Decode and validate credentials
+     try {
+       var authValue = headers.authorization.value;
+       var encodedCreds = authValue.split(' ')[1];
+       var decodedCreds = atob(encodedCreds);
+       var credentials = decodedCreds.split(':');
+
+       if (credentials[0] !== 'correct-user' || credentials[1] !== 'correct-password') {
+         throw new Error('Invalid credentials');
+       }
+     } catch (error) {
+       return {
+         statusCode: 401,
+         statusDescription: 'Unauthorized',
+         headers: {
+           'www-authenticate': {value: 'Basic realm="Secure Area"'}
+         }
+       };
+     }
+
+     return request;
+   }
+   ```
+
+#### Lambda@Edge Advanced Use Cases
+
+1. **Dynamic Origin Selection**
+
+   ```javascript
+   exports.handler = async (event) => {
+     const request = event.Records[0].cf.request;
+     const headers = request.headers;
+     const uri = request.uri;
+
+     // Route to microservices based on path patterns
+     if (uri.startsWith('/api/users')) {
+       request.origin = {
+         custom: {
+           domainName: 'user-service.example.com',
+           port: 443,
+           protocol: 'https',
+           path: '',
+           sslProtocols: ['TLSv1.2'],
+           readTimeout: 5,
+           keepaliveTimeout: 5
+         }
+       };
+     } else if (uri.startsWith('/api/products')) {
+       request.origin = {
+         custom: {
+           domainName: 'product-service.example.com',
+           port: 443,
+           protocol: 'https',
+           path: '',
+           sslProtocols: ['TLSv1.2'],
+           readTimeout: 5,
+           keepaliveTimeout: 5
+         }
+       };
+     }
+
+     return request;
+   };
+   ```
+
+2. **Personalized Content Generation**
+
+   ```javascript
+   exports.handler = async (event) => {
+     const request = event.Records[0].cf.request;
+     const headers = request.headers;
+
+     // Extract user device details
+     const userAgent = headers['user-agent'] && headers['user-agent'][0].value;
+     const isMobile = /Mobile|Android|iPhone/i.test(userAgent);
+
+     // Modify request to fetch appropriate content
+     if (isMobile && request.uri.endsWith('.html')) {
+       // Either rewrite URI to mobile version
+       request.uri = request.uri.replace('.html', '.mobile.html');
+
+       // Or add query parameter for the origin to handle
+       request.querystring = (request.querystring ? request.querystring + '&' : '') + 'device=mobile';
+     }
+
+     return request;
+   };
+   ```
+
+3. **Server-Side Rendering**
+
+   ```javascript
+   const AWS = require('aws-sdk');
+   const s3 = new AWS.S3();
+
+   exports.handler = async (event) => {
+     const request = event.Records[0].cf.request;
+
+     // Only process HTML requests
+     if (!request.uri.endsWith('.html') && !request.uri.endsWith('/')) {
+       return request;
+     }
+
+     try {
+       // Fetch template and data
+       const templateKey = request.uri === '/' ? 'index.html' : request.uri.substring(1);
+       const dataKey = templateKey.replace('.html', '.json');
+
+       const [templateObj, dataObj] = await Promise.all([
+         s3.getObject({
+           Bucket: 'my-templates-bucket',
+           Key: templateKey
+         }).promise(),
+         s3.getObject({
+           Bucket: 'my-data-bucket',
+           Key: dataKey
+         }).promise()
+       ]);
+
+       const template = templateObj.Body.toString('utf-8');
+       const data = JSON.parse(dataObj.Body.toString('utf-8'));
+
+       // Simple templating system
+       const renderedContent = template.replace(
+         /\{\{([^}]+)\}\}/g,
+         (match, p1) => data[p1.trim()] || ''
+       );
+
+       // Return pre-rendered content
+       return {
+         status: '200',
+         statusDescription: 'OK',
+         headers: {
+           'content-type': [{ key: 'Content-Type', value: 'text/html' }],
+           'cache-control': [{ key: 'Cache-Control', value: 'max-age=60' }]
+         },
+         body: renderedContent
+       };
+     } catch (error) {
+       // Fall back to origin request
+       return request;
+     }
+   };
+   ```
+
+4. **Advanced Authentication and Authorization**
+
+   ```javascript
+   const jwksClient = require('jwks-rsa');
+   const jwt = require('jsonwebtoken');
+
+   // Initialize JWKS client (used to fetch public keys for JWT verification)
+   const client = jwksClient({
+     jwksUri: 'https://auth.example.com/.well-known/jwks.json'
+   });
+
+   // Function to get the signing key
+   const getSigningKey = (kid) => {
+     return new Promise((resolve, reject) => {
+       client.getSigningKey(kid, (err, key) => {
+         if (err) {
+           reject(err);
+           return;
+         }
+
+         const signingKey = key.publicKey || key.rsaPublicKey;
+         resolve(signingKey);
+       });
+     });
+   };
+
+   exports.handler = async (event) => {
+     const request = event.Records[0].cf.request;
+     const headers = request.headers;
+
+     // Extract JWT from Authorization header or cookie
+     let token;
+     if (headers.authorization && headers.authorization[0].value.startsWith('Bearer ')) {
+       token = headers.authorization[0].value.slice(7);
+     } else if (headers.cookie) {
+       const cookies = headers.cookie[0].value.split(';');
+       const authCookie = cookies.find(cookie => cookie.trim().startsWith('auth='));
+       if (authCookie) {
+         token = authCookie.split('=')[1].trim();
+       }
+     }
+
+     if (!token) {
+       return {
+         status: '401',
+         statusDescription: 'Unauthorized',
+         headers: {
+           'www-authenticate': [{ key: 'WWW-Authenticate', value: 'Bearer realm="example"' }]
+         }
+       };
+     }
+
+     try {
+       // Decode token without verification to get the key ID (kid)
+       const decoded = jwt.decode(token, { complete: true });
+       if (!decoded || !decoded.header || !decoded.header.kid) {
+         throw new Error('Invalid token');
+       }
+
+       // Get the signing key
+       const signingKey = await getSigningKey(decoded.header.kid);
+
+       // Verify token
+       const verified = jwt.verify(token, signingKey, {
+         algorithms: ['RS256'],
+         audience: 'api.example.com',
+         issuer: 'auth.example.com'
+       });
+
+       // Add claims as headers to the request
+       if (verified.roles) {
+         request.headers['x-user-roles'] = [{ key: 'X-User-Roles', value: verified.roles.join(',') }];
+       }
+       request.headers['x-user-id'] = [{ key: 'X-User-Id', value: verified.sub }];
+
+       return request;
+     } catch (error) {
+       return {
+         status: '403',
+         statusDescription: 'Forbidden',
+         headers: {
+           'content-type': [{ key: 'Content-Type', value: 'application/json' }]
+         },
+         body: JSON.stringify({ error: 'Invalid token' })
+       };
+     }
+   };
+   ```
+
+### SSL/TLS Implementation
+
+Securing your CloudFront distribution with proper SSL/TLS configuration is essential for both security and performance.
+
+#### Certificate Management
+
+1. **Certificate Selection Options**
+
+   | Certificate Type | Use Case | Pros | Cons |
+   |------------------|----------|------|------|
+   | Default CloudFront Certificate | Basic HTTPS for *.cloudfront.net domains | Free, automatic management | Cannot use custom domain |
+   | ACM Certificate | Custom domains with AWS integration | Free, automatic renewal, integration with ALB/API Gateway | US East-1 region only for CloudFront |
+   | Imported Certificate | Legacy certificates or special requirements | Full control | Manual renewal, $600/month for SNI, higher for dedicated IP |
+   | Custom SSL Certificate | Special compliance requirements | Full control | Most expensive, complex management |
+
+2. **Certificate Deployment Process**
+
+   ```bash
+   # Request certificate in ACM (must be in us-east-1 for CloudFront)
+   aws acm request-certificate \
+     --domain-name example.com \
+     --validation-method DNS \
+     --subject-alternative-names www.example.com api.example.com \
+     --region us-east-1
+
+   # Get validation details
+   aws acm describe-certificate \
+     --certificate-arn arn:aws:acm:us-east-1:123456789012:certificate/uuid \
+     --region us-east-1
+
+   # Add CNAME record to your DNS
+   # Name: _x1.example.com
+   # Value: _x2.acm-validations.aws
+
+   # Associate certificate with CloudFront distribution
+   aws cloudfront update-distribution \
+     --id EXXXXX \
+     --distribution-config file://dist-config.json
+   ```
+
+3. **Certificate Rotation Strategy**
+
+   ```javascript
+   // AWS Lambda function for automatic certificate monitoring
+   const AWS = require('aws-sdk');
+   const acm = new AWS.ACM({ region: 'us-east-1' });
+   const sns = new AWS.SNS({ region: 'us-east-1' });
+
+   exports.handler = async () => {
+     // Fetch all certificates
+     const certResponse = await acm.listCertificates({
+       CertificateStatuses: ['ISSUED']
+     }).promise();
+
+     const expiringCerts = [];
+     const thirtyDaysFromNow = new Date();
+     thirtyDaysFromNow.setDate(thirtyDaysFromNow.getDate() + 30);
+
+     // Check each certificate
+     for (const cert of certResponse.CertificateSummaryList) {
+       const certDetails = await acm.describeCertificate({
+         CertificateArn: cert.CertificateArn
+       }).promise();
+
+       const expiryDate = new Date(certDetails.Certificate.NotAfter);
+
+       // If expiring within 30 days and not managed by ACM
+       if (expiryDate < thirtyDaysFromNow &&
+           certDetails.Certificate.Type !== 'AMAZON_ISSUED') {
+         expiringCerts.push({
+           arn: cert.CertificateArn,
+           domain: cert.DomainName,
+           expiry: expiryDate
+         });
+       }
+     }
+
+     // Send notification if certificates are expiring
+     if (expiringCerts.length > 0) {
+       await sns.publish({
+         TopicArn: process.env.NOTIFICATION_TOPIC,
+         Subject: 'SSL Certificates Expiring Soon',
+         Message: JSON.stringify(expiringCerts, null, 2)
+       }).promise();
+     }
+
+     return { expiringCertificates: expiringCerts.length };
+   };
+   ```
+
+#### TLS Configuration Optimization
+
+1. **Security Policy Selection**
+
+   CloudFront TLS security policies:
+
+   * **TLSv1.2_2021**: Modern policy (TLS 1.2+)
+   * **TLSv1.2_2019**: Legacy compatibility (TLS 1.2+)
+   * **TLSv1.1_2016**: Older client support (TLS 1.1+)
+   * **TLSv1_2016**: Maximum compatibility (TLS 1.0+)
+
+   ```json
+   {
+     "DistributionConfig": {
+       "ViewerCertificate": {
+         "CloudFrontDefaultCertificate": false,
+         "ACMCertificateArn": "arn:aws:acm:us-east-1:123456789012:certificate/uuid",
+         "SSLSupportMethod": "sni-only",
+         "MinimumProtocolVersion": "TLSv1.2_2021"
+       }
+     }
+   }
+   ```
+
+2. **HSTS Implementation**
+
+   Add HTTP Strict Transport Security headers:
+
+   ```javascript
+   // CloudFront Function for HSTS
+   function handler(event) {
+     var response = event.response;
+     var headers = response.headers;
+
+     // Add HSTS header
+     headers['strict-transport-security'] = {
+       value: 'max-age=31536000; includeSubdomains; preload'
+     };
+
+     return response;
+   }
+   ```
+
+3. **Certificate Transparency Monitoring**
+
+   Set up automated monitoring:
+
+   ```javascript
+   // AWS Lambda function for Certificate Transparency log monitoring
+   const axios = require('axios');
+   const AWS = require('aws-sdk');
+   const sns = new AWS.SNS();
+
+   exports.handler = async (event) => {
+     // Query Certificate Transparency logs
+     const response = await axios.get(
+       'https://ct.googleapis.com/logs/argon2021/ct/v1/get-entries',
+       {
+         params: {
+           start: process.env.LAST_INDEX || '0',
+           end: parseInt(process.env.LAST_INDEX || '0') + 1000
+         }
+       }
+     );
+
+     // Process certificates
+     const domainPatterns = [
+       'example.com',
+       '*.example.com'
+     ];
+
+     const matches = [];
+
+     for (const entry of response.data.entries) {
+       // Decode certificate data...
+       // Parse for domain names...
+
+       // Check for matches
+       if (extractedDomains.some(domain =>
+           domainPatterns.some(pattern =>
+             domain === pattern ||
+             (pattern.startsWith('*.') &&
+              domain.endsWith(pattern.substring(1)))))) {
+         matches.push({
+           certificate: extractedData,
+           issuer: extractedIssuer,
+           domains: extractedDomains
+         });
+       }
+     }
+
+     // Alert if unexpected certificates found
+     if (matches.length > 0) {
+       await sns.publish({
+         TopicArn: process.env.ALERT_TOPIC,
+         Subject: 'New SSL Certificates Detected',
+         Message: JSON.stringify(matches, null, 2)
+       }).promise();
+     }
+
+     return { processedEntries: response.data.entries.length };
+   };
+   ```
+
+#### Client-Side Security Integration
+
+1. **Content Security Policy Implementation**
+
+   ```javascript
+   // CloudFront Function for CSP
+   function handler(event) {
+     var response = event.response;
+     var headers = response.headers;
+
+     // Set CSP header
+     headers['content-security-policy'] = {
+       value: "default-src 'self'; " +
+              "script-src 'self' https://cdn.example.com; " +
+              "style-src 'self' https://cdn.example.com; " +
+              "img-src 'self' data: https://cdn.example.com; " +
+              "connect-src 'self' https://api.example.com; " +
+              "font-src 'self'; " +
+              "object-src 'none'; " +
+              "media-src 'self'; " +
+              "frame-src 'self'; " +
+              "frame-ancestors 'self'; " +
+              "form-action 'self'; " +
+              "base-uri 'self'; " +
+              "upgrade-insecure-requests;"
+     };
+
+     return response;
+   }
+   ```
+
+2. **Certificate Pinning**
+
+   ```javascript
+   // CloudFront Function for HPKP (HTTP Public Key Pinning)
+   function handler(event) {
+     var response = event.response;
+     var headers = response.headers;
+
+     // Add HPKP header
+     headers['public-key-pins'] = {
+       value: 'pin-sha256="base64+primary="; ' +
+              'pin-sha256="base64+backup="; ' +
+              'max-age=2592000; ' +
+              'includeSubDomains'
+     };
+
+     return response;
+   }
+   ```
+
+3. **Modern TLS Features Integration**
+
+   ```javascript
+   // CloudFront Function to add security headers
+   function handler(event) {
+     var response = event.response;
+     var headers = response.headers;
+
+     // Add Expect-CT header for Certificate Transparency
+     headers['expect-ct'] = {
+       value: 'enforce, max-age=30'
+     };
+
+     // Add Referrer-Policy
+     headers['referrer-policy'] = {
+       value: 'strict-origin-when-cross-origin'
+     };
+
+     // Add Permissions-Policy (formerly Feature-Policy)
+     headers['permissions-policy'] = {
+       value: 'camera=(), microphone=(), geolocation=(self), payment=()'
+     };
+
+     return response;
+   }
+   ```
+
+### Security Best Practices
+
+Securing CloudFront distributions requires a comprehensive approach covering multiple aspects of the service configuration.
+
+#### Origin Security Configuration
+
+1. **Origin Access Control (OAC)**
+
+   Secure S3 origins with Origin Access Control:
+
+   ```json
+   // CloudFront Distribution Configuration
+   {
+     "Origins": {
+       "Items": [
+         {
+           "Id": "s3-origin",
+           "DomainName": "mybucket.s3.amazonaws.com",
+           "S3OriginConfig": {
+             "OriginAccessIdentity": ""
+           },
+           "OriginAccessControlId": "E3AAABCDEFGHI"
+         }
+       ]
+     }
+   }
+   ```
+
+   ```json
+   // S3 Bucket Policy
+   {
+     "Version": "2012-10-17",
+     "Statement": [
+       {
+         "Effect": "Allow",
+         "Principal": {
+           "Service": "cloudfront.amazonaws.com"
+         },
+         "Action": "s3:GetObject",
+         "Resource": "arn:aws:s3:::mybucket/*",
+         "Condition": {
+           "StringEquals": {
+             "AWS:SourceArn": "arn:aws:cloudfront::123456789012:distribution/EXXXXX"
+           }
+         }
+       }
+     ]
+   }
+   ```
+
+2. **Origin Custom Headers for Authentication**
+
+   ```json
+   {
+     "Origins": {
+       "Items": [
+         {
+           "Id": "custom-origin",
+           "DomainName": "api.example.com",
+           "CustomOriginConfig": {
+             "HTTPPort": 80,
+             "HTTPSPort": 443,
+             "OriginProtocolPolicy": "https-only"
+           },
+           "OriginCustomHeaders": [
+             {
+               "HeaderName": "X-Origin-Secret",
+               "HeaderValue": "secret-token-value"
+             }
+           ]
+         }
+       ]
+     }
+   }
+   ```
+
+3. **WAF Integration for Origin Protection**
+
+   ```bash
+   # Create IP set for CloudFront IP ranges
+   aws wafv2 create-ip-set \
+     --name CloudFrontIPs \
+     --scope REGIONAL \
+     --region us-east-1 \
+     --ip-address-version IPV4 \
+     --addresses $(curl -s https://ip-ranges.amazonaws.com/ip-ranges.json | \
+                  jq -r '.prefixes[] | select(.service=="CLOUDFRONT") | .ip_prefix')
+
+   # Create WAF rule to allow only CloudFront traffic
+   aws wafv2 create-rule-group \
+     --name AllowCloudFrontOnly \
+     --scope REGIONAL \
+     --region us-east-1 \
+     --capacity 2 \
+     --visibility-config SampledRequestsEnabled=true,CloudWatchMetricsEnabled=true,MetricName=AllowCloudFrontOnly \
+     --rules file://waf-rules.json
+   ```
+
+#### Distribution Security Features
+
+1. **Geo-Restriction Implementation**
+
+   ```json
+   {
+     "DistributionConfig": {
+       "Restrictions": {
+         "GeoRestriction": {
+           "RestrictionType": "whitelist",
+           "Quantity": 5,
+           "Items": [
+             "US",
+             "CA",
+             "GB",
+             "DE",
+             "FR"
+           ]
+         }
+       }
+     }
+   }
+   ```
+
+2. **AWS WAF Integration**
+
+   ```bash
+   # Create WAF WebACL
+   aws wafv2 create-web-acl \
+     --name CloudFrontProtection \
+     --scope CLOUDFRONT \
+     --region us-east-1 \
+     --default-action Allow={} \
+     --visibility-config SampledRequestsEnabled=true,CloudWatchMetricsEnabled=true,MetricName=CloudFrontWAF \
+     --rules file://waf-cloudfront-rules.json
+
+   # Associate with CloudFront distribution
+   aws cloudfront update-distribution \
+     --id EXXXXX \
+     --web-acl-id arn:aws:wafv2:us-east-1:123456789012:global/webacl/CloudFrontProtection/abcdef
+   ```
+
+3. **Field-Level Encryption**
+
+   ```json
+   {
+     "DistributionConfig": {
+       "DefaultCacheBehavior": {
+         "FieldLevelEncryptionId": "KXXXX"
+       }
+     }
+   }
+   ```
+
+   ```bash
+   # Create public/private key pair for field-level encryption
+   openssl genrsa -out private-key.pem 2048
+   openssl rsa -pubout -in private-key.pem -out public-key.pem
+
+   # Create field-level encryption profile
+   aws cloudfront create-field-level-encryption-profile \
+     --field-level-encryption-profile-config file://fle-profile.json
+
+   # Create field-level encryption configuration
+   aws cloudfront create-field-level-encryption-config \
+     --field-level-encryption-config file://fle-config.json
+   ```
+
+#### DDoS and Attack Mitigation
+
+1. **Rate Limiting with Lambda@Edge**
+
+   ```javascript
+   // DynamoDB rate limiting with Lambda@Edge
+   const AWS = require('aws-sdk');
+   const dynamodb = new AWS.DynamoDB.DocumentClient();
+
+   exports.handler = async (event) => {
+     const request = event.Records[0].cf.request;
+     const ip = request.headers['x-forwarded-for'][0].value.split(', ')[0];
+     const path = request.uri;
+
+     // Set rate limit parameters
+     const rateLimit = 100; // requests per minute
+     const blockDuration = 300; // seconds to block if rate exceeded
+
+     try {
+       // Check if IP is currently blocked
+       const blockCheck = await dynamodb.get({
+         TableName: 'cf-ratelimit-blocks',
+         Key: { ip }
+       }).promise();
+
+       if (blockCheck.Item && blockCheck.Item.expires > Math.floor(Date.now() / 1000)) {
+         return {
+           status: '429',
+           statusDescription: 'Too Many Requests',
+           headers: {
+             'retry-after': [{ key: 'Retry-After', value: blockCheck.Item.expires - Math.floor(Date.now() / 1000) }]
+           }
+         };
+       }
+
+       // Check and update request count
+       const timestamp = Math.floor(Date.now() / 60000); // Current minute
+       const countKey = `${ip}:${timestamp}`;
+
+       const updateResult = await dynamodb.update({
+         TableName: 'cf-ratelimit-counts',
+         Key: { key: countKey },
+         UpdateExpression: 'SET requests = if_not_exists(requests, :zero) + :inc',
+         ExpressionAttributeValues: {
+           ':zero': 0,
+           ':inc': 1,
+           ':limit': rateLimit
+         },
+         ReturnValues: 'UPDATED_NEW',
+         ConditionExpression: 'attribute_not_exists(requests) OR requests < :limit'
+       }).promise();
+
+       return request;
+     } catch (error) {
+       if (error.code === 'ConditionalCheckFailedException') {
+         // Rate limit exceeded, block the IP
+         const expires = Math.floor(Date.now() / 1000) + blockDuration;
+
+         await dynamodb.put({
+           TableName: 'cf-ratelimit-blocks',
+           Item: {
+             ip,
+             expires,
+             reason: 'Rate limit exceeded'
+           }
+         }).promise();
+
+         return {
+           status: '429',
+           statusDescription: 'Too Many Requests',
+           headers: {
+             'retry-after': [{ key: 'Retry-After', value: blockDuration.toString() }]
+           }
+         };
+       }
+
+       // Allow request if there's an error with rate limiting system
+       return request;
+     }
+   };
+   ```
+
+2. **Bot Management**
+
+   ```javascript
+   // Bot detection with Lambda@Edge
+   exports.handler = async (event) => {
+     const request = event.Records[0].cf.request;
+     const headers = request.headers;
+     const userAgent = headers['user-agent'] && headers['user-agent'][0].value;
+
+     // Simple bot detection patterns
+     const knownBotPatterns = [
+       /360Spider/i,
+       /AhrefsBot/i,
+       /Baiduspider/i,
+       /bingbot/i,
+       /Googlebot/i,
+       /YandexBot/i
+     ];
+
+     // Check for obvious bots
+     const isKnownBot = knownBotPatterns.some(pattern => pattern.test(userAgent));
+
+     // Advanced checks for sophisticated bots
+     const hasValidHeaders = headers['accept'] && headers['accept-language'] && headers['accept-encoding'];
+     const suspiciousRequest = !hasValidHeaders ||
+                              (headers['connection'] && headers['connection'][0].value === 'close');
+
+     if (isKnownBot) {
+       // Modify behavior for known bots
+       if (request.uri.includes('/admin') || request.uri.includes('/login')) {
+         return {
+           status: '403',
+           statusDescription: 'Forbidden'
+         };
+       }
+
+       // Rate limit known bots
+       request.headers['x-bot-type'] = [{ key: 'X-Bot-Type', value: 'known' }];
+     } else if (suspiciousRequest) {
+       // Challenge suspicious requests
+       request.headers['x-bot-type'] = [{ key: 'X-Bot-Type', value: 'suspicious' }];
+     }
+
+     return request;
+   };
+   ```
+
+3. **Shield Advanced Integration**
+
+   ```bash
+   # Enable Shield Advanced for CloudFront distribution
+   aws shield create-protection \
+     --name "CloudFront-Protection" \
+     --resource-arn "arn:aws:cloudfront::123456789012:distribution/EXXXXX"
+
+   # Configure proactive engagement
+   aws shield update-emergency-contact-settings \
+     --emergency-contact-list '[{"EmailAddress": "security@example.com", "PhoneNumber": "+15555555555"}]'
+
+   aws shield associate-drt-role-arn \
+     --role-arn "arn:aws:iam::123456789012:role/DRTAccessRole"
+   ```
+
+### Hands-on Labs: CloudFront
+
+#### Lab 1: Building a High-Performance Global Website
+
+**Objective**: Create a globally optimized website with CloudFront, S3, and Lambda@Edge.
+
+**Steps**:
+
+1. **Create S3 Bucket for Website Content**:
+   ```bash
+   aws s3 mb s3://global-website-123
+   aws s3 website s3://global-website-123 --index-document index.html --error-document error.html
+
+   # Upload content
+   aws s3 sync ./website-content/ s3://global-website-123/ --acl public-read
+   ```
+
+2. **Create CloudFront Origin Access Control**:
+   ```bash
+   aws cloudfront create-origin-access-control \
+     --origin-access-control-config '{
+       "Name": "S3 Website OAC",
+       "Description": "OAC for S3 website access",
+       "SigningProtocol": "sigv4",
+       "SigningBehavior": "always",
+       "OriginAccessControlOriginType": "s3"
+     }'
+   ```
+
+3. **Create CloudFront Distribution**:
+   ```bash
+   aws cloudfront create-distribution \
+     --distribution-config file://cloudfront-config.json
+   ```
+
+4. **Create Origin Response Lambda@Edge Function**:
+   ```bash
+   # Create function
+   aws lambda create-function \
+     --function-name OptimizeResponseHeaders \
+     --runtime nodejs16.x \
+     --role arn:aws:iam::123456789012:role/lambda-edge-execution \
+     --handler index.handler \
+     --zip-file fileb://response-optimizer.zip
+
+   # Publish version for Lambda@Edge
+   aws lambda publish-version \
+     --function-name OptimizeResponseHeaders# Advanced AWS Expertise: Comprehensive Learning Guide (Continued)
+
+
+### Lab 2: Optimizing CloudFront Distribution Settings
+
+**Objective**: Create and configure a CloudFront distribution with optimal settings for various content types.
+
+**Steps**:
+1. Create a CloudFront distribution pointing to an S3 origin
+2. Configure cache behaviors for different content types:
+   - Static assets (images, CSS, JS): Long TTL
+   - API responses: Short TTL with query string forwarding
+   - Dynamic content: No caching with all headers forwarded
+3. Implement origin failover with origin groups
+4. Configure error responses with custom error pages
+5. Test distribution performance with different cache settings
+
+**Success Criteria**: Achieve >90% cache hit ratio for static content while maintaining data freshness for dynamic content.
+
+### Lab 3: Implementing CloudFront Functions for Content Transformation
+
+**Objective**: Use CloudFront Functions to manipulate requests and responses at the edge.
+
+**Steps**:
+1. Create a CloudFront Function to:
+   - Normalize URL paths (lowercase, remove trailing slashes)
+   - Add security headers to responses
+   - Redirect legacy URL patterns to new formats
+2. Deploy the function to the viewer request and response events
+3. Test with various request patterns
+4. Analyze function execution metrics and logs
+
+**Code Example**:
+```javascript
+function handler(event) {
+    var request = event.request;
+    var headers = request.headers;
+
+    // Normalize URL to lowercase
+    var uri = request.uri.toLowerCase();
+
+    // Remove trailing slashes except for root
+    if (uri.length > 1 && uri.endsWith('/')) {
+        uri = uri.slice(0, -1);
+    }
+
+    // Redirect legacy paths
+    if (uri.startsWith('/legacy')) {
+        return {
+            statusCode: 301,
+            statusDescription: 'Moved Permanently',
+            headers: {
+                'location': { value: uri.replace('/legacy', '/v2') }
+            }
+        };
+    }
+
+    // Update the request with normalized URI
+    request.uri = uri;
+    return request;
+}
+```
+
+### Lab 4: Implementing Lambda@Edge for Advanced Edge Computing
+
+**Objective**: Implement Lambda@Edge functions for complex request/response processing.
+
+**Steps**:
+1. Create Lambda functions for:
+   - Origin request: Dynamic origin selection based on user location
+   - Origin response: Content modification and compression
+2. Deploy and associate functions with CloudFront distribution
+3. Test edge processing with users from different regions
+4. Analyze function performance and execution logs
+
+**Success Criteria**: Successfully implement geo-based routing with less than 50ms additional latency.
+
+## Integration Patterns
+
+### CloudFront with Application Load Balancer
+
+An effective architecture for serving dynamic web applications involves placing CloudFront in front of an Application Load Balancer (ALB) that distributes traffic to EC2 instances or containers:
+
+```
+Client → CloudFront → ALB → EC2/ECS → RDS
+```
+
+**Key Configuration Points**:
+- Set ALB as a custom origin with protocol policy HTTPS-only
+- Configure health checks on ALB to ensure only healthy instances receive traffic
+- Implement stickiness at the ALB level for session-based applications
+- Use CloudFront for TLS termination and edge caching of static assets
+
+### CloudFront with Cognito and API Gateway
+
+For secure API access with authenticated users:
+
+```
+                      ┌─→ Cognito User Pool
+                      │
+Client → CloudFront ──┼─→ API Gateway → Lambda → DynamoDB
+                      │
+                      └─→ S3 (static content)
+```
+
+**Implementation Details**:
+1. Configure different cache behaviors for:
+   - `/api/*`: Forward to API Gateway with minimal caching
+   - `/auth/*`: Forward to Cognito endpoints with no caching
+   - `/*`: Forward to S3 with aggressive caching
+2. Use Lambda@Edge to validate JWT tokens at the edge
+3. Implement signed cookies for authenticated users
+
+### Multi-Region Failover Architecture
+
+For high availability across regions:
+
+```
+                     ┌─→ Region A: ALB → EC2 → RDS
+                     │
+Client → CloudFront ─┤
+                     │
+                     └─→ Region B: ALB → EC2 → RDS (replica)
+```
+
+**Implementation Details**:
+1. Configure origin groups with primary and failover origins
+2. Set appropriate failover criteria (status codes, timeout)
+3. Implement Route 53 health checks for region availability
+4. Use Global Accelerator for IP-based traffic routing
+
+## Performance Optimization
+
+### Edge Caching Optimization
+
+**Content Delivery Network (CDN) Configuration**:
+- **Optimal TTL Settings**:
+  - Static assets (images, CSS, JS): 1 year with versioning
+  - Semi-dynamic content: 1 hour with cache invalidation
+  - API responses: Vary by content type (5-15 minutes)
+- **Cache Keys**: Carefully select which headers and query parameters to include
+- **Compression**: Enable Brotli compression for improved compression ratios
+
+**Cache Key Optimization Example**:
+```json
+{
+  "CachePolicyConfig": {
+    "Name": "OptimizedCachePolicy",
+    "DefaultTTL": 86400,
+    "MaxTTL": 31536000,
+    "MinTTL": 1,
+    "ParametersInCacheKeyAndForwardedToOrigin": {
+      "CookiesConfig": {
+        "CookieBehavior": "whitelist",
+        "Cookies": ["session-id"]
+      },
+      "HeadersConfig": {
+        "HeaderBehavior": "whitelist",
+        "Headers": ["Accept", "Accept-Language"]
+      },
+      "QueryStringsConfig": {
+        "QueryStringBehavior": "whitelist",
+        "QueryStrings": ["version"]
+      }
+    }
+  }
+}
+```
+
+### Advanced Edge Computing
+
+**Lambda@Edge Optimization**:
+- Minimize function size to reduce cold start times
+- Use environment variables for configuration
+- Implement aggressive caching within functions
+- Use Node.js runtime for fastest execution
+
+**CloudFront Functions vs. Lambda@Edge Decision Matrix**:
+
+| Requirement | CloudFront Functions | Lambda@Edge |
+|-------------|---------------------|------------|
+| Execution Time | less than1ms required | Up to 5s acceptable |
+| Memory Usage | less than2MB | >2MB needed |
+| Network Access | Not needed | Required |
+| Event Type | Viewer events only | All event types |
+| Library Dependencies | None or minimal | Multiple dependencies |
+
+### Origin Request Optimization
+
+**EC2 Origin Optimization**:
+- Use Global Accelerator for origin routing
+- Implement connection keep-alive
+- Configure origin timeouts appropriately
+- Use HTTP/2 for origin fetches
+
+**Performance Testing Methodology**:
+1. Establish baseline performance metrics
+2. Incrementally apply optimizations
+3. Use CloudWatch Synthetics to continuously monitor performance
+4. Implement A/B testing for optimization validation
+
+## Cost Optimization
+
+### CloudFront Cost Analysis
+
+**Key Cost Factors**:
+- Data transfer out to internet
+- Number of requests
+- Edge function executions
+- Origin shield requests
+- SSL certificate costs (if using custom certificates)
+
+**Cost Optimization Strategies**:
+1. **Caching Efficiency**: Increase cache hit ratio to reduce origin fetches
+2. **Compression**: Reduce transfer costs with Brotli compression
+3. **Origin Shield**: Reduce redundant origin requests
+4. **Price Class Selection**: Choose price class based on target audience geography
+5. **Function Execution**: Optimize Lambda@Edge execution frequency and duration
+
+**Price Class Comparison**:
+
+| Price Class | Regions Covered | Cost Level | Use Case |
+|-------------|----------------|------------|----------|
+| Price Class 100 | North America, Europe | Lowest | Regional applications |
+| Price Class 200 | + Asia, Africa | Medium | Global applications excluding Australia/South America |
+| Price Class All | All CloudFront regions | Highest | Truly global applications |
+
+### EC2 Cost Optimization
+
+**Instance Optimization**:
+- Use Spot Instances for non-critical workloads
+- Implement Auto Scaling with predictive scaling
+- Right-size instances based on CloudWatch metrics
+- Use Graviton processors for better price/performance
+
+**Cost Monitoring**:
+- Implement CloudWatch alarms for cost anomalies
+- Use Cost Explorer to identify optimization opportunities
+- Tag resources appropriately for cost allocation
+
+### Cognito Cost Optimization
+
+**Active User Management**:
+- Implement user pool cleanup for inactive users
+- Configure appropriate session duration
+- Optimize MFA settings for cost-effectiveness
+
+**Feature Selection**:
+- Evaluate necessity of advanced security features
+- Use appropriate authentication flows for your use case
+
+## References and Resources
+
+### Official Documentation
+- [Amazon Cognito Developer Guide](https://docs.aws.amazon.com/cognito/)
+- [Amazon EC2 User Guide](https://docs.aws.amazon.com/ec2/)
+- [Amazon CloudFront Developer Guide](https://docs.aws.amazon.com/cloudfront/)
+
+### Whitepapers
+- [AWS Security Best Practices](https://d1.awsstatic.com/whitepapers/Security/AWS_Security_Best_Practices.pdf)
+- [Architecting for HIPAA Security and Compliance](https://d1.awsstatic.com/whitepapers/compliance/AWS_HIPAA_Compliance_Whitepaper.pdf)
+- [Performance at Scale with Amazon CloudFront](https://d1.awsstatic.com/whitepapers/performance-at-scale-with-amazon-cloudfront.pdf)
+
+### Workshops and Labs
+- [AWS Cognito Workshop](https://github.com/aws-samples/amazon-cognito-developer-authentication-sample)
+- [EC2 Advanced Features Workshop](https://ec2-workshops.com/)
+- [CloudFront and Lambda@Edge Workshop](https://github.com/aws-samples/aws-lambda-edge-workshops)
+
+### Community Resources
+- [AWS Samples GitHub](https://github.com/aws-samples)
+- [AWS Architecture Blog](https://aws.amazon.com/blogs/architecture/)
+- [AWS Community Builders Program](https://aws.amazon.com/developer/community/community-builders/)
+
+### Certification Preparation
+- [AWS Certified Solutions Architect Professional](https://aws.amazon.com/certification/certified-solutions-architect-professional/)
+- [AWS Certified DevOps Engineer Professional](https://aws.amazon.com/certification/certified-devops-engineer-professional/)
+- [AWS Certified Security Specialty](https://aws.amazon.com/certification/certified-security-specialty/)

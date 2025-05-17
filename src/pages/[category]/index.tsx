@@ -47,10 +47,10 @@ export default function Category({ posts, category }: CategoryProps) {
                 <div className="h-full p-6 bg-white dark:bg-zinc-800 rounded-lg border border-zinc-200 dark:border-zinc-700 transition-shadow hover:shadow-lg">
                   <h2 className="text-xl font-bold text-zinc-900 dark:text-white mb-3">
                     {post.title}
-                  </h2>
+                </h2>
                   <p className="text-sm text-zinc-600 dark:text-zinc-400 mb-4">
-                    {post.description}
-                  </p>
+                  {post.description}
+                </p>
                   <div className="mt-auto flex items-center text-sm font-medium text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300">
                     <span>Read article</span>
                     <svg
